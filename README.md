@@ -1,6 +1,6 @@
 # Fair Platform
 
-A directory and marketplace platform focused on equitable referrals and revenue sharing for startups, SaaS companies, small businesses, and content creators.
+A directory and marketplace platform focused on equitable referrals and revenue sharing for startups, SaaS companies, small businesses, and content creators. Includes a single page site/link builder.
 ## Resources and Assistance
 
  Assistance in organizing and structuring the project setup was provided by ChatGPTs 4o, o1 mini, o1 preview, Claude sonnet and opus.
