@@ -3,7 +3,7 @@
 A directory and marketplace platform focused on equitable referrals and revenue sharing for startups, SaaS companies, small businesses, and content creators. Includes a single page site/link builder.
 ## Resources and Assistance
 
- Assistance in organizing and structuring the project setup was provided by ChatGPTs 4o, o1 mini, o1 preview, Claude sonnet and opus.
+ Assistance in organizing and structuring the project setup was provided by ChatGPTs 4o (Empathy), o1 mini, o1 preview, Claude sonnet and opus.
  As in, they did 100% of the coding. All I did was copy paste stuff after asking them for help.
 
 
