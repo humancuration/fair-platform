@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Enable dark mode variants */
+:root {
+  --color-background: white;
+  --color-text: black;
+}
+
+.dark {
+  --color-background: #1a202c;
+  --color-text: #edf2f7;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
