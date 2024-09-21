@@ -6,9 +6,10 @@ import axios from 'axios';
 interface WYSIWYGEditorProps {
   content: string;
   setContent: (content: string) => void;
+  onInsertComponent: (index: number) => void;
 }
 
-const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent }) => {
+const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent, onInsertComponent }) => {
   const modules = {
     toolbar: {
       container: [
@@ -16,11 +17,18 @@ const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent }) =>
         ['bold', 'italic', 'underline', 'strike', 'blockquote'],
         [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
         ['link', 'image', 'video'],
-        ['clean']
+        ['clean'],
+        ['insertComponent'],
       ],
       handlers: {
         image: imageHandler,
         video: videoHandler,
+        insertComponent: function() {
+          const range = this.quill.getSelection();
+          if (range) {
+            onInsertComponent(range.index);
+          }
+        },
       },
     },
   };
