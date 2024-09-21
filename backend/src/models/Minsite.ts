@@ -9,6 +9,11 @@ class Minsite extends Model {
   public userId!: number;
   public createdAt!: Date;
   public updatedAt!: Date;
+  public template!: string;
+  public customCSS!: string;
+  public seoMetadata!: object;
+  public components!: string[];
+  public versions!: object[];
 }
 
 Minsite.init(
@@ -28,6 +33,34 @@ Minsite.init(
         model: User,
         key: 'id',
       },
+    },
+    template: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isIn: [['blank', 'blog', 'portfolio', 'landing']],
+      },
+    },
+    customCSS: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      validate: {
+        len: [0, 10000], // Limit CSS length
+      },
+    },
+    seoMetadata: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    components: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
+    versions: {
+      type: DataTypes.ARRAY(DataTypes.JSON),
+      allowNull: false,
+      defaultValue: [],
     },
   },
   {
