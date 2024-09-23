@@ -1,38 +1,57 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface Template {
   id: string;
   name: string;
-  description: string;
-}
-
-interface TemplateSelectorProps {
-  onSelect: (template: string) => void;
-  selectedTemplate: string;
+  preview: string;
 }
 
 const templates: Template[] = [
-  { id: 'blank', name: 'Blank', description: 'Start with a clean slate' },
-  { id: 'blog', name: 'Blog', description: 'Perfect for content creators' },
-  { id: 'portfolio', name: 'Portfolio', description: 'Showcase your work' },
-  { id: 'landing', name: 'Landing Page', description: 'Promote your product or service' },
+  { id: 'blank', name: 'Blank', preview: '/images/blank-template.png' },
+  { id: 'blog', name: 'Blog', preview: '/images/blog-template.png' },
+  { id: 'portfolio', name: 'Portfolio', preview: '/images/portfolio-template.png' },
+  { id: 'landing', name: 'Landing Page', preview: '/images/landing-template.png' },
+  { id: 'ecommerce', name: 'E-commerce', preview: '/images/ecommerce-template.png' },
 ];
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect, selectedTemplate }) => {
+interface TemplateSelectorProps {
+  onSelect: (templateId: string) => void;
+}
+
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ onSelect }) => {
+  const [loading, setLoading] = useState(true);
+  const [templates, setTemplates] = useState<Template[]>([]);
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await axios.get('/api/templates'); // Adjust API endpoint as needed
+        setTemplates(response.data);
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        alert('Failed to load templates.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTemplates();
+  }, []);
+
+  if (loading) return <div>Loading templates...</div>;
+
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">Select Template</label>
-      <select
-        value={selectedTemplate}
-        onChange={(e) => onSelect(e.target.value)}
-        className="w-full border rounded px-3 py-2"
-      >
-        {templates.map((template) => (
-          <option key={template.id} value={template.id}>
-            {template.name} - {template.description}
-          </option>
-        ))}
-      </select>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {templates.map((template) => (
+        <div
+          key={template.id}
+          className="cursor-pointer border rounded p-2 hover:border-blue-500"
+          onClick={() => onSelect(template.id)}
+        >
+          <img src={template.preview} alt={template.name} className="w-full h-32 object-cover mb-2" />
+          <p className="text-center">{template.name}</p>
+        </div>
+      ))}
     </div>
   );
 };
