@@ -1,70 +1,59 @@
-// src/App.tsx (Update)
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import Home from './pages/Home';
-import Directory from './pages/Directory';
-import Marketplace from './pages/Marketplace';
-import Login from './pages/Login';
-import LoginPage from './pages/LoginPage';
-import Signup from './pages/Signup';
-import PrivateRoute from './components/PrivateRoute';
-import { AuthProvider } from './context/AuthContext';
-import Analytics from './pages/Analytics';
-import Forums from './pages/Forums';
-import ForumPosts from './pages/ForumPosts';
+import React, { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
-import AffiliateLinksPage from './pages/AffiliateLinksPage';
-import AffiliateAnalyticsPage from './pages/AffiliateAnalyticsPage';
-import AIFeedbackPage from './pages/AIFeedbackPage';
-import MinsiteBuilder from './pages/MinsiteBuilder';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Lazy-loaded components
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const MinsiteBuilder = lazy(() => import('./pages/MinsiteBuilder'));
+const Directory = lazy(() => import('./pages/Directory'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const Analytics = lazy(() => import('./pages/Analytics'));
+const Forums = lazy(() => import('./pages/Forums'));
+const ForumPosts = lazy(() => import('./pages/ForumPosts'));
+const AffiliateLinksPage = lazy(() => import('./pages/AffiliateLinksPage'));
+const AffiliateAnalyticsPage = lazy(() => import('./pages/AffiliateAnalyticsPage'));
+const AIFeedbackPage = lazy(() => import('./pages/AIFeedbackPage'));
+const LinkInBioPage = lazy(() => import('./pages/LinkInBioPage'));
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <Switch>
-          <Route path="/" exact component={Home} />
-          <Route path="/login" component={Login} />
-          <Route path="/signup" component={Signup} />
-          <Route path="/affiliate-links" component={AffiliateLinksPage} />
-          <Route path="/affiliate-analytics/:id" component={AffiliateAnalyticsPage} />
-          <Route path="/u/:username" component={LinkInBioPage} />
-          <Route path="/ai-feedback" component={AIFeedbackPage} />
-          <PrivateRoute path="/directory" com ponent={Directory} />
-          <PrivateRoute path="/marketplace" component={Marketplace} />
-          <PrivateRoute path="/analytics" component={Analytics} />  
-          <PrivateRoute path="/forums/:forumId" component={ForumPosts} />
-          <PrivateRoute path="/forums" component={Forums} />
-          <ProtectedRoute path="/builder" component={MinsiteBuilder} />
-        </Switch>
-      </Router>
-    </AuthProvider>
-  );
-};
+    <Provider store={store}>
+      <ErrorBoundary>
+        <Router>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="login" element={<Login />} />
+                <Route path="signup" element={<Signup />} />
+                <Route path="affiliate-links" element={<AffiliateLinksPage />} />
+                <Route path="affiliate-analytics/:id" element={<AffiliateAnalyticsPage />} />
+                <Route path="u/:username" element={<LinkInBioPage />} />
+                <Route path="ai-feedback" element={<AIFeedbackPage />} />
+                
+                <Route element={<ProtectedRoute />}>
+                  <Route path="minsite/:id?" element={<MinsiteBuilder />} />
+                  <Route path="directory" element={<Directory />} />
+                  <Route path="marketplace" element={<Marketplace />} />
+                  <Route path="analytics" element={<Analytics />} />
+                  <Route path="forums" element={<Forums />} />
+                  <Route path="forums/:forumId" element={<ForumPosts />} />
+                  <Route path="builder" element={<MinsiteBuilder />} />
+                </Route>
 
-const App: React.FC = () => {
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  return (
-    <Router>
-      <div className={darkMode ? 'dark' : ''}>
-        <div className="bg-white dark:bg-gray-800 min-h-screen">
-          {/* Your Navbar with Dark Mode Toggle */}
-          <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
-          <Switch>
-            {/* Your Routes */}
-          </Switch>
-        </div>
-      </div>
-    </Router>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </Routes>
+          </Suspense>
+        </Router>
+      </ErrorBoundary>
+    </Provider>
   );
 };
 
