@@ -1,17 +1,13 @@
-// backend/src/models/Product.ts
-import { DataTypes, Model } from 'sequelize';
-import sequelize from './index';
-import User from './User';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../config/database';
 
 class Product extends Model {
   public id!: number;
   public name!: string;
   public description!: string;
   public price!: number;
-  public sellerId!: number;
-  // timestamps!
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public category!: string;
+  public imageUrl!: string;
 }
 
 Product.init(
@@ -30,22 +26,22 @@ Product.init(
       allowNull: false,
     },
     price: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    sellerId: {
-      type: DataTypes.INTEGER,
+    category: {
+      type: DataTypes.STRING,
       allowNull: false,
+    },
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {
     sequelize,
-    tableName: 'products',
+    modelName: 'Product',
   }
 );
-
-// Associations
-Product.belongsTo(User, { foreignKey: 'sellerId' });
-User.hasMany(Product, { foreignKey: 'sellerId' });
 
 export default Product;

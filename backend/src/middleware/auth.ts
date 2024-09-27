@@ -1,8 +1,17 @@
 // middleware/auth.ts
 
 import { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import marketplaceRoutes from './routes/marketplace';
+import { errorHandler } from './middleware/errorHandler';
+
+const app = express();
+
+app.use('/marketplace', marketplaceRoutes);
+
+app.use(errorHandler);
 
 interface AuthRequest extends Request {
   user?: User;

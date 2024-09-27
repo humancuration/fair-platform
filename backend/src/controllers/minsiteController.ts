@@ -10,36 +10,26 @@ interface AuthRequest extends Request {
 
 export const saveMinsite = async (req: AuthRequest, res: Response) => {
   const { title, content, template, customCSS, seoMetadata, components } = req.body;
-  const userId = req.user?.id;
 
   if (!title || !content || !template) {
-    return res.status(400).json({ message: 'Title, content, and template are required.' });
+    return res.status(400).json({ error: 'Title, content, and template are required.' });
   }
 
   try {
     const newMinsite = await Minsite.create({
       title,
       content,
-      userId,
+      userId: req.user.id,
       template,
       customCSS,
       seoMetadata,
       components,
-      versions: [{
-        content,
-        title,
-        template,
-        customCSS,
-        seoMetadata,
-        components,
-        timestamp: new Date().toISOString(),
-      }],
+      versions: [{ content, title, template, customCSS, seoMetadata, components, timestamp: new Date().toISOString() }],
     });
-
     res.status(201).json({ message: 'Minsite created successfully.', minsite: newMinsite });
   } catch (error) {
     console.error('Error saving minsite:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -99,4 +89,41 @@ export const updateMinsite = async (req: AuthRequest, res: Response) => {
     console.error('Error updating minsite:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
+};
+
+export const publishMinsite = async (req: AuthRequest, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+
+  try {
+    const minsite = await Minsite.findOne({ where: { id, userId } });
+    if (!minsite) {
+      return res.status(404).json({ message: 'Minsite not found.' });
+    }
+
+    // Generate a unique slug for the published minsite
+    const slug = generateSlug(minsite.title);
+
+    // Update the minsite with the published status and slug
+    await minsite.update({
+      isPublished: true,
+      publishedSlug: slug,
+    });
+
+    const publishedUrl = `${process.env.BASE_URL}/m/${slug}`;
+
+    res.json({ message: 'Minsite published successfully.', publishedUrl });
+  } catch (error) {
+    console.error('Error publishing minsite:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// Helper function to generate a slug
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w ]+/g, '')
+    .replace(/ +/g, '-')
+    + '-' + Math.random().toString(36).substring(2, 7);
 };

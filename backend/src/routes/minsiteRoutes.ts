@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { saveMinsite, getMinsite, updateMinsite } from '../controllers/minsiteController';
+import { saveMinsite, getMinsite, updateMinsite, publishMinsite } from '../controllers/minsiteController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -24,5 +24,12 @@ router.get('/:id', authenticateToken, getMinsite);
  * @access Protected (Creators and Brands)
  */
 router.put('/:id', authenticateToken, updateMinsite);
+
+/**
+ * @route POST /api/minsite/:id/publish
+ * @desc Publish a minisite
+ * @access Protected (Creators and Brands)
+ */
+router.post('/:id/publish', authenticateToken, publishMinsite);
 
 export default router;

@@ -1,49 +1,74 @@
-// backend/src/index.ts
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
-import { sequelize } from './models'; // Ensure correct path
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import path from 'path';
+
+import { connectToDatabase } from './config/database';
 import authRoutes from './routes/auth';
 import companyRoutes from './routes/companies';
 import productRoutes from './routes/products';
 import dividendRoutes from './routes/dividends';
 import grantRoutes from './routes/grants';
-import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
 import analyticsRoutes from './routes/analytics';
 import forumRoutes from './routes/forums';
 import postRoutes from './routes/posts';
-import path from 'path';
-
+import { errorHandler } from './middleware/errorHandler';
+import marketplaceRoutes from './routes/marketplace';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Security middleware (Helmet for securing HTTP headers)
+// Enhanced security middleware
 app.use(helmet());
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", 'trusted-cdn.com'],
+    styleSrc: ["'self'", "'unsafe-inline'", 'trusted-cdn.com'],
+    imgSrc: ["'self'", 'data:', 'trusted-cdn.com'],
+    connectSrc: ["'self'", 'api.example.com'],
+    fontSrc: ["'self'", 'trusted-cdn.com'],
+    objectSrc: ["'none'"],
+    mediaSrc: ["'self'"],
+    frameSrc: ["'none'"],
+  },
+}));
+app.use(helmet.referrerPolicy({ policy: 'strict-origin-when-cross-origin' }));
+app.use(helmet.noSniff());
+app.use(helmet.xssFilter());
 
-// Rate limiting middleware (limits IP requests to prevent abuse)
+// Strict CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? 'https://yourdomain.com' 
+    : 'http://localhost:3000',
+  optionsSuccessStatus: 200,
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
+app.use(express.json({ limit: '10kb' })); // Limit body size
+
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
 });
-app.use(limiter);
+app.use('/api', limiter); // Apply rate limiting to all API routes
 
-// Cross-Origin Resource Sharing (CORS) middleware
-app.use(cors());
-
-// Middleware to parse incoming JSON requests
-app.use(express.json());
-// Swagger Setup (if already configured)
+// Swagger setup
 const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Affiliate Link Management API',
+      title: 'Fair Platform API',
       version: '1.0.0',
     },
     components: {
@@ -56,9 +81,12 @@ const options = {
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ['./routes/*.ts'], // Path to the API docs
+  apis: ['./src/routes/*.ts'],
 };
-// API routes
+const specs = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/products', productRoutes);
@@ -67,46 +95,33 @@ app.use('/api/grants', grantRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/forums', forumRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
-// Default route
-app.get('/', (req, res) => {
-  res.send('Hello from the backend!');
-});
 // Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-
-// Serve frontend build files in production
+// Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../../frontend/build')));
-
   app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../../frontend', 'build', 'index.html'));
   });
 }
-// Database Connection and Server Start
-sequelize.sync({ alter: true }) // Use 'force: true' for development to reset tables
-  .then(() => {
+
+// Error handling middleware
+app.use(errorHandler);
+
+// Start server
+const startServer = async () => {
+  try {
+    await connectToDatabase();
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.error('Unable to connect to the database:', err);
-  });
-// Sync database (ensure database connection and model synchronization)
-sequelize
-  .sync({ force: false }) // Set force: true to reset the database (use with caution in production)
-  .then(() => {
-    console.log('Database synced');
-  })
-  .catch((err) => {
-    console.error('Error syncing database:', err);
-  });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
 
-  
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+startServer();
