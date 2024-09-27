@@ -1,49 +1,101 @@
-// src/pages/Marketplace.tsx
-import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  sellerId: number;
-}
+import React, { useState, useEffect } from 'react';
+import { fetchProducts, searchProducts, fetchRecommendations } from '../services/api';
+import ProductCard from  '../components/ProductCard';
+import SearchBar from '../components/SearchBar';
+import FilterSidebar from '../components/FilterSidebar';
+import Pagination from '../components/Pagination';
+import RecommendationCarousel from '../components/RecommendationCarousel';
 
 const Marketplace: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const { token } = useContext(AuthContext);
+  const [products, setProducts] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({});
+  const productsPerPage = 12;
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get('/api/products', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setProducts(res.data);
-      } catch (err) {
-        console.error(err);
-        alert('Failed to fetch products');
-      }
-    };
-    fetchProducts();
-  }, [token]);
+    fetchInitialData();
+  }, []);
+
+  const fetchInitialData = async () => {
+    try {
+      setLoading(true);
+      const [productsResponse, recommendationsResponse] = await Promise.all([
+        fetchProducts(),
+        fetchRecommendations()
+      ]);
+      setProducts(productsResponse.data);
+      setRecommendations(recommendationsResponse.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to fetch data. Please try again later.');
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (query: string) => {
+    try {
+      setLoading(true);
+      const response = await searchProducts({ query, ...filters });
+      setProducts(response.data);
+      setCurrentPage(1);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error searching products:', err);
+      setError('Failed to search products. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = async (newFilters: object) => {
+    setFilters(newFilters);
+    try {
+      setLoading(true);
+      const response = await searchProducts({ ...newFilters });
+      setProducts(response.data);
+      setCurrentPage(1);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error applying filters:', err);
+      setError('Failed to apply filters. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl mb-4">Marketplace</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {products.map((product) => (
-          <div key={product.id} className="border p-4 rounded shadow">
-            <h2 className="text-xl font-bold">{product.name}</h2>
-            <p className="mt-2">{product.description}</p>
-            <p className="mt-2"><strong>Price:</strong> ${product.price.toFixed(2)}</p>
-            <p className="mt-2 text-sm text-gray-500">Includes 2.5% platform fee</p>
+    <div className="container mx-auto px-4">
+      <h1 className="text-3xl font-bold mb-8">Marketplace</h1>
+      <RecommendationCarousel recommendations={recommendations} />
+      <SearchBar onSearch={handleSearch} />
+      <div className="flex flex-wrap -mx-4">
+        <div className="w-full md:w-1/4 px-4">
+          <FilterSidebar onFilterChange={handleFilterChange} />
+        </div>
+        <div className="w-full md:w-3/4 px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {currentProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
-        ))}
+          <Pagination
+            productsPerPage={productsPerPage}
+            totalProducts={products.length}
+            paginate={paginate}
+            currentPage={currentPage}
+          />
+        </div>
       </div>
     </div>
   );
