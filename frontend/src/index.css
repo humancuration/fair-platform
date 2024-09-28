@@ -1,19 +1,25 @@
+/* frontend/src/index.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Enable dark mode variants */
-:root {
-  --color-background: white;
-  --color-text: black;
-}
-
-.dark {
-  --color-background: #1a202c;
-  --color-text: #edf2f7;
-}
-
-body {
-  background-color: var(--color-background);
-  color: var(--color-text);
+/* Custom dark mode styles */
+@layer components {
+  .dark .bg-gray-800 {
+    background-color: #2d3748;
+  }
+  .dark .bg-white {
+    background-color: #1a202c;
+  }
+  .dark .text-white {
+    color: #edf2f7;
+  }
+  .dark .text-gray-600 {
+    color: #a0aec0;
+  }
+  .dark .text-gray-700 {
+    color: #cbd5e0;
+  }
+  /* Add more dark mode styles as needed */
 }

@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
@@ -6,7 +7,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import path from 'path';
-
+import { Server } from 'socket.io';
 import { connectToDatabase } from './config/database';
 import authRoutes from './routes/auth';
 import companyRoutes from './routes/companies';
@@ -123,5 +124,23 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+io.on('connection', (socket) => {
+  console.log('a user connected:', socket.id);
 
+  // Example: Emit a new notification
+  // This should be triggered by your backend logic when a relevant event occurs
+  socket.emit('newNotification', {
+    id: 1,
+    message: 'Welcome to the platform!',
+    read: false,
+    timestamp: new Date().toISOString(),
+  });
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected:', socket.id);
+  });
+});
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 startServer();

@@ -2,9 +2,8 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
-import Layout from './components/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy-loaded components
 const Home = lazy(() => import('./pages/Home'));
@@ -49,14 +48,17 @@ const App: React.FC = () => {
                   <Route path="analytics" element={<Analytics />} />
                   <Route path="forums" element={<Forums />} />
                   <Route path="forums/:forumId" element={<ForumPosts />} />
-                  <Route path="builder" element={<MinsiteBuilder />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="settings" element={<Settings />} />
-                  <Route path="activity-log" element={<ActivityLog />} />
-                  <Route path="notifications" element={<Notifications />} />
+                  <Route path="/dashboard/*" element={<Dashboard />}>
+                    <Route path="affiliate-links" element={<AffiliateLinksPage />} />
+                    <Route path="affiliate-analytics" element={<AffiliateAnalyticsPage />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="activity-log" element={<ActivityLog />} />
+                    <Route path="notifications" element={<Notifications />} />
+                  </Route>
                 </Route>
 
+                {/* Fallback Route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </Routes>

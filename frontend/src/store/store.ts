@@ -1,11 +1,15 @@
-// src/store/store.ts
+// frontend/src/store/store.ts
+
 import { configureStore } from '@reduxjs/toolkit';
-import userReducer from './slices/userSlice';
+import authReducer from './slices/authSlice';
+import themeReducer from './slices/themeSlice';
+// Import other reducers as needed
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
-    // Add other reducers
+    auth: authReducer,
+    theme: themeReducer,
+    // Add other reducers here
   },
 });
 
