@@ -1,6 +1,5 @@
-// src/pages/AdminDistributeDividends.tsx
 import React, { useContext } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { AuthContext } from '../context/AuthContext';
 
 const AdminDistributeDividends: React.FC = () => {
@@ -9,8 +8,8 @@ const AdminDistributeDividends: React.FC = () => {
   const handleDistribute = async () => {
     if (window.confirm('Are you sure you want to distribute dividends?')) {
       try {
-        const res = await axios.post(
-          '/api/dividends/distribute',
+        const res = await api.post(
+          '/dividends/distribute',
           {},
           {
             headers: {

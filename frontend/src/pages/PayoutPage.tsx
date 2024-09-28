@@ -1,7 +1,5 @@
-// frontend/src/pages/PayoutPage.tsx
-
 import React, { useState } from 'react';
-import api from '../services/api';
+import api from '../api/api';
 
 const PayoutPage: React.FC = () => {
   const [linkId, setLinkId] = useState('');

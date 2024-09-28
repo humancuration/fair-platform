@@ -1,6 +1,5 @@
-// src/pages/Dividends.tsx
 import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { AuthContext } from '../context/AuthContext';
 
 interface Dividend {
@@ -16,7 +15,7 @@ const Dividends: React.FC = () => {
   useEffect(() => {
     const fetchDividends = async () => {
       try {
-        const res = await axios.get('/api/dividends', {
+        const res = await api.get('/dividends', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

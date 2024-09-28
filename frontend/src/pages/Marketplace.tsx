@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchProducts, searchProducts, fetchRecommendations } from '../services/api';
+import { fetchProducts, searchProducts, fetchRecommendations } from '../api/api';
 import ProductCard from  '../components/ProductCard';
 import SearchBar from '../components/SearchBar';
 import FilterSidebar from '../components/FilterSidebar';

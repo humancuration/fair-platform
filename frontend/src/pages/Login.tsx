@@ -1,6 +1,5 @@
-// src/pages/Login.tsx
 import React, { useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { AuthContext } from '../context/AuthContext';
 import { useHistory } from 'react-router-dom';
 
@@ -13,7 +12,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
+      const res = await api.post('/auth/login', { email, password });
       setToken(res.data.token);
       history.push('/');
     } catch (err) {

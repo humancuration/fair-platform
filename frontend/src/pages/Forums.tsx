@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ const Forums: React.FC = () => {
   useEffect(() => {
     const fetchForums = async () => {
       try {
-        const res = await axios.get('/api/forums', {
+        const res = await api.get('/forums', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
