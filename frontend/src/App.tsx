@@ -20,6 +20,11 @@ const AffiliateLinksPage = lazy(() => import('./pages/AffiliateLinksPage'));
 const AffiliateAnalyticsPage = lazy(() => import('./pages/AffiliateAnalyticsPage'));
 const AIFeedbackPage = lazy(() => import('./pages/AIFeedbackPage'));
 const LinkInBioPage = lazy(() => import('./pages/LinkInBioPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Settings = lazy(() => import('./pages/Settings'));
+const ActivityLog = lazy(() => import('./pages/ActivityLog'));
+const Notifications = lazy(() => import('./pages/Notifications'));
 
 const App: React.FC = () => {
   return (
@@ -45,6 +50,11 @@ const App: React.FC = () => {
                   <Route path="forums" element={<Forums />} />
                   <Route path="forums/:forumId" element={<ForumPosts />} />
                   <Route path="builder" element={<MinsiteBuilder />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="activity-log" element={<ActivityLog />} />
+                  <Route path="notifications" element={<Notifications />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />
