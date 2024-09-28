@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { HeartIcon, ShoppingCartIcon, EyeIcon } from '@heroicons/react/outline'; // Install heroicons
+import styled from 'styled-components';
 
 // Define Product interface
 interface Product {
@@ -13,6 +14,20 @@ interface Product {
   price: number;
   // Add other relevant fields
 }
+
+// Styled component for ProductCard
+const StyledProductCard = styled(motion.article)`
+  background: ${({ theme }) => theme.background};
+  border: 1px solid ${({ theme }) => theme.secondary};
+  padding: 1rem;
+  border-radius: 10px;
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.1);
+  }
+`;
 
 const ProductCard: React.FC<{ product: Product }> = React.memo(({ product }) => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -44,8 +59,8 @@ const ProductCard: React.FC<{ product: Product }> = React.memo(({ product }) => 
   };
 
   return (
-    <motion.article
-      className="product-card bg-white dark:bg-gray-800 p-4 rounded shadow hover:shadow-lg transition-shadow duration-300 relative"
+    <StyledProductCard
+      className="product-card"
       role="button"
       tabIndex={0}
       onClick={handleClick}
@@ -69,7 +84,7 @@ const ProductCard: React.FC<{ product: Product }> = React.memo(({ product }) => 
           <HeartIcon className={`h-5 w-5 ${isFavorite ? 'text-red-500' : ''}`} />
         </button>
       </div>
-    </motion.article>
+    </StyledProductCard>
   );
 });
 
