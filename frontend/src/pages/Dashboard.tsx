@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { MenuIcon, XIcon } from '@heroicons/react/outline'; // Install heroicons if not already
+import { MenuIcon, XIcon } from '@heroicons/react/outline'; // Ensure you have heroicons installed
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const Dashboard: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,22 +14,64 @@ const Dashboard: React.FC = () => {
       <aside className="hidden md:block w-64 bg-gray-800 text-white min-h-screen">
         <div className="p-4 text-2xl font-bold">Dashboard</div>
         <nav className="mt-10">
-          <NavLink to="/dashboard/affiliate-links" className="block py-2 px-4 hover:bg-gray-700">
+          <NavLink
+            to="affiliate-links"
+            className={({ isActive }) =>
+              isActive
+                ? 'block py-2.5 px-4 rounded bg-gray-700'
+                : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+            }
+          >
             Affiliate Links
           </NavLink>
-          <NavLink to="/dashboard/affiliate-analytics" className="block py-2 px-4 hover:bg-gray-700">
-            Analytics
+          <NavLink
+            to="affiliate-analytics"
+            className={({ isActive }) =>
+              isActive
+                ? 'block py-2.5 px-4 rounded bg-gray-700'
+                : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+            }
+          >
+            Affiliate Analytics
           </NavLink>
-          <NavLink to="/dashboard/profile" className="block py-2 px-4 hover:bg-gray-700">
+          <NavLink
+            to="profile"
+            className={({ isActive }) =>
+              isActive
+                ? 'block py-2.5 px-4 rounded bg-gray-700'
+                : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+            }
+          >
             Profile
           </NavLink>
-          <NavLink to="/dashboard/settings" className="block py-2 px-4 hover:bg-gray-700">
+          <NavLink
+            to="settings"
+            className={({ isActive }) =>
+              isActive
+                ? 'block py-2.5 px-4 rounded bg-gray-700'
+                : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+            }
+          >
             Settings
           </NavLink>
-          <NavLink to="/dashboard/activity-log" className="block py-2 px-4 hover:bg-gray-700">
+          <NavLink
+            to="activity-log"
+            className={({ isActive }) =>
+              isActive
+                ? 'block py-2.5 px-4 rounded bg-gray-700'
+                : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+            }
+          >
             Activity Log
           </NavLink>
-          <NavLink to="/dashboard/notifications" className="block py-2 px-4 hover:bg-gray-700">
+          <NavLink
+            to="notifications"
+            className={({ isActive }) =>
+              isActive
+                ? 'block py-2.5 px-4 rounded bg-gray-700'
+                : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+            }
+          >
             Notifications
           </NavLink>
         </nav>
@@ -53,22 +96,70 @@ const Dashboard: React.FC = () => {
                 <XIcon className="h-6 w-6 text-white" />
               </button>
               <nav className="mt-10">
-                <NavLink to="/dashboard/affiliate-links" className="block py-2 px-4 hover:bg-gray-700">
+                <NavLink
+                  to="affiliate-links"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block py-2.5 px-4 rounded bg-gray-700'
+                      : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
                   Affiliate Links
                 </NavLink>
-                <NavLink to="/dashboard/affiliate-analytics" className="block py-2 px-4 hover:bg-gray-700">
-                  Analytics
+                <NavLink
+                  to="affiliate-analytics"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block py-2.5 px-4 rounded bg-gray-700'
+                      : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
+                  Affiliate Analytics
                 </NavLink>
-                <NavLink to="/dashboard/profile" className="block py-2 px-4 hover:bg-gray-700">
+                <NavLink
+                  to="profile"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block py-2.5 px-4 rounded bg-gray-700'
+                      : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
                   Profile
                 </NavLink>
-                <NavLink to="/dashboard/settings" className="block py-2 px-4 hover:bg-gray-700">
+                <NavLink
+                  to="settings"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block py-2.5 px-4 rounded bg-gray-700'
+                      : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
                   Settings
                 </NavLink>
-                <NavLink to="/dashboard/activity-log" className="block py-2 px-4 hover:bg-gray-700">
+                <NavLink
+                  to="activity-log"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block py-2.5 px-4 rounded bg-gray-700'
+                      : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
                   Activity Log
                 </NavLink>
-                <NavLink to="/dashboard/notifications" className="block py-2 px-4 hover:bg-gray-700">
+                <NavLink
+                  to="notifications"
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'block py-2.5 px-4 rounded bg-gray-700'
+                      : 'block py-2.5 px-4 rounded hover:bg-gray-700'
+                  }
+                  onClick={() => setIsOpen(false)}
+                >
                   Notifications
                 </NavLink>
               </nav>
@@ -82,7 +173,8 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-100 min-h-screen">
+      <main className="flex-1 bg-gray-100 min-h-screen p-4">
+        <Breadcrumbs />
         <Outlet />
       </main>
     </div>

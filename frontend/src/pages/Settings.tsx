@@ -5,7 +5,7 @@ import api from '../services/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleDarkMode } from '../store/slices/themeSlice'; // Create a theme slice
 import { RootState } from '../store/store';
-
+import { toast } from 'react-toastify';
 interface Settings {
   receiveNewsletter: boolean;
   darkMode: boolean;
@@ -51,10 +51,11 @@ const SettingsPage: React.FC = () => {
     e.preventDefault();
     try {
       await api.put('/user/settings', settings); // Implement this endpoint
-      alert('Settings updated successfully!');
+      toast.success('Settings updated successfully!');
     } catch (err) {
       console.error('Error updating settings:', err);
       setError('Failed to update settings. Please try again.');
+      toast.error('Failed to update settings. Please try again.');
     }
   };
 
