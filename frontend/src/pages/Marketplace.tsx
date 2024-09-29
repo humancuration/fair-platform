@@ -40,6 +40,7 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
+
 const ProductCardSkeleton: React.FC = () => {
   return (
     <div className="product-card">
