@@ -10,7 +10,7 @@ Assistance in organizing and structuring the project setup was provided by ChatG
 
 - **Company Directory:** List and rank companies based on the generosity of their referral programs.
 - **Marketplace:** Buy and sell products with a fair fee structure.
-- **Community Forums:** Engage with other users through discussion boards.
+- **Community Forums:** Engage with other users through discussion boards, connected to the fediverse.
 - **Universal Dividend & Micro-Grants:** Participate in wealth redistribution initiatives.
 - **Fediverse Integration:** Share and interact across decentralized social networks.
 - **Data Visualization:** Interactive charts and graphs to display platform statistics and user data.
