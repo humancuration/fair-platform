@@ -1,22 +1,18 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import Navbar from './Navbar';
+import Breadcrumbs from './Breadcrumbs';
+import ErrorDisplay from './ErrorDisplay';
 
 const Layout: React.FC = () => {
   return (
-    <div>
-      {/* Add your header, navigation, footer, etc. here */}
-      <header>
-        {/* Add header content */}
-      </header>
-      <nav>
-        {/* Add navigation menu items */}
-      </nav>
-      <main>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      <Navbar />
+      <div className="container mx-auto p-4">
+        <Breadcrumbs />
+        <ErrorDisplay />
         <Outlet />
-      </main>
-      <footer>
-        {/* Add footer content */}
-      </footer>
+      </div>
     </div>
   );
 };

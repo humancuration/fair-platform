@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 
 const routes: BreadcrumbsRoute[] = [
   { path: '/', breadcrumb: 'Home' },
+  { path: '/login', breadcrumb: 'Login' },
+  { path: '/signup', breadcrumb: 'Signup' },
   { path: '/dashboard', breadcrumb: 'Dashboard' },
   { path: '/dashboard/affiliate-links', breadcrumb: 'Affiliate Links' },
   { path: '/dashboard/affiliate-analytics', breadcrumb: 'Affiliate Analytics' },

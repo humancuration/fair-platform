@@ -1,16 +1,11 @@
 import axios from 'axios';
+import { API_ENDPOINTS } from './constants';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
 });
 
-api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('API Error:', error);
-    alert('An error occurred. Please try again.');
-    return Promise.reject(error);
-  }
-);
+export const login = (credentials: { email: string; password: string }) =>
+  api.post(API_ENDPOINTS.LOGIN, credentials);
 
-export default api;
+// Define other API calls similarly

@@ -1,72 +1,64 @@
-// src/pages/Signup.tsx
-import React, { useState, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-import { useHistory } from 'react-router-dom';
+import React from 'react';
+import FormWrapper from '../components/forms/FormWrapper';
+import TextInput from '../components/forms/TextInput';
+import Checkbox from '../components/forms/Checkbox';
+import * as Yup from 'yup';
+import api from '../utils/api';
+import { useNavigate } from 'react-router-dom';
+import { useError } from '../contexts/ErrorContext';
 
-const Signup: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'creator' | 'business'>('creator');
-  const { setToken } = useContext(AuthContext);
-  const history = useHistory();
+const SignupPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { setError } = useError();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const initialValues = {
+    name: '',
+    email: '',
+    password: '',
+    agreeToTerms: false,
+  };
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required('Name is required'),
+    email: Yup.string()
+      .email('Invalid email format')
+      .required('Email is required'),
+    password: Yup.string()
+      .min(6, 'Password must be at least 6 characters')
+      .required('Password is required'),
+    agreeToTerms: Yup.boolean()
+      .oneOf([true], 'You must agree to the terms')
+      .required('You must agree to the terms'),
+  });
+
+  const handleSubmit = async (values: any, actions: any) => {
     try {
-      const res = await axios.post('/api/auth/register', { username, email, password, role });
-      setToken(res.data.token);
-      history.push('/');
-    } catch (err) {
-      console.error(err);
-      alert('Signup failed');
+      await api.post('/auth/signup', values);
+      actions.setSubmitting(false);
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Signup failed');
+      actions.setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <form onSubmit={handleSubmit} className="w-1/3 p-6 bg-white shadow-md rounded">
-        <h2 className="text-2xl mb-4">Signup</h2>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value as 'creator' | 'business')}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        >
-          <option value="creator">Content Creator</option>
-          <option value="business">Business</option>
-        </select>
-        <button type="submit" className="w-full bg-green-500 text-white p-2 rounded">
-          Signup
-        </button>
-      </form>
-    </div>
+    <FormWrapper
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      <TextInput label="Name" name="name" type="text" placeholder="Your Name" />
+      <TextInput label="Email" name="email" type="email" placeholder="you@example.com" />
+      <TextInput
+        label="Password"
+        name="password"
+        type="password"
+        placeholder="********"
+      />
+      <Checkbox name="agreeToTerms" label="I agree to the terms and conditions" />
+    </FormWrapper>
   );
 };
 
-export default Signup;
+export default SignupPage;

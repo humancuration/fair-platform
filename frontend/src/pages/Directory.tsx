@@ -1,52 +1,49 @@
-// src/pages/Directory.tsx
-import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-
-interface Company {
-  id: number;
-  name: string;
-  industry: string;
-  description: string;
-  referralTerms: string;
-  generosityScore: number;
-}
+import React, { useEffect, useState } from 'react';
+import CompanyListing from '../components/CompanyListing';
+import Pagination from '../components/Pagination';
+import LoadingSpinner from '../components/LoadingSpinner';
+import api from '../utils/api';
 
 const Directory: React.FC = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const { token } = useContext(AuthContext);
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await axios.get('/api/companies', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await api.get('/companies', {
+          params: { page: currentPage, limit: itemsPerPage },
         });
-        setCompanies(res.data);
+        setCompanies(response.data.companies);
+        setTotalPages(response.data.totalPages);
+        setLoading(false);
       } catch (err) {
-        console.error(err);
-        alert('Failed to fetch companies');
+        // Handle error
+        setLoading(false);
       }
     };
+
     fetchCompanies();
-  }, [token]);
+  }, [currentPage]);
+
+  if (loading) return <LoadingSpinner />;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl mb-4">Company Directory</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Company Directory</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {companies.map((company) => (
-          <div key={company.id} className="border p-4 rounded shadow">
-            <h2 className="text-xl font-bold">{company.name}</h2>
-            <p className="text-gray-600">{company.industry}</p>
-            <p className="mt-2">{company.description}</p>
-            <p className="mt-2"><strong>Referral Terms:</strong> {company.referralTerms}</p>
-            <p className="mt-2"><strong>Generosity Score:</strong> {company.generosityScore}</p>
-          </div>
+          <CompanyListing key={company.id} company={company} />
         ))}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </div>
   );
 };

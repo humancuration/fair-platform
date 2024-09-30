@@ -1,39 +1,50 @@
 import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import Slider from 'react-slick';
+import ProductCard from './ProductCard';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-const RecommendationCarousel: React.FC = () => {
-  const recommendations = [
-    { id: 1, title: 'Featured Product 1', image: '/path/to/image1.jpg' },
-    { id: 2, title: 'Featured Product 2', image: '/path/to/image2.jpg' },
-    { id: 3, title: 'Featured Product 3', image: '/path/to/image3.jpg' },
-  ];
+interface Product {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  price: number;
+}
+
+const RecommendationCarousel: React.FC<{ products: Product[] }> = ({ products }) => {
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
 
   return (
-    <div className="mb-8">
+    <div className="my-8">
       <h2 className="text-2xl font-semibold mb-4">Recommended for You</h2>
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={30}
-        slidesPerView={3}
-        navigation
-        pagination={{ clickable: true }}
-        autoplay={{ delay: 5000 }}
-      >
-        {recommendations.map(product => (
-          <SwiperSlide key={product.id}>
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <img src={product.image} alt={product.title} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold">{product.title}</h3>
-              </div>
-            </div>
-          </SwiperSlide>
+      <Slider {...settings}>
+        {products.map((product) => (
+          <div key={product.id} className="px-2">
+            <ProductCard product={product} />
+          </div>
         ))}
-      </Swiper>
+      </Slider>
     </div>
   );
 };

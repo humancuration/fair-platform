@@ -1,91 +1,74 @@
-// src/pages/AdminGrants.tsx
-import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-
-interface Grant {
-  id: number;
-  applicantName: string;
-  projectDescription: string;
-  amountRequested: number;
-  amountGranted: number;
-}
+import React, { useEffect, useState } from 'react';
+import Table from '../components/Table';
+import LoadingSpinner from '../components/LoadingSpinner';
+import Pagination from '../components/Pagination';
+import api from '../utils/api';
 
 const AdminGrants: React.FC = () => {
-  const [grants, setGrants] = useState<Grant[]>([]);
-  const { token } = useContext(AuthContext);
+  const [grants, setGrants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
 
   useEffect(() => {
     const fetchGrants = async () => {
       try {
-        const res = await axios.get('/api/grants', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await api.get('/grants', {
+          params: { page: currentPage, limit: itemsPerPage },
         });
-        setGrants(res.data);
+        setGrants(response.data.grants);
+        setTotalPages(response.data.totalPages);
+        setLoading(false);
       } catch (err) {
-        console.error(err);
-        alert('Failed to fetch grants');
+        // Handle error
+        setLoading(false);
       }
     };
-    fetchGrants();
-  }, [token]);
 
-  const handleGrant = async (id: number) => {
-    const amountGranted = parseFloat(prompt('Enter amount to grant:') || '0');
-    if (amountGranted > 0) {
-      try {
-        const res = await axios.put(
-          `/api/grants/${id}`,
-          { amountGranted },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setGrants(grants.map((grant) => (grant.id === id ? res.data : grant)));
-        alert('Grant updated successfully!');
-      } catch (err) {
-        console.error(err);
-        alert('Failed to update grant');
-      }
+    fetchGrants();
+  }, [currentPage]);
+
+  const handleSort = (accessor: string) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === accessor && sortConfig.direction === 'ascending') {
+      direction = 'descending';
     }
+    setSortConfig({ key: accessor, direction });
+
+    const sortedData = [...grants].sort((a, b) => {
+      if (a[accessor] < b[accessor]) return direction === 'ascending' ? -1 : 1;
+      if (a[accessor] > b[accessor]) return direction === 'ascending' ? 1 : -1;
+      return 0;
+    });
+    setGrants(sortedData);
   };
 
+  const columns = [
+    { header: 'ID', accessor: 'id', sortable: true },
+    { header: 'Name', accessor: 'name', sortable: true },
+    { header: 'Amount', accessor: 'amount', sortable: true },
+    { header: 'Status', accessor: 'status', sortable: true },
+    // Add more columns as needed
+  ];
+
+  if (loading) return <LoadingSpinner />;
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl mb-4">Manage Grants</h1>
-      <table className="w-full table-auto">
-        <thead>
-          <tr>
-            <th className="px-4 py-2">Applicant Name</th>
-            <th className="px-4 py-2">Project Description</th>
-            <th className="px-4 py-2">Amount Requested</th>
-            <th className="px-4 py-2">Amount Granted</th>
-            <th className="px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {grants.map((grant) => (
-            <tr key={grant.id} className="text-center">
-              <td className="border px-4 py-2">{grant.applicantName}</td>
-              <td className="border px-4 py-2">{grant.projectDescription}</td>
-              <td className="border px-4 py-2">${grant.amountRequested.toFixed(2)}</td>
-              <td className="border px-4 py-2">${grant.amountGranted.toFixed(2)}</td>
-              <td className="border px-4 py-2">
-                <button
-                  onClick={() => handleGrant(grant.id)}
-                  className="bg-green-500 text-white px-2 py-1 rounded"
-                >
-                  Grant
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Admin Grants</h1>
+      <Table
+        columns={columns}
+        data={grants}
+        onSort={handleSort}
+        sortConfig={sortConfig || undefined}
+      />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </div>
   );
 };
