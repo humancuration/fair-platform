@@ -49,4 +49,16 @@ sequelize.sync().then(() => {
   });
 });
 
+// Use Wishlist model
+import Wishlist from '@models/Wishlist';
+Wishlist.findAll().then(wishlists => {
+  console.log(wishlists);
+});
+
+// Use CommunityWishlist model
+import CommunityWishlist from '@models/CommunityWishlist';
+CommunityWishlist.findAll().then(wishlists => {
+  console.log(wishlists);
+});
+
 export default app;

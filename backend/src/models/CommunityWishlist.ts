@@ -1,64 +1,29 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../config/database';
 
-export interface CommunityWishlistAttributes {
-  id: number;
-  productId: string;
-  name: string;
-  image: string;
-  price: number;
-  highlighted: boolean;
-  date: Date;
-}
-
-export class CommunityWishlist extends Model<CommunityWishlistAttributes> implements CommunityWishlistAttributes {
+class CommunityWishlist extends Model {
   public id!: number;
-  public productId!: string;
-  public name!: string;
-  public image!: string;
-  public price!: number;
-  public highlighted!: boolean;
-  public date!: Date;
-
-  public static initialize(sequelize: Sequelize) {
-    this.init(
-      {
-        id: {
-          type: DataTypes.INTEGER,
-          autoIncrement: true,
-          primaryKey: true,
-        },
-        productId: {
-          type: DataTypes.STRING,
-          allowNull: false,
-          unique: true,
-        },
-        name: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-        image: {
-          type: DataTypes.STRING,
-          allowNull: false,
-        },
-        price: {
-          type: DataTypes.FLOAT,
-          allowNull: false,
-        },
-        highlighted: {
-          type: DataTypes.BOOLEAN,
-          defaultValue: false,
-        },
-        date: {
-          type: DataTypes.DATE,
-          defaultValue: DataTypes.NOW,
-        },
-      },
-      {
-        sequelize,
-        modelName: 'CommunityWishlist',
-      }
-    );
-  }
+  public communityName!: string;
+  // ... other fields
 }
+
+CommunityWishlist.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    communityName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    // ... other fields
+  },
+  {
+    sequelize,
+    tableName: 'community_wishlists',
+  }
+);
 
 export default CommunityWishlist;

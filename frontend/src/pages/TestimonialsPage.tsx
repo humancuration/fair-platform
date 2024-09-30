@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { fetchTestimonials } from '../store/slices/testimonialsSlice';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import TestimonialCard from '../components/TestimonialCard';
 import { toast } from 'react-toastify';
+import SupportForm from '@components/SupportForm';
 
 const TestimonialsPage: React.FC = () => {
-  const dispatch = useDispatch();
-  const { testimonials, loading, error } = useSelector((state: RootState) => state.testimonials);
+  const dispatch = useAppDispatch();
+  const { testimonials, loading, error } = useAppSelector(state => state.testimonials);
 
   useEffect(() => {
     dispatch(fetchTestimonials());

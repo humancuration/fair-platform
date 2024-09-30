@@ -1,45 +1,28 @@
 // middleware/auth.ts
 
 import { Request, Response, NextFunction } from 'express';
-import express from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
-import marketplaceRoutes from './routes/marketplace';
-import { errorHandler } from './middleware/errorHandler';
-
-const app = express();
-
-app.use('/marketplace', marketplaceRoutes);
-
-app.use(errorHandler);
+import { JWT_SECRET } from '../config/constants';
 
 interface AuthRequest extends Request {
-  user?: User;
+  user?: {
+    id: string;
+    email: string;
+    // ... other user properties
+  };
 }
 
-export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) return res.sendStatus(401);
+export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).send({ error: 'Please authenticate.' });
+  }
 
   try {
-    const payload: any = jwt.verify(token, process.env.JWT_SECRET!);
-    const user = await User.findByPk(payload.id);
-    if (!user) return res.sendStatus(401);
-    req.user = user;
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string };
+    req.user = decoded;
     next();
-  } catch (error) {
-    console.error('Error authenticating token:', error);
-    res.sendStatus(403);
+  } catch (err) {
+    res.status(401).send({ error: 'Please authenticate.' });
   }
-};
-
-export const authorizeRole = (role: string) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (req.user?.role !== role) {
-      return res.sendStatus(403);
-    }
-    next();
-  };
 };

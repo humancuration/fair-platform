@@ -2,12 +2,18 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Button from './Button';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { submitSupportForm } from '@store/slices/supportFormSlice';
 
-interface SupportFormProps {
-  onSubmit: (data: { name: string; email: string; message: string }) => void;
-}
+const SupportForm: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const formState = useAppSelector(state => state.supportForm);
 
-const SupportForm: React.FC<SupportFormProps> = ({ onSubmit }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(submitSupportForm(formState));
+  };
+
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -20,7 +26,7 @@ const SupportForm: React.FC<SupportFormProps> = ({ onSubmit }) => {
       message: Yup.string().required('Required'),
     }),
     onSubmit: (values, { resetForm }) => {
-      onSubmit(values);
+      handleSubmit(values);
       resetForm();
     },
   });

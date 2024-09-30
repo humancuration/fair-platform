@@ -21,7 +21,11 @@ const initialState: TestimonialsState = {
   error: null,
 };
 
-export const fetchTestimonials = createAsyncThunk(
+export const fetchTestimonials = createAsyncThunk<
+  Testimonial[],
+  void,
+  { rejectValue: string }
+>(
   'testimonials/fetchTestimonials',
   async (_, { rejectWithValue }) => {
     try {
