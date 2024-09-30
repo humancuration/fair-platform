@@ -3,7 +3,11 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Button from './Button';
 
-const SupportForm: React.FC = () => {
+interface SupportFormProps {
+  onSubmit: (data: { name: string; email: string; message: string }) => void;
+}
+
+const SupportForm: React.FC<SupportFormProps> = ({ onSubmit }) => {
   const formik = useFormik({
     initialValues: {
       name: '',
@@ -15,10 +19,9 @@ const SupportForm: React.FC = () => {
       email: Yup.string().email('Invalid email format').required('Required'),
       message: Yup.string().required('Required'),
     }),
-    onSubmit: (values) => {
-      // Handle form submission
-      console.log(values);
-      // Reset form or show success message
+    onSubmit: (values, { resetForm }) => {
+      onSubmit(values);
+      resetForm();
     },
   });
 

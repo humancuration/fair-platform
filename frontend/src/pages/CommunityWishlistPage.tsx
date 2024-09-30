@@ -43,11 +43,11 @@ const CommunityWishlistPage: React.FC = () => {
     fetchCommunityWishlist();
   }, []);
 
-  const handleAddCommunityItem = async (item: Partial<CommunityWishlistItemType>) => {
+  const handleAddCommunityItem = async (newItem: Omit<CommunityWishlistItem['item'], 'id'>) => {
     try {
-      const response = await api.post('/community-wishlist', item);
-      setCommunityWishlist((prev) => [response.data, ...prev]);
-      toast.success('Item added to community wishlist!');
+      const response = await api.post('/wishlist/community', { item: newItem });
+      setCommunityWishlist([response.data, ...communityWishlist]);
+      toast.success('Community wishlist item added!');
     } catch (error) {
       console.error('Error adding community wishlist item:', error);
       toast.error('Failed to add item.');

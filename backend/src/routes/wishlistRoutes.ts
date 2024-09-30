@@ -1,19 +1,28 @@
 import express from 'express';
-import { getWishlist, addWishlistItem, updateWishlistItem } from '../controllers/wishlistController';
+import {
+  upsertPrivateWishlist,
+  getPrivateWishlist,
+  upsertPublicWishlist,
+  getPublicWishlistByUsername,
+  addCommunityWishlistItem,
+  getCommunityWishlist,
+  contributeToCommunityWishlist,
+} from '../controllers/wishlistController';
 import auth from '../middleware/auth';
 
 const router = express.Router();
 
-// Get user's wishlist
-router.get('/:userId/wishlist', auth, getWishlist);
+// Private Wishlist Routes
+router.post('/private', auth, upsertPrivateWishlist);
+router.get('/private', auth, getPrivateWishlist);
 
-// Add item to wishlist
-router.post('/:userId/wishlist', auth, addWishlistItem);
-
-// Update wishlist item (e.g., toggle public/private)
-router.patch('/:userId/wishlist/:itemId', auth, updateWishlistItem);
-
-// Add a new route to fetch public wishlist by username
+// Public Wishlist Routes
+router.post('/public', auth, upsertPublicWishlist);
 router.get('/public/:username', getPublicWishlistByUsername);
+
+// Community Wishlist Routes
+router.post('/community', auth, addCommunityWishlistItem);
+router.get('/community', getCommunityWishlist);
+router.post('/community/:itemId/contribute', auth, contributeToCommunityWishlist);
 
 export default router;

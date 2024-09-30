@@ -1,35 +1,38 @@
 import { Request, Response } from 'express';
-import Testimonial from '../models/Testimonial';
+import { Testimonial } from '../models/Testimonial';
+import { User } from '../models/User';
 
 export const getTestimonials = async (req: Request, res: Response) => {
   try {
-    const testimonials = await Testimonial.find().sort({ date: -1 }).limit(50);
-    res.json(testimonials);
+    const testimonials = await Testimonial.findAll({
+      include: [{ model: User, attributes: ['username', 'avatar'] }],
+    });
+    res.status(200).json(testimonials);
   } catch (error) {
     console.error('Error fetching testimonials:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server Error' });
   }
 };
 
 export const addTestimonial = async (req: Request, res: Response) => {
-  const { user, content, avatar } = req.body;
-
-  if (!user || !content) {
-    return res.status(400).json({ message: 'Please provide user and content' });
-  }
+  const userId = (req.user as any).id;
+  const { content, fediversePostUrl } = req.body;
 
   try {
-    const newTestimonial = new Testimonial({
-      user,
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const testimonial = await Testimonial.create({
+      userId: user.id,
       content,
-      avatar: avatar || '',
-      date: new Date(),
+      fediversePostUrl,
     });
 
-    await newTestimonial.save();
-    res.status(201).json(newTestimonial);
+    res.status(201).json(testimonial);
   } catch (error) {
     console.error('Error adding testimonial:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server Error' });
   }
 };

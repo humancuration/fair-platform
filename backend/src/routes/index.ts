@@ -13,6 +13,9 @@ import recommendationRoutes from './recommendationRoutes';
 import payoutRoutes from './payoutRoutes';
 import minsiteRoutes from './minsiteRoutes'; // Import the minsite routes
 import uploadRoutes from './uploadRoutes'; // Import upload routes
+import testimonialRoutes from './testimonialRoutes';
+import wishlistRoutes from './wishlistRoutes';
+import communityWishlistRoutes from './communityWishlistRoutes';
 
 // Import other routes
 
@@ -32,6 +35,9 @@ router.use('/recommendations', recommendationRoutes);
 router.use('/minsite', minsiteRoutes); // Use the minsite routes
 router.use('/', payoutRoutes);
 router.use('/upload', uploadRoutes); // Use upload routes
+router.use('/testimonials', testimonialRoutes);
+router.use('/wishlist', wishlistRoutes);
+router.use('/community-wishlist', communityWishlistRoutes);
 
 // Use other routes
 

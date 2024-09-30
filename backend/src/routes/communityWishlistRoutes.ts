@@ -1,16 +1,14 @@
 import express from 'express';
-import { getCommunityWishlist, addCommunityWishlistItem, contributeToItem } from '../controllers/communityWishlistController';
-import auth from '../middleware/auth';
+import { getCommunityWishlist, highlightItem, addToCommunityWishlist } from '../controllers/communityWishlistController';
+import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
 // Public route to get community wishlist
 router.get('/', getCommunityWishlist);
 
-// Protected route to add an item to community wishlist
-router.post('/', auth, addCommunityWishlistItem);
-
-// Protected route to contribute to a community wishlist item
-router.post('/:itemId/contribute', auth, contributeToItem);
+// Protected routes
+router.post('/highlight', authMiddleware, highlightItem);
+router.post('/add', authMiddleware, addToCommunityWishlist);
 
 export default router;

@@ -1,6 +1,6 @@
 import express from 'express';
 import { getTestimonials, addTestimonial } from '../controllers/testimonialController';
-import auth from '../middleware/auth';
+import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -8,6 +8,6 @@ const router = express.Router();
 router.get('/', getTestimonials);
 
 // Protected route to add a testimonial
-router.post('/', auth, addTestimonial);
+router.post('/', authMiddleware, addTestimonial);
 
 export default router;

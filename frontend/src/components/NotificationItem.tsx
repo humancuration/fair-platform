@@ -1,19 +1,32 @@
 import React from 'react';
 
-interface NotificationItemProps {
-  notification: {
-    id: string;
-    message: string;
-    read: boolean;
-    date: string;
-  };
+interface Notification {
+  id: string;
+  message: string;
+  read: boolean;
+  date: string;
 }
 
-const NotificationItem: React.FC<NotificationItemProps> = ({ notification }) => {
+interface NotificationItemProps {
+  notification: Notification;
+  onMarkAsRead?: (id: string) => void;
+}
+
+const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMarkAsRead }) => {
   return (
     <li className={`p-2 rounded ${notification.read ? 'bg-gray-100' : 'bg-blue-100'}`}>
-      <p>{notification.message}</p>
-      <p className="text-sm text-gray-500">{new Date(notification.date).toLocaleString()}</p>
+      <div className="flex justify-between items-center">
+        <p>{notification.message}</p>
+        {!notification.read && onMarkAsRead && (
+          <button
+            onClick={() => onMarkAsRead(notification.id)}
+            className="text-sm text-blue-500 hover:underline"
+          >
+            Mark as Read
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-gray-500">{new Date(notification.date).toLocaleString()}</p>
     </li>
   );
 };

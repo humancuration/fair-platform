@@ -1,17 +1,42 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes, Sequelize } from 'sequelize';
 
-export interface ITestimonial extends Document {
-  user: string;
-  content: string;
-  avatar: string;
-  date: Date;
+export class Testimonial extends Model<Testimonial> {
+  public id!: number;
+  public userId!: number;
+  public content!: string;
+  public fediversePostUrl?: string;
+  public date!: Date;
+
+  public static initialize(sequelize: Sequelize) {
+    this.init(
+      {
+        userId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: { model: 'Users', key: 'id' },
+        },
+        content: {
+          type: DataTypes.TEXT,
+          allowNull: false,
+        },
+        fediversePostUrl: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        date: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          defaultValue: DataTypes.NOW,
+        },
+      },
+      {
+        sequelize,
+        modelName: 'Testimonial',
+      }
+    );
+  }
 }
 
-const TestimonialSchema: Schema = new Schema({
-  user: { type: String, required: true },
-  content: { type: String, required: true },
-  avatar: { type: String, default: '' },
-  date: { type: Date, default: Date.now },
-});
-
-export default mongoose.model<ITestimonial>('Testimonial', TestimonialSchema);
+export const initTestimonialModel = (sequelize: Sequelize) => {
+  Testimonial.initialize(sequelize);
+};
