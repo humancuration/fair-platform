@@ -1,90 +1,238 @@
-frontend/
-+-- src/
-¦   +-- components/
-¦   ¦   +-- Button.tsx
-¦   ¦   +-- ThemeSelector.tsx
-¦   ¦   +-- ...
-¦   +-- pages/
-¦   ¦   +-- LinkInBioPage.tsx
-¦   ¦   +-- AffiliateLinksPage.tsx
-¦   ¦   +-- AffiliateAnalyticsPage.tsx
-¦   ¦   +-- PayoutPage.tsx
-¦   ¦   +-- ...
-¦   +-- services/
-¦   ¦   +-- api.ts
-¦   ¦   +-- ...
-¦   +-- store/
-¦   ¦   +-- store.ts
-¦   ¦   +-- slices/
-¦   ¦   ¦   +-- userSlice.ts
-¦   ¦   ¦   +-- ...
-¦   ¦   +-- ...
-¦   +-- App.tsx
-¦   +-- index.tsx
-¦   +-- ...
-+-- Dockerfile
-+-- package.json
-+-- tailwind.config.js
-+-- tsconfig.json
-+-- ...
-backend/
-+-- src/
-¦   +-- controllers/
-¦   ¦   +-- userController.ts
-¦   ¦   +-- affiliateController.ts
-¦   ¦   +-- affiliateProgramController.ts
-¦   ¦   +-- payoutController.ts
-¦   ¦   +-- ...
-¦   +-- models/
-¦   ¦   +-- User.ts
-¦   ¦   +-- Brand.ts
-¦   ¦   +-- AffiliateProgram.ts
-¦   ¦   +-- AffiliateLink.ts
-¦   ¦   +-- Payout.ts
-¦   ¦   +-- ...
-¦   +-- routes/
-¦   ¦   +-- userRoutes.ts
-¦   ¦   +-- affiliateRoutes.ts
-¦   ¦   +-- affiliateProgramRoutes.ts
-¦   ¦   +-- payoutRoutes.ts
-¦   ¦   +-- ...
-¦   +-- middleware/
-¦   ¦   +-- auth.ts
-¦   ¦   +-- ...
-¦   +-- utils/
-¦   ¦   +-- generateAffiliateLink.ts
-¦   ¦   +-- ...
-¦   +-- app.ts
-¦   +-- server.ts
-¦   +-- ...
-    +--eco_consultant_ai/
-       +-- agents/
-       ¦   +-- __init__.py
-       ¦   +-- data_ingestion_agent.py
-       ¦   +-- data_cleaning_agent.py
-       ¦   +-- impact_analysis_agent.py
-       ¦   +-- recommendation_agent.py
-       ¦   +-- eco_consultant_agent.py
-       ¦   +-- visualization_agent.py
-       ¦   +-- feedback_agent.py
-       +-- data/
-       ¦   +-- raw/
-       ¦   +-- processed/
-       +-- models/
-       ¦   +-- lca_model.py
-       ¦   +-- recommendation_model.py
-       ¦   +-- ...
-       +-- main.py
-       +-- requirements.txt
-       +-- README.md
-+-- Dockerfile
-+-- docker-compose.yml
-+-- package.json
-+-- tsconfig.json
-+-- ...
-+-- data-lake/
-¦   +-- raw/
-¦   +-- processed/
-¦   +-- README.md
-+-- data-warehouse/
-¦   +-- README.md
+GitHub/
+  workspaces/
+    fair-platform.code-workspace
+  fair-platform/
+    ci.yaml
+    docker-compose.yaml
+    fair-market-setup.odt
+    fair-market-setup.txt
+    FILE_STRUCTURE.md
+    LICENSE
+    README.md
+    setup.txt
+    setup_old.txt
+    frontend/
+      Dockerfile.dockerfile
+      package.json
+      tailwind.config
+      tailwind.config.js
+      styles/
+        BarChart.css
+        ConfettiButton.css
+      src/
+        App.tsx
+        i18n.ts
+        index.css
+        index.tsx
+        utils/
+          api.ts
+        styles/
+          styles.css
+          theme.ts
+        store/
+          authSlice.ts
+          index.ts
+          store.ts
+          slices/
+            authSlice.ts
+            themeSlice.ts
+            userSlice.ts
+        services/
+          api.ts
+        pages/
+          ActivityLogPage.tsx
+          AdminDistributeDividends.tsx
+          AdminGrants.tsx
+          AffiliateAnalyticsPage.tsx
+          AffiliateLinksPage.tsx
+          AIFeedbackPage.tsx
+          Analytics.tsx
+          ApplyGrant.tsx
+          BarChart.jsx
+          Dashboard.tsx
+          Directory.tsx
+          Dividends.tsx
+          ForumPosts.tsx
+          Forums.tsx
+          LinkInBioPage.tsx
+          Login.tsx
+          LoginPage.tsx
+          Marketplace.tsx
+          MinsiteBuilder.tsx
+          NotificationsPage.tsx
+          PayoutPage.tsx
+          Settings.tsx
+          Signup.tsx
+          UserProfilePage.tsx
+          __tests__/
+            AffiliateLinksPage.test.tsx
+        context/
+          AuthContext.ts
+          ThemeContext.tsx
+        components/
+          AffiliateLink.tsx
+          AffiliateLinkCard.tsx
+          AnimatedHeading.jsx
+          AnimatedRoutes.jsx
+          AvatarGenerator.jsx
+          BackgroundMusic.jsx
+          BarChart.jsx
+          Breadcrumbs.tsx
+          Button.jsx
+          Button.test.jsx
+          CompanyListing.jsx
+          ComponentLibrary.tsx
+          ConfettiButton.jsx
+          CreatAffiliateLinkModal.tsx
+          CSSEditor.tsx
+          CursorTrail.jsx
+          CustomCursor.jsx
+          Dashboard.jsx
+          DraggableWidget.jsx
+          ErrorBoundary.tsx
+          FilterSidebar.tsx
+          ForumThread.jsx
+          GenerativeArtCanvas.jsx
+          Header.tsx
+          Layout.tsx
+          LinkPageEditor.tsx
+          Mascot.jsx
+          MinsitePreview.tsx
+          MorphingSVG.jsx
+          Navbar.tsx
+          NetworkGraph.jsx
+          ParallaxSections.jsx
+          ParticleBackground.jsx
+          PetCheckin.jsx
+          PollWidget.css
+          PollWidget.jsx
+          PrivateRoute.tsx
+          ProductCard.jsx
+          ProductCard.tsx
+          ProtectedRoute.tsx
+          RecommendationCarousel.tsx
+          Recommendations.tsx
+          SearchBar.tsx
+          SEOMetadataEditor.tsx
+          ShareButton.tsx
+          SomeComponent.jsx
+          StyledLink.tsx
+          TemplateSelector.tsx
+          ThemeSwitcher.tsx
+          ThreeDScene.jsx
+          UserProfile.jsx
+          UserProfile.test.jsx
+          VersionHistory.tsx
+          VirtualPet.jsx
+          WYSIWYGEditor.tsx
+          __tests__/
+            AffiliateLinkCard.test.tsx
+            Button.test.tsx
+            WYSIWYGEditor.test.tsx
+        api/
+          api.ts
+    backend/
+      .env.txt
+      DockerFile.dockerfile
+      jest.config.js
+      package.json
+      src/
+        app.ts
+        index.ts
+        package.json
+        server.ts
+        tsconfig.json
+        __tests__/
+          auth.test.ts
+        utils/
+          generateAffiliateLink.ts
+          stripe.ts
+        tests/
+          affiliate.test.ts
+          affiliateLink.test.ts
+          minsite.test.ts
+          user.test.ts
+        routes/
+          affiliateLinkRoutes.ts
+          affiliateProgramRoutes.ts
+          affiliateRoutes.ts
+          aiRoutes.ts
+          analyticRoutes.ts
+          analytics.ts
+          auth.ts
+          clickTrackingRoutes.ts
+          companies.ts
+          dividends.ts
+          forums.ts
+          grants.ts
+          index.ts
+          LinkInBioRoutes.ts
+          marketplace.ts
+          minsiteRoutes.ts
+          payoutRoutes.ts
+          posts.ts
+          products.ts
+          recommendationRoutes.ts
+          uploadRoutes.ts
+          userRoutes.ts
+        models/
+          AffiliateLink.ts
+          AffiliateProgram.ts
+          Brands.ts
+          ClickTracking.ts
+          Company.ts
+          Dividend.ts
+          Forum.ts
+          Grant.ts
+          index.ts
+          LinkPage.ts
+          Minsite.ts
+          Payout.ts
+          Post.ts
+          Product.ts
+          User.ts
+        middleware/
+          auth.ts
+          errorHandler.ts
+        controllers/
+          affiliateController.ts
+          affiliateLinkController.ts
+          affiliateProgramController.ts
+          analyticsController.ts
+          clickTrackingController.ts
+          linkInBioController.ts
+          marketplaceController.ts
+          minsiteController.ts
+          payoutController.ts
+          recommendationController.ts
+          uploadController.ts
+          userController.ts
+        config/
+          database.ts
+        ai/
+          Dockerfile.dockerfile
+          recommendation_engine.py
+          recommendation_service.py
+        activitypub/
+          activitypub.js
+          index.ts
+    ai-models/
+      recommendation/
+        app.py
+        model.py
+      eco-consultant/
+        main.py
+        models/
+          lca_model.py
+          recommendation_model.py
+          supply_chain_model.py
+        api/
+          data_cleaning_api.py
+          data_ingestion_api.py
+        agents/
+          data_cleaning_agent.py
+          data_ingestion_agent.py
+          data_processing_agent.py
+          impact_analysis_agent.py
+          recommendation_agent.py
+          supply_chain_agent.py
