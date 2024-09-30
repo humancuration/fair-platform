@@ -1,56 +1,22 @@
-// backend/src/models/User.ts
-import { DataTypes, Model } from 'sequelize';
-import sequelize from './index';
+import mongoose, { Document, Schema } from 'mongoose';
+import { IWishlistItem } from './WishlistItem';
 
-enum UserRole {
-  CREATOR = 'creator',
-  BRAND = 'brand',
-  ADMIN = 'admin',
+export interface IUser extends Document {
+  username: string;
+  email: string;
+  password: string;
+  wishlist: mongoose.Types.ObjectId[] | IWishlistItem[];
+  fediverseProfile?: string;
+  // ... other fields
 }
 
-class User extends Model {
-  public id!: number;
-  public username!: string;
-  public email!: string;
-  public password!: string;
-  public role!: 'creator' | 'business';
-  // timestamps!
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-}
+const UserSchema: Schema = new Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  wishlist: [{ type: Schema.Types.ObjectId, ref: 'WishlistItem' }],
+  fediverseProfile: { type: String, default: '' },
+  // ... other fields
+});
 
-User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    role: {
-      type: DataTypes.ENUM(...Object.values(UserRole)),
-      allowNull: false,
-      defaultValue: UserRole.CREATOR,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'User',
-    tableName: 'users',
-  }
-);
-
-export default User;
+export default mongoose.model<IUser>('User', UserSchema);

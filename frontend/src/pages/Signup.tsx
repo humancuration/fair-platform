@@ -6,6 +6,8 @@ import * as Yup from 'yup';
 import api from '../utils/api';
 import { useNavigate } from 'react-router-dom';
 import { useError } from '../contexts/ErrorContext';
+import { handleError } from '../utils/errorHandler';
+import { toast } from 'react-toastify';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,8 +38,9 @@ const SignupPage: React.FC = () => {
       await api.post('/auth/signup', values);
       actions.setSubmitting(false);
       navigate('/login');
+      toast.success('Signup successful!');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Signup failed');
+      handleError(err);
       actions.setSubmitting(false);
     }
   };
@@ -48,13 +51,12 @@ const SignupPage: React.FC = () => {
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
-      <TextInput label="Name" name="name" type="text" placeholder="Your Name" />
-      <TextInput label="Email" name="email" type="email" placeholder="you@example.com" />
+      <TextInput label="Name" name="name" type="text" />
+      <TextInput label="Email" name="email" type="email" />
       <TextInput
         label="Password"
         name="password"
         type="password"
-        placeholder="********"
       />
       <Checkbox name="agreeToTerms" label="I agree to the terms and conditions" />
     </FormWrapper>

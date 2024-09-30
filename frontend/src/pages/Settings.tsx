@@ -6,16 +6,21 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleDarkMode } from '../store/slices/themeSlice'; // Create a theme slice
 import { RootState } from '../store/store';
 import { toast } from 'react-toastify';
+import Select from '../components/Select';
+import TextInput from '../components/forms/TextInput';
+import Checkbox from '../components/forms/Checkbox';
+
 interface Settings {
   receiveNewsletter: boolean;
   darkMode: boolean;
-  // Add other settings as needed
+  language: string; // Add language to settings
 }
 
 const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<Settings>({
     receiveNewsletter: false,
     darkMode: false,
+    language: 'en', // Default language
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,6 +52,13 @@ const SettingsPage: React.FC = () => {
     }
   };
 
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSettings((prev) => ({
+      ...prev,
+      language: e.target.value,
+    }));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -65,6 +77,12 @@ const SettingsPage: React.FC = () => {
 
   if (loading) return <div>Loading settings...</div>;
   if (error) return <div>Error: {error}</div>;
+
+  const languageOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'es', label: 'Spanish' },
+    // Add more languages as needed
+  ];
 
   return (
     <div className="container mx-auto p-4">
@@ -90,7 +108,13 @@ const SettingsPage: React.FC = () => {
           />
           <label className="text-sm">Enable Dark Mode</label>
         </div>
-        {/* Add more settings options here */}
+        <Select
+          label="Preferred Language"
+          name="language"
+          value={settings.language}
+          onChange={handleLanguageChange}
+          options={languageOptions}
+        />
         <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
           Save Settings
         </button>

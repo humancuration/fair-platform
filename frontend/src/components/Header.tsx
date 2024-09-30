@@ -1,12 +1,12 @@
-// Example: src/components/Header.tsx
+import React from 'react';
+import Navbar from './Navbar';
 
-import styled from 'styled-components';
-
-const Header = styled.header`
-  background: ${({ theme }) => theme.primary};
-  color: ${({ theme }) => theme.text};
-  padding: 1rem;
-  text-align: center;
-`;
+const Header: React.FC = () => {
+  return (
+    <header className="bg-primary text-white p-4">
+      <Navbar />
+    </header>
+  );
+};
 
 export default Header;

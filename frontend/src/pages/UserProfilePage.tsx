@@ -1,75 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import TextInput from '../components/forms/TextInput';
-import LoadingSpinner from '../components/LoadingSpinner';
-import SkeletonLoader from '../components/SkeletonLoader';
-import FormWrapper from '../components/forms/FormWrapper';
-import * as Yup from 'yup';
+import { useParams } from 'react-router-dom';
+import Layout from '../components/Layout';
+import WishlistItem from '../components/WishlistItem';
 import api from '../utils/api';
-import useNotification from '../hooks/useNotification';
-import { useError } from '../contexts/ErrorContext';
+import { toast } from 'react-toastify';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+interface WishlistItemType {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  isPublic: boolean;
+}
 
 const UserProfilePage: React.FC = () => {
-  const [initialValues, setInitialValues] = useState({
-    name: '',
-    email: '',
-  });
-  const [loading, setLoading] = useState(true);
-  const { notifySuccess } = useNotification();
-  const { setError } = useError();
+  const { username } = useParams<{ username: string }>();
+  const [wishlist, setWishlist] = useState<WishlistItemType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [fediverseProfile, setFediverseProfile] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUserWishlist = async () => {
       try {
-        const response = await api.get('/user/profile');
-        setInitialValues(response.data);
+        const response = await api.get(`/user/${username}/public-wishlist`);
+        setWishlist(response.data.wishlist);
+        setFediverseProfile(response.data.fediverseProfile);
         setLoading(false);
-      } catch (err) {
-        setError('Failed to load profile');
+      } catch (error) {
+        console.error('Error fetching user public wishlist:', error);
+        toast.error('Failed to load user wishlist.');
         setLoading(false);
       }
     };
 
-    fetchProfile();
-  }, [setError]);
-
-  if (loading)
-    return (
-      <div className="max-w-lg mx-auto">
-        <SkeletonLoader width="50%" height="2rem" className="mb-4" />
-        <SkeletonLoader height="1.5rem" className="mb-2" />
-        <SkeletonLoader height="1.5rem" className="mb-4" />
-        <SkeletonLoader width="30%" height="2rem" />
-      </div>
-    );
-
-  const validationSchema = Yup.object({
-    name: Yup.string().required('Name is required'),
-    email: Yup.string()
-      .email('Invalid email format')
-      .required('Email is required'),
-  });
-
-  const handleSubmit = async (values: any, actions: any) => {
-    try {
-      await api.put('/user/profile', values);
-      setInitialValues(values);
-      notifySuccess('Profile updated successfully!');
-      actions.setSubmitting(false);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Update failed');
-      actions.setSubmitting(false);
-    }
-  };
+    fetchUserWishlist();
+  }, [username]);
 
   return (
-    <FormWrapper
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={handleSubmit}
-    >
-      <TextInput label="Name" name="name" type="text" />
-      <TextInput label="Email" name="email" type="email" />
-    </FormWrapper>
+    <Layout>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-6">{username}'s Wishlist</h1>
+        {fediverseProfile && (
+          <p className="mb-4">
+            Fediverse Profile: <a href={fediverseProfile} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">{fediverseProfile}</a>
+          </p>
+        )}
+        {loading ? (
+          <LoadingSpinner />
+        ) : wishlist.length === 0 ? (
+          <p>This user has no public wishlist items.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {wishlist.map((item) => (
+              <WishlistItem key={item.id} item={item} />
+            ))}
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 
