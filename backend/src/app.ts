@@ -7,6 +7,8 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import wishlistRoutes from './routes/wishlistRoutes';
 import testimonialRoutes from './routes/testimonialRoutes';
 import { sequelize } from './models';
+import Wishlist from '@models/Wishlist';
+import CommunityWishlist from '@models/CommunityWishlist';
 
 dotenv.config();
 
@@ -50,13 +52,11 @@ sequelize.sync().then(() => {
 });
 
 // Use Wishlist model
-import Wishlist from '@models/Wishlist';
 Wishlist.findAll().then(wishlists => {
   console.log(wishlists);
 });
 
 // Use CommunityWishlist model
-import CommunityWishlist from '@models/CommunityWishlist';
 CommunityWishlist.findAll().then(wishlists => {
   console.log(wishlists);
 });

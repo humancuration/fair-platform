@@ -28,12 +28,14 @@ const TestimonialsPage: React.FC = () => {
         <h1 className="text-2xl font-bold mb-4">What Our Community Says</h1>
         {loading ? (
           <p>Loading testimonials...</p>
-        ) : (
+        ) : testimonials.length > 0 ? ( // Added check for testimonials length
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {testimonials.map((testimonial) => (
               <TestimonialCard key={testimonial.id} testimonial={testimonial} />
             ))}
           </div>
+        ) : (
+          <p>No testimonials available.</p> // Message when no testimonials
         )}
       </main>
       <Footer />

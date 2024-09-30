@@ -32,7 +32,7 @@ export const fetchTestimonials = createAsyncThunk<
       const response = await api.get('/testimonials');
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response.data.message || 'Failed to fetch testimonials');
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch testimonials');
     }
   }
 );
