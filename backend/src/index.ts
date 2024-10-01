@@ -19,6 +19,7 @@ import forumRoutes from './routes/forums';
 import postRoutes from './routes/posts';
 import { errorHandler } from './middleware/errorHandler';
 import marketplaceRoutes from './routes/marketplace';
+import groupRoutes from './routes/groupRoutes';
 
 dotenv.config();
 
@@ -97,6 +98,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/forums', forumRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

@@ -9,6 +9,7 @@ import wishlistReducer from './slices/wishlistSlice';
 import publicWishlistReducer from './slices/publicWishlistSlice';
 import communityWishlistReducer from './slices/communityWishlistSlice';
 import testimonialsReducer from './slices/testimonialsSlice';
+import groupsReducer from './slices/groupsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     publicWishlist: publicWishlistReducer,
     communityWishlist: communityWishlistReducer,
     testimonials: testimonialsReducer,
+    groups: groupsReducer,
   },
 });
 

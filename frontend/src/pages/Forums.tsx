@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import api from '../api/api';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
 interface Forum {

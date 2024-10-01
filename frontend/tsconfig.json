@@ -2,17 +2,30 @@
   "compilerOptions": {
     "baseUrl": "src",
     "paths": {
+      "@/*": ["*"],
       "@components/*": ["components/*"],
       "@store/*": ["store/*"],
       "@pages/*": ["pages/*"],
       "@providers/*": ["providers/*"],
-      "@models/*": ["models/*"]
+      "@models/*": ["models/*"],
+      "@services/*": ["services/*"],
+      "@utils/*": ["utils/*"],
+      "@contexts/*": ["contexts/*"]
+      "@config/*": ["config/*"]
     },
     "strict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "jsx": "react-jsx"
-    // ... other configurations
+    "jsx": "react-jsx",
+    "target": "es6",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "module": "esnext",
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

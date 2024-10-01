@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import api from '../api/api';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 
 const AdminDistributeDividends: React.FC = () => {
   const { token } = useContext(AuthContext);
