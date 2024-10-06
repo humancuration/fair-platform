@@ -12,15 +12,6 @@ class DataIngestionAgent:
         )
         os.makedirs(self.raw_data_path, exist_ok=True)
 
-    def fetch_data_and_publish(self, api_url, params=None):
-        # Fetch data logic
-        # ...
-        # After fetching
-        message = {
-            'source': api_url,
-            'status': 'data_fetched',
-            'timestamp': '2024-04-27T12:00:00Z'
-        }
-        self.producer.send('data_fetched', message)
-        self.producer.flush()
-        print("Published data_fetched message to Kafka")
+    def fetch_data_from_api(self, api_url, params=None):
+        # Existing method renamed for consistency
+        # ... implementation ...

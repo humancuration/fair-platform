@@ -17,12 +17,7 @@ class ApiFetchRequest(BaseModel):
 # Endpoint for fetching data from an API
 @app.post("/fetch_data/api")
 def fetch_data_api(request: ApiFetchRequest):
-    file_path = data_ingestion.fetch_data_from_api(request.api_url, request.params)
-    
-    if "Failed" in file_path:
-        raise HTTPException(status_code=400, detail=file_path)
-    
-    return {"status": "success", "message": f"Data fetched from {request.api_url}", "file_path": file_path}
+    {{ fetch_data_from_api }}
 
 # Define a model for file URL input
 class FileFetchRequest(BaseModel):
@@ -31,9 +26,4 @@ class FileFetchRequest(BaseModel):
 # Endpoint for downloading a file from a URL
 @app.post("/fetch_data/file")
 def fetch_data_file(request: FileFetchRequest):
-    file_path = data_ingestion.fetch_data_from_file(request.file_url)
-    
-    if "Failed" in file_path:
-        raise HTTPException(status_code=400, detail=file_path)
-    
-    return {"status": "success", "message": f"File downloaded from {request.file_url}", "file_path": file_path}
+    {{ error_handling }}

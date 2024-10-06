@@ -11,6 +11,8 @@
   "rules": {
     // Add or override rules as needed
     "semi": ["error", "always"],
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single"],
+    "no-console": "warn", // Added rule to warn on console statements
+    "indent": ["error", 2] // Enforce consistent indentation
   }
 }
