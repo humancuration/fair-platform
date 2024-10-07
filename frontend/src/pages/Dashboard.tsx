@@ -72,6 +72,16 @@ const Dashboard: React.FC = () => {
           >
             Notifications
           </NavLink>
+          <NavLink
+            to="eco-consultant"
+            className={({ isActive }) =>
+              isActive
+                ? 'text-blue-500'
+                : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'
+            }
+          >
+            Eco Consultant
+          </NavLink>
         </nav>
         <div className="mt-6">
           <ThemeSwitcher />

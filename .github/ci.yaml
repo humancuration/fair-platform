@@ -35,13 +35,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '18'  # Updated to a more recent LTS version
       - name: Install Dependencies
         run: npm install
         working-directory: ./backend
       - name: Run Tests
         env:
-          DB_HOST: localhost
+          DB_HOST: db  # Consistent with .env
           DB_USER: postgres
           DB_PASSWORD: postgres
           DB_NAME: yourdb
@@ -64,7 +64,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '18'  # Updated to a more recent LTS version
       - name: Install Dependencies
         run: npm install
         working-directory: ./frontend
