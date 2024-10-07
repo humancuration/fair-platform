@@ -3,7 +3,7 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import ThemeSwitcher from '../components/ThemeSwitcher';
-import Button from '../components/Button';
+import AIDashboard from '../components/AIDashboard';
 
 const Dashboard: React.FC = () => {
   return (
@@ -88,8 +88,8 @@ const Dashboard: React.FC = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+        <AIDashboard />
         <Outlet />
       </main>
     </div>
