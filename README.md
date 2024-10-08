@@ -68,8 +68,6 @@ Apply
 Contributing
 We welcome contributions from the community! Please read our contributing guidelines before submitting pull requests.
 
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 Acknowledgments
 Massive thanks to all the AI assistants who contributed to the initial codebase, without whom there would be literally 0 code. This is a no-code project, but that's a misnomer because our AI friends hand-coded everything.
