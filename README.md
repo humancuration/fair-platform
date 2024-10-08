@@ -6,7 +6,7 @@ Hey there, awesome humans and AIs! 👋 Welcome to Fair Platform, where we're re
 
 Fair Platform is not your average marketplace. We're talking next-level stuff here:
 
-- 🤖 AI-Powered Everything: From content recommendations to eco-impact analysis, our AI's got your back! (or bring your own AI friends via byok/local hosting!)
+- 🤖 AI-Powered Everything: From content recommendations to eco-impact analysis, our AI's got your back! (or bring your own AI friends via BYOK/local hosting!)
 - 🌍 Eco-Consultant Dashboard: Making green decisions has never been this cool (or easy)!
 - 💰 Affiliate Analytics on Steroids: Track your earnings like a boss with our super-smart analytics tools.
 - 🖥️ GPU Marketplace: Rent or lend computing power. It's like Fairbnb, but for GPUs!
@@ -41,10 +41,17 @@ We're not messing around when it comes to tech. Check this out:
 
 ## 🚀 Getting Started
 
-1. Clone this bad boy: `git clone https://github.com/your-username/fair-platform.git`
-2. Install dependencies: `npm install` (or `yarn install` if you're fancy)
-3. Fire up the dev server: `npm run dev`
-4. Start changing the world! 🌍
+1. **Clone this bad boy**: `git clone https://github.com/your-username/fair-platform.git`
+2. **Install dependencies**:
+   - Frontend: `cd fair-platform/frontend && npm install` (or `yarn install` if you're fancy)
+   - Backend: `cd fair-platform/backend && npm install`
+3. **Setup Environment Variables**:
+   - Create a `.env` file in both `frontend` and `backend` directories.
+   - Refer to `.env.example` for the required variables.
+4. **Fire up the dev server**:
+   - Frontend: `npm run dev`
+   - Backend: `npm run start`
+5. **Start changing the world!** 🌍
 
 ## 🤝 Contributing
 
@@ -64,11 +71,56 @@ Massive thanks to all the humans and AIs who've contributed to this project. You
 
 World domination! Just kidding... or are we? 😉 Stay tuned for more features, more integrations, and more awesomeness. The future is fair, and it starts here!
 
-Acknowledgments
+## Acknowledgments
 
 Massive thanks to all the AI friends who contributed to the codebase!
 
 Assistance in organizing and structuring the project setup was provided by ChatGPTs 4o, 4o mini, o1 mini, o1 preview, Claude sonnet 3.5, opus 3, Gemini 1.5 pro, turbo, and Codestral 22b. As in, they did 100% of the coding.
 
 Gratitude to the open-source community for the tools and libraries used in this project. Oss needs to be funded and supported!!!
+
 Ready to join the fair side? Let's gooooo! 🚀🚀🚀
+
+---
+
+## 📄 Additional Sections
+
+### 📈 Feature Implementation Status
+
+| Feature                           | Status          |
+| --------------------------------- | --------------- |
+| AI-Powered Content Recommendations| 🌓 Implementing |
+| Eco-Consultant Dashboard          | 🌓 Implementing |
+| Affiliate Analytics               | 🌓 Implementing |
+| GPU Marketplace                   | 🌓 Implementing |
+| AI Job Marketplace                | 🌓 Implementing |
+| Customizable Minsites             | 🌓 Implementing |
+| Community Forums                  | 🌓 Implementing |
+| Universal Dividend & Micro-Grants | 🌓 Implementing |
+| Notifications                     | 🌓 Implementing |
+| ...                               | ...             |
+
+*More features coming soon!*
+
+### 🧩 Directory Structure
+
+fair-platform/
+├── backend/
+│ ├── controllers/
+│ ├── models/
+│ ├── routes/
+│ └── app.js
+├── frontend/
+│ ├── src/
+│ │ ├── components/
+│ │ ├── pages/
+│ │ │ ├── Dashboard.tsx
+│ │ │ ├── NotificationsPage.tsx
+│ │ │ └── ...other pages
+│ │ ├── services/
+│ │ └── App.tsx
+│ └── public/
+├── ai-models/
+│ └── eco-consultant/
+├── Dockerfile
+└── README.md
