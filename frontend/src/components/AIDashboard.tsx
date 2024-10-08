@@ -6,16 +6,29 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const AIDashboard: React.FC = () => {
+  const [apiType, setApiType] = useState<'byok' | 'hosted' | 'distributed'>('byok');
   const [apiUrl, setApiUrl] = useState('https://api.example.com/data');
   const [apiKey, setApiKey] = useState('');
+  const [hostedService, setHostedService] = useState('');
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
-      const response = await axios.get(apiUrl, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
+      let response;
+      switch (apiType) {
+        case 'byok':
+          response = await axios.get(apiUrl, {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          break;
+        case 'hosted':
+          response = await axios.get(`/api/hosted-ai/${hostedService}`);
+          break;
+        case 'distributed':
+          response = await axios.get('/api/distributed-ai');
+          break;
+      }
       setData(response.data);
       setError(null);
     } catch (err) {
@@ -44,14 +57,30 @@ const AIDashboard: React.FC = () => {
     <div>
       <h1>AI-Powered Analytics Dashboard</h1>
       <div>
-        <label>
-          API Endpoint:
-          <input type="text" value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} />
-        </label>
-        <label>
-          API Key:
-          <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
-        </label>
+        <select value={apiType} onChange={(e) => setApiType(e.target.value as 'byok' | 'hosted' | 'distributed')}>
+          <option value="byok">Bring Your Own Key</option>
+          <option value="hosted">Hosted Solution</option>
+          <option value="distributed">Distributed Solution</option>
+        </select>
+        {apiType === 'byok' && (
+          <>
+            <label>
+              API Endpoint:
+              <input type="text" value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} />
+            </label>
+            <label>
+              API Key:
+              <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
+            </label>
+          </>
+        )}
+        {apiType === 'hosted' && (
+          <select value={hostedService} onChange={(e) => setHostedService(e.target.value)}>
+            <option value="">Select a hosted service</option>
+            <option value="service1">Hosted Service 1</option>
+            <option value="service2">Hosted Service 2</option>
+          </select>
+        )}
         <button onClick={fetchData}>Fetch Data</button>
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}

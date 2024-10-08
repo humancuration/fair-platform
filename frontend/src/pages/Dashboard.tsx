@@ -4,6 +4,7 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import ThemeSwitcher from '../components/ThemeSwitcher';
 import AIDashboard from '../components/AIDashboard';
+import GPUMarketplace from '../components/GPUMarketplace';
 
 const Dashboard: React.FC = () => {
   return (
@@ -82,6 +83,16 @@ const Dashboard: React.FC = () => {
           >
             Eco Consultant
           </NavLink>
+          <NavLink
+            to="gpu-marketplace"
+            className={({ isActive }) =>
+              isActive
+                ? 'text-blue-500'
+                : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'
+            }
+          >
+            GPU Marketplace
+          </NavLink>
         </nav>
         <div className="mt-6">
           <ThemeSwitcher />
@@ -90,6 +101,7 @@ const Dashboard: React.FC = () => {
 
       <main className="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
         <AIDashboard />
+        <GPUMarketplace />
         <Outlet />
       </main>
     </div>
