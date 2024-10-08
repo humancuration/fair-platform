@@ -3,7 +3,7 @@ import api from '../utils/api';
 import { handleError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 import TextInput from '../components/TextInput';
-import Button from '../components/Button';
+import Button from '../components/common/Button';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');

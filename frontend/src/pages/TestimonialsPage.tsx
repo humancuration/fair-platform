@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { fetchTestimonials } from '../store/slices/testimonialsSlice';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import TestimonialCard from '../components/TestimonialCard';
 import { toast } from 'react-toastify';
 import SupportForm from '@components/SupportForm';

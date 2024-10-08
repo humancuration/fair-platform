@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import Button from './Button';
+import Button from './common/Button';
 import { toast } from 'react-toastify';
 
 const UserProfile: React.FC = () => {

@@ -38,8 +38,8 @@ const NotificationsPage: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setNotifications((prev) =>
-        prev.map((notif) =>
+      setNotifications((prev: Notification[]) =>
+        prev.map((notif: Notification) =>
           notif.id === id ? { ...notif, read: true } : notif
         )
       );
@@ -50,7 +50,7 @@ const NotificationsPage: React.FC = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [token]);
 
   if (loading) return <div>Loading notifications...</div>;
 
@@ -61,7 +61,7 @@ const NotificationsPage: React.FC = () => {
         <p>No new notifications.</p>
       ) : (
         <ul className="space-y-4">
-          {notifications.map((notif) => (
+          {notifications.map((notif: Notification) => (
             <li key={notif.id} className={`p-4 rounded shadow ${notif.read ? 'bg-gray-100' : 'bg-white'}`}>
               <div className="flex justify-between">
                 <span>{notif.message}</span>

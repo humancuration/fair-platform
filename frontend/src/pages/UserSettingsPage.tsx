@@ -1,8 +1,8 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import SettingsForm from '../components/SettingsForm';
 import { updateUserSettings } from '../store/slices/userSettingsSlice';
 import { toast } from 'react-toastify';

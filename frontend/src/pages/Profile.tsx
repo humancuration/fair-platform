@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Modal from '../components/Modal';
+import Modal from '../components/common/Modal';
 
 const Profile: React.FC = () => {
   const [isModalOpen, setModalOpen] = useState(false);

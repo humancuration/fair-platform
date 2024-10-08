@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Modal from '../components/Modal';
-import Button from '../components/Button';
+import Modal from '../components/common/Modal';
+import Button from '../components/common/Button';
 
 const SomePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

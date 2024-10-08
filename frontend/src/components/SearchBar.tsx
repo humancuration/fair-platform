@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from './Button';
+import Button from './common/Button';
 
 const SearchBar: React.FC = () => {
   const [query, setQuery] = useState('');

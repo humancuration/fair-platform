@@ -2,7 +2,7 @@ import React from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '../components/forms/TextInput';
-import Button from '../components/Button';
+import Button from '../components/common/Button';
 
 const validationSchema = Yup.object({
   email: Yup.string().email('Invalid email address').required('Required'),

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import Button from './Button';
+import Button from './common/Button';
 
 interface SettingsFormProps {
   initialValues: {

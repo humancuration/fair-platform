@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ProductCard from '../components/ProductCard';
-import Button from '../components/Button';
+import Button from '../components/common/Button';
 import LoadingSpinner from '../components/LoadingSpinner';
 import api from '../utils/api';
 import { handleError } from '../utils/errorHandler';

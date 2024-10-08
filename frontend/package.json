@@ -16,7 +16,9 @@
     "react-helmet": "^6.1.0",
     "framer-motion": "^4.1.17",
     "react-loading-skeleton": "^3.1.0",
-    "react-i18next": "^11.18.0"
+    "react-i18next": "^11.18.0",
+    "axios":"",
+    
   },
   "devDependencies": {
     "@types/styled-components": "^5.1.15",

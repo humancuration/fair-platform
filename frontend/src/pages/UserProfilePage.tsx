@@ -1,9 +1,9 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import Button from '../components/Button';
+import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
+import Button from '../components/common/Button';
 import { toast } from 'react-toastify';
 
 const UserProfilePage: React.FC = () => {

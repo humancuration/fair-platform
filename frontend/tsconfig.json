@@ -10,7 +10,7 @@
       "@models/*": ["models/*"],
       "@services/*": ["services/*"],
       "@utils/*": ["utils/*"],
-      "@contexts/*": ["contexts/*"]
+      "@contexts/*": ["contexts/*"],
       "@config/*": ["config/*"]
     },
     "strict": true,
