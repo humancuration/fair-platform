@@ -1,6 +1,7 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import SupportForm from '../components/SupportForm';
+import GroupSupportChannels from '../components/GroupSupportChannels'; // Import Group Support
 
 const SupportPage: React.FC = () => {
   return (
@@ -26,6 +27,8 @@ const SupportPage: React.FC = () => {
             {/* TODO: Add more support information or FAQs */}
           </div>
         </div>
+        {{ /* Add Group Support Channels */ }}
+        <GroupSupportChannels />
       </div>
     </Layout>
   );

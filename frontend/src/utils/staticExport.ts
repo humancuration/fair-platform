@@ -1,20 +1,19 @@
 import axios from 'axios';
 
-export const exportAsStatic = async () => {
-  try {
-    const response = await axios.post('/api/export-static');
-    const { html, css, js } = response.data;
+export const exportAsStatic = (data: any) => {
+  const fileName = 'affiliate_links.json';
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
 
-    // Create downloadable files
-    downloadFile('index.html', html);
-    downloadFile('styles.css', css);
-    downloadFile('scripts.js', js);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
 
-    alert('Static files exported successfully!');
-  } catch (error) {
-    console.error('Error exporting static files:', error);
-    alert('Failed to export static files.');
-  }
+  document.body.removeChild(link);
+  URL.revokeObjectURL(href);
 };
 
 const downloadFile = (filename: string, content: string) => {
@@ -23,4 +22,20 @@ const downloadFile = (filename: string, content: string) => {
   link.href = window.URL.createObjectURL(blob);
   link.download = filename;
   link.click();
+};
+
+export const exportGroupData = (data: any, groupId: string) => {
+  const fileName = `group_${groupId}_data.json`;
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const href = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+
+  document.body.removeChild(link);
+  URL.revokeObjectURL(href);
 };

@@ -6,6 +6,7 @@ import Footer from '../components/layout/Footer';
 import TestimonialCard from '../components/TestimonialCard';
 import { toast } from 'react-toastify';
 import SupportForm from '@components/SupportForm';
+import GroupTestimonials from '../components/GroupTestimonials'; // Import Group Testimonials
 
 const TestimonialsPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -37,6 +38,7 @@ const TestimonialsPage: React.FC = () => {
         ) : (
           <p>No testimonials available.</p> // Message when no testimonials
         )}
+        <GroupTestimonials />
       </main>
       <Footer />
     </div>

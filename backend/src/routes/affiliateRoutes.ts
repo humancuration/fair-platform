@@ -1,10 +1,21 @@
-// routes/affiliateRoutes.ts
-
 import { Router } from 'express';
 import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from '../controllers/affiliateController';
 import { authenticateToken } from '../middleware/auth';
+import { body, param, ValidationChain } from 'express-validator';
+import { validate } from '../middleware/validate';
 
 const router = Router();
+
+// Validation rules
+const createAffiliateLinkValidation: ValidationChain[] = [
+  body('affiliateProgramId').isString().notEmpty(),
+  body('originalLink').isURL(),
+  body('customAlias').optional().isString(),
+];
+
+const trackAffiliateClickValidation: ValidationChain[] = [
+  param('trackingCode').isUUID(),
+];
 
 /**
  * @swagger
@@ -21,18 +32,21 @@ const router = Router();
  *             type: object
  *             properties:
  *               affiliateProgramId:
- *                 type: integer
+ *                 type: string
  *               originalLink:
  *                 type: string
+ *                 format: uri
  *               customAlias:
  *                 type: string
  *     responses:
  *       201:
  *         description: Affiliate link created successfully
+ *       400:
+ *         description: Validation error
  *       500:
  *         description: Internal Server Error
  */
-router.post('/links', authenticateToken, createAffiliateLink);
+router.post('/links', authenticateToken, createAffiliateLinkValidation, validate, createAffiliateLink);
 
 /**
  * @swagger
@@ -59,16 +73,19 @@ router.get('/links', authenticateToken, getAffiliateLinks);
  *         name: trackingCode
  *         schema:
  *           type: string
+ *           format: uuid
  *         required: true
  *         description: The tracking code of the affiliate link
  *     responses:
  *       302:
  *         description: Redirect to the original link
+ *       400:
+ *         description: Invalid tracking code format
  *       404:
  *         description: Affiliate Link Not Found
  *       500:
  *         description: Internal Server Error
  */
-router.get('/affiliate/:trackingCode', trackAffiliateClick);
+router.get('/affiliate/:trackingCode', trackAffiliateClickValidation, validate, trackAffiliateClick);
 
 export default router;

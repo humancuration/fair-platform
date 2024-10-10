@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
-import { exportAsStatic } from '../utils/staticExport'; // Import the export function
+import { exportAsStatic } from '../utils/staticExport'; // Ensure the export function is correctly imported
 
 interface AffiliateProgram {
   id: number;
@@ -25,6 +25,7 @@ const AffiliateLinksPage: React.FC = () => {
   const [originalLink, setOriginalLink] = useState('');
   const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
   const [customAlias, setCustomAlias] = useState('');
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const fetchAffiliateLinks = async () => {
     try {
@@ -62,8 +63,14 @@ const AffiliateLinksPage: React.FC = () => {
     }
   };
 
-  const handleStaticExport = () => {
-    exportAsStatic();
+  const handleStaticExport = async () => {
+    try {
+      await exportAsStatic(affiliateLinks); // Pass the current affiliate links to the export function
+      alert('Affiliate links exported successfully!');
+    } catch (error) {
+      console.error('Error exporting affiliate links:', error);
+      alert('Failed to export affiliate links.');
+    }
   };
 
   useEffect(() => {
@@ -128,12 +135,20 @@ const AffiliateLinksPage: React.FC = () => {
             <p>Clicks: {link.clicks}</p>
             <p>Conversions: {link.conversions}</p>
             <p>Commission Earned: ${(link.conversions * (link.affiliateProgram.commissionRate / 100)).toFixed(2)}</p>
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="mt-2 bg-green-500 text-white px-3 py-1 rounded"
+            >
+              Share with Group
+            </button>
           </div>
         ))}
       </div>
 
       // Add a new button for static export
-      <button onClick={handleStaticExport}>Export as Static</button>
+      <button onClick={handleStaticExport} className="mt-4 bg-gray-500 text-white px-4 py-2 rounded">
+        Export as Static
+      </button>
     </div>
   );
 };

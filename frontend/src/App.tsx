@@ -13,6 +13,9 @@ import { MusicPlayerProvider } from '@contexts/MusicPlayerContext';
 import { ErrorProvider } from '@contexts/ErrorContext';
 import MusicPlayerControls from '@components/MusicPlayerControls';
 import ErrorDisplay from '@components/ErrorDisplay';
+import PlaylistCreationPage from './pages/PlaylistCreationPage';
+import PlaylistListPage from './pages/PlaylistListPage';
+import PlaylistDetailsPage from './pages/PlaylistDetailsPage';
 
 // Lazy-loaded components
 const Home = lazy(() => import('@pages/Home'));
@@ -77,6 +80,9 @@ const App: React.FC = () => {
                     <Route path="/groups" element={<ProtectedRoute><GroupListPage /></ProtectedRoute>} />
                     <Route path="/groups/create" element={<ProtectedRoute><GroupCreationPage /></ProtectedRoute>} />
                     <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
+                    <Route path="/playlists" element={<PlaylistListPage />} />
+                    <Route path="/playlists/create" element={<PlaylistCreationPage />} />
+                    <Route path="/playlists/:playlistId" element={<PlaylistDetailsPage />} />
 
                     {/* Fallback route */}
                     <Route path="*" element={<Navigate to="/" replace />} />

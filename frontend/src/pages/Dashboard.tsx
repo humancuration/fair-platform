@@ -1,18 +1,20 @@
-// frontend/src/pages/Dashboard.tsx
-
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 import ThemeSwitcher from '../components/ThemeSwitcher';
-import AdminDashboard from './AdminDashboard';
-import EcoConsultantDashboard from './EcoConsultantDashboard';
-import AIDashboard from '../components/AIDashboard';
-import DataTransparencyDashboard from '../components/DataTransparencyDashboard';
-import UserSettings from '../components/UserSettings';
-import GPUMarketplace from '../components/GPUMarketplace';
+import ThemeCustomizer from '../components/ThemeCustomizer';
 
 const Dashboard: React.FC = () => {
+  const { currentTheme, customStyles } = useSelector((state: RootState) => state.theme);
+
+  const dashboardStyle = {
+    ...customStyles,
+    backgroundColor: currentTheme === 'dark' ? '#1a202c' : '#f7fafc',
+  };
+
   return (
-    <div className="flex">
+    <div className="flex" style={dashboardStyle}>
       {/* Sidebar */}
       <aside className="w-64 bg-gray-200 dark:bg-gray-800 p-4">
         <h2 className="text-xl font-bold mb-4">Dashboard</h2>
@@ -32,15 +34,15 @@ const Dashboard: React.FC = () => {
           <NavLink to="settings" className={({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}>
             Settings
           </NavLink>
-          {/* Add other dashboard links as needed */}
         </nav>
         <div className="mt-6">
           <ThemeSwitcher />
+          <ThemeCustomizer />
         </div>
       </aside>
 
       {/* Main content area */}
-      <main className="flex-1 p-6 bg-gray-100 dark:bg-gray-900">
+      <main className="flex-1 p-6">
         <Outlet />
       </main>
     </div>

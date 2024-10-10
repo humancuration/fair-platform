@@ -27,3 +27,31 @@ const themeSlice = createSlice({
 
 export const { toggleDarkMode } = themeSlice.actions;
 export default themeSlice.reducer;
+
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface ThemeState {
+  currentTheme: string;
+  customStyles: Record<string, string>;
+}
+
+const initialState: ThemeState = {
+  currentTheme: 'default',
+  customStyles: {},
+};
+
+const themeSlice = createSlice({
+  name: 'theme',
+  initialState,
+  reducers: {
+    setTheme: (state, action: PayloadAction<string>) => {
+      state.currentTheme = action.payload;
+    },
+    setCustomStyle: (state, action: PayloadAction<{ key: string; value: string }>) => {
+      state.customStyles[action.payload.key] = action.payload.value;
+    },
+  },
+});
+
+export const { setTheme, setCustomStyle } = themeSlice.actions;
+export default themeSlice.reducer;

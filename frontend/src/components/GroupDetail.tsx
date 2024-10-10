@@ -20,6 +20,9 @@ interface Group {
   delegates: { username: string }[];
   events: any[];
 }
+const EventList: React.FC = () => <div>Event List Placeholder</div>;
+const CreateEvent: React.FC = () => <div>Create Event Placeholder</div>;
+const ManageMembers: React.FC = () => <div>Manage Members Placeholder</div>;
 
 const GroupDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

@@ -8,6 +8,8 @@ import analyticsRoutes from './routes/analyticsRoutes';
 import userRoutes from './routes/userRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import dataRetentionTask from './tasks/dataRetentionTask';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 const app = express();
 const uWS = App();
@@ -17,6 +19,15 @@ app.use('/api/surveys', surveyRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/user', userRoutes);
+
+// Apply rate limiting to all requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+
+app.use(limiter);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -52,5 +63,7 @@ uWS.any('/*', (res, req) => {
 
 // Start data retention task
 dataRetentionTask();
+
+app.use(helmet());
 
 export { uWS as server };

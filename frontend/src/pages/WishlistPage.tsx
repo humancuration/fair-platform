@@ -9,6 +9,7 @@ import { RootState } from '../store/store';
 import Modal from '../components/common/Modal';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CollaborativeWishlist from '../components/CollaborativeWishlist'; // Import Collaborative Wishlist
 
 interface WishlistItemType {
   id: string;
@@ -67,33 +68,11 @@ const WishlistPage: React.FC = () => {
   return (
     <Layout>
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">My Wishlist</h1>
-        <Button onClick={() => setIsModalOpen(true)}>Add Item</Button>
-        {loading ? (
-          <LoadingSpinner />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {wishlist.map((item) => (
-              <WishlistItem
-                key={item.id}
-                item={item}
-                onTogglePublic={() => togglePublic(item.id, !item.isPublic)}
-              />
-            ))}
-          </div>
-        )}
+        <h1 className="text-3xl font-bold mb-8">Your Wishlist</h1>
+        
+        {{ /* Replace existing Wishlist with Collaborative Wishlist */ }}
+        <CollaborativeWishlist />
       </div>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add New Wishlist Item"
-      >
-        <AddWishlistItemModal
-          onAdd={handleAddItem}
-          onClose={() => setIsModalOpen(false)}
-        />
-      </Modal>
     </Layout>
   );
 };

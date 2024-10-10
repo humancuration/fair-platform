@@ -1,46 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 import './PollWidget.css';
 
-const PollWidget = ({ question, options }) => {
-  const [votes, setVotes] = useState({});
-  const [voted, setVoted] = useState(false);
+const PollWidget = () => {
+  const [pollData, setPollData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const initialVotes = options.reduce((acc, option) => {
-      acc[option] = Math.floor(Math.random() * 10); // Random initial votes
-      return acc;
-    }, {});
-    setVotes(initialVotes);
-  }, [options]);
+    const fetchPollData = async () => {
+      try {
+        const response = await api.get('/polls/current');
+        setPollData(response.data);
+      } catch (err) {
+        console.error('Error fetching poll data:', err);
+        setError('Failed to load poll data.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleVote = (option) => {
-    if (!voted) {
-      setVotes(prev => ({ ...prev, [option]: prev[option] + 1 }));
-      setVoted(true);
-    }
-  };
+    fetchPollData();
+  }, []);
 
-  const totalVotes = Object.values(votes).reduce((sum, count) => sum + count, 0);
+  if (loading) return <div className="poll-widget">Loading poll...</div>;
+  if (error) return <div className="poll-widget error">{error}</div>;
 
   return (
     <div className="poll-widget">
-      <h3>{question}</h3>
-      {options.map(option => {
-        const percent = totalVotes ? ((votes[option] / totalVotes) * 100).toFixed(1) : 0;
-        return (
-          <button 
-            key={option}
-            onClick={() => handleVote(option)} 
-            disabled={voted}
-            className="poll-option"
-          >
-            <span className="option-text">{option}</span>
-            <div className="progress-bar" style={{ width: `${percent}%` }}></div>
-            <span className="percent">{percent}%</span>
-          </button>
-        );
-      })}
-      <p className="total-votes">Total votes: {totalVotes}</p>
+      <h2>{pollData.question}</h2>
+      <ul>
+        {pollData.options.map((option) => (
+          <li key={option.id}>
+            <button>{option.text}</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

@@ -1,8 +1,10 @@
 // controllers/affiliateController.ts
 
 import { Request, Response } from 'express';
+import { Request as ExpressRequest } from 'express';
 import AffiliateLink from '../models/AffiliateLink';
 import { generateTrackingCode, generateAffiliateLink } from '../utils/generateAffiliateLink';
+import logger from '../utils/logger'; // Import the centralized logger
 
 export const createAffiliateLink = async (req: Request, res: Response) => {
   const { affiliateProgramId, originalLink, customAlias } = req.body;
@@ -22,9 +24,10 @@ export const createAffiliateLink = async (req: Request, res: Response) => {
       generatedLink,
     });
 
+    logger.info(`Affiliate link created for user ${creatorId}`);
     res.status(201).json(newAffiliateLink);
   } catch (error) {
-    console.error('Error creating affiliate link:', error);
+    logger.error('Error creating affiliate link:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
@@ -66,3 +69,5 @@ export const trackAffiliateClick = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+// Repeat similar logger integrations for other controller methods

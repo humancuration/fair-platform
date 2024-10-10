@@ -6,11 +6,13 @@ import Button from '../components/common/Button';
 import LoadingSpinner from '../components/LoadingSpinner';
 import api from '../utils/api';
 import { handleError } from '../utils/errorHandler';
+import ShareWithGroupModal from '../components/ShareWithGroupModal'; // Import the Share Modal
 
 const ProductDetailsPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -49,6 +51,19 @@ const ProductDetailsPage: React.FC = () => {
         ) : (
           <p className="text-center text-xl">Product not found</p>
         )}
+        <button
+          onClick={() => setIsShareModalOpen(true)}
+          className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Share with Group
+        </button>
+
+        {{ /* Share with Group Modal */ }}
+        <ShareWithGroupModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          productId={/* pass the current product ID */}
+        />
       </div>
     </Layout>
   );

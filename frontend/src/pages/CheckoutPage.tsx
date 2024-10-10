@@ -1,6 +1,7 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import CheckoutForm from '../components/CheckoutForm';
+import CheckoutOrderSummary from '../components/CheckoutOrderSummary'; // Import the Order Summary component
 
 const CheckoutPage: React.FC = () => {
   return (
@@ -11,9 +12,7 @@ const CheckoutPage: React.FC = () => {
         {/* TODO: Implement order summary component */}
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
-          <p className="text-gray-600 dark:text-gray-300">
-            Placeholder for order summary component
-          </p>
+          <CheckoutOrderSummary />
         </div>
       </div>
     </Layout>

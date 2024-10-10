@@ -10,6 +10,7 @@ import publicWishlistReducer from './slices/publicWishlistSlice';
 import communityWishlistReducer from './slices/communityWishlistSlice';
 import testimonialsReducer from './slices/testimonialsSlice';
 import groupsReducer from './slices/groupsSlice';
+import playlistsReducer from './slices/playlistsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     communityWishlist: communityWishlistReducer,
     testimonials: testimonialsReducer,
     groups: groupsReducer,
+    playlists: playlistsReducer,
   },
 });
 
