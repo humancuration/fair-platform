@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { exportAsStatic } from '../utils/staticExport'; // Import the export function
 
 interface AffiliateProgram {
   id: number;
@@ -59,6 +60,10 @@ const AffiliateLinksPage: React.FC = () => {
     } catch (error) {
       console.error('Error creating affiliate link', error);
     }
+  };
+
+  const handleStaticExport = () => {
+    exportAsStatic();
   };
 
   useEffect(() => {
@@ -126,6 +131,9 @@ const AffiliateLinksPage: React.FC = () => {
           </div>
         ))}
       </div>
+
+      // Add a new button for static export
+      <button onClick={handleStaticExport}>Export as Static</button>
     </div>
   );
 };
