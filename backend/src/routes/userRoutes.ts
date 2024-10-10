@@ -1,26 +1,12 @@
-import { Router } from 'express';
-import { register, login } from '../controllers/userController';
-import { body } from 'express-validator';
+import express from 'express';
+import UserController from '../controllers/UserController';
+import { authenticateJWT } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-router.post(
-  '/register',
-  [
-    body('email').isEmail(),
-    body('password').isLength({ min: 6 }),
-    body('role').isIn(['creator', 'brand']),
-  ],
-  register
-);
-
-router.post(
-  '/login',
-  [
-    body('email').isEmail(),
-    body('password').exists(),
-  ],
-  login
-);
+router.get('/data', authenticateJWT, UserController.getUserData);
+router.delete('/data/:dataType', authenticateJWT, UserController.deleteUserData);
+router.get('/settings', authenticateJWT, UserController.getSettings);
+router.patch('/settings', authenticateJWT, UserController.updateSettings);
 
 export default router;

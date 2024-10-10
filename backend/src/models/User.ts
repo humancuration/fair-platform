@@ -1,22 +1,36 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { IWishlistItem } from './WishlistItem';
 
-export interface IUser extends Document {
-  username: string;
+export interface UserSettings {
+  allowSearchAnalytics: boolean;
+  allowBehavioralTracking: boolean;
+  dataRetentionPeriod: number;
+  anonymizeData: boolean;
+}
+
+export interface UserDocument extends Document {
   email: string;
   password: string;
-  wishlist: mongoose.Types.ObjectId[] | IWishlistItem[];
-  fediverseProfile?: string;
-  // ... other fields
+  role: string;
+  settings: UserSettings;
+  getPublicProfile: () => any;
 }
 
 const UserSchema: Schema = new Schema({
-  username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  wishlist: [{ type: Schema.Types.ObjectId, ref: 'WishlistItem' }],
-  fediverseProfile: { type: String, default: '' },
-  // ... other fields
+  role: { type: String, required: true },
+  settings: {
+    allowSearchAnalytics: { type: Boolean, default: false },
+    allowBehavioralTracking: { type: Boolean, default: false },
+    dataRetentionPeriod: { type: Number, default: 365 },
+    anonymizeData: { type: Boolean, default: false }
+  }
 });
 
-export default mongoose.model<IUser>('User', UserSchema);
+UserSchema.methods.getPublicProfile = function() {
+  const userObject = this.toObject();
+  delete userObject.password;
+  return userObject;
+};
+
+export default mongoose.model<UserDocument>('User', UserSchema);

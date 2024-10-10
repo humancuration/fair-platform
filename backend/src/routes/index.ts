@@ -16,6 +16,15 @@ import uploadRoutes from './uploadRoutes'; // Import upload routes
 import testimonialRoutes from './testimonialRoutes';
 import wishlistRoutes from './wishlistRoutes';
 import communityWishlistRoutes from './communityWishlistRoutes';
+import express from 'express';
+import campaignRoutes from './campaignRoutes';
+import groupRoutes from './groupRoutes';
+import eventRoutes from './eventRoutes';
+import n8nRoutes from './n8nRoutes';
+import mauticRoutes from './mauticRoutes';
+import gitRoutes from './gitRoutes';
+
+const router = express.Router();
 
 // Import other routes
 
@@ -38,7 +47,12 @@ router.use('/upload', uploadRoutes); // Use upload routes
 router.use('/testimonials', testimonialRoutes);
 router.use('/wishlist', wishlistRoutes);
 router.use('/community-wishlist', communityWishlistRoutes);
-
+router.use('/campaigns', campaignRoutes);
+router.use('/groups', groupRoutes);
+router.use('/events', eventRoutes);
+router.use('/n8n', n8nRoutes);
+router.use('/mautic', mauticRoutes);
+router.use('/git', gitRoutes);
 // Use other routes
 
 export default router;

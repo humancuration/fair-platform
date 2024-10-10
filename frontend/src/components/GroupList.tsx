@@ -1,46 +1,49 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchGroups, searchGroups } from '../store/slices/groupsSlice';
-import { RootState } from '../store/store';
+import api from '../services/api';
+import GroupCard from './GroupCard';
 
-const GroupList = () => {
-  const dispatch = useDispatch();
-  const { groups, status, error } = useSelector((state: RootState) => state.groups);
-  const [searchTerm, setSearchTerm] = useState('');
+interface Group {
+  _id: string;
+  name: string;
+  description: string;
+  groupType: {
+    name: string;
+    description: string;
+  };
+  categoryBadge: string;
+  profilePicture: string;
+  members: { username: string }[];
+  delegates: { username: string }[];
+}
+
+const GroupList: React.FC = () => {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchGroups());
-    }
-  }, [status, dispatch]);
+    const fetchGroups = async () => {
+      try {
+        const response = await api.get('/groups');
+        setGroups(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+        setLoading(false);
+      }
+    };
 
-  const handleSearch = () => {
-    dispatch(searchGroups({ query: searchTerm }));
-  };
+    fetchGroups();
+  }, []);
 
-  if (status === 'loading') return <div>Loading...</div>;
-  if (status === 'failed') return <div>{error}</div>;
+  if (loading) {
+    return <p>Loading groups...</p>;
+  }
 
   return (
-    <div>
-      <input
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Search groups"
-      />
-      <button onClick={handleSearch}>Search</button>
-      <ul>
-        {groups.map((group) => (
-          <li key={group.id}>
-            <h3>{group.name}</h3>
-            <p>{group.type}</p>
-            <p>{group.description}</p>
-            {group.motto && <p>Motto: {group.motto}</p>}
-            {group.location && <p>Location: {group.location}</p>}
-            {group.tags && <p>Tags: {group.tags.join(', ')}</p>}
-          </li>
-        ))}
-      </ul>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {groups.map((group) => (
+        <GroupCard key={group._id} group={group} />
+      ))}
     </div>
   );
 };

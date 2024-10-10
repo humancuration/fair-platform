@@ -1,43 +1,61 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { createGroup } from '../store/slices/groupsSlice';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
-const CreateGroup = () => {
-  const dispatch = useDispatch();
-  const [name, setName] = useState('');
-  const [type, setType] = useState('');
-  const [description, setDescription] = useState('');
-  const [motto, setMotto] = useState('');
-  const [vision, setVision] = useState('');
-  const [location, setLocation] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+interface GroupType {
+  _id: string;
+  name: string;
+  description: string;
+  levelOfFormality: 'Informal' | 'Formal';
+  scope: 'Local' | 'Regional' | 'Global';
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
+const CreateGroup: React.FC = () => {
+  const navigate = useNavigate();
+  const [groupTypes, setGroupTypes] = useState<GroupType[]>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    groupTypeId: '',
+    categoryBadge: '',
+    profilePicture: '',
+  });
+
+  useEffect(() => {
+    const fetchGroupTypes = async () => {
+      try {
+        const response = await api.get('/group-types');
+        setGroupTypes(response.data);
+      } catch (error) {
+        console.error('Error fetching group types:', error);
+      }
+    };
+
+    fetchGroupTypes();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(createGroup({ name, type, description, motto, vision, location, tags }));
+    try {
+      const response = await api.post('/groups', formData);
+      navigate(`/groups/${response.data._id}`);
+    } catch (error) {
+      console.error('Error creating group:', error);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {/* Existing fields */}
-      <input
-        value={motto}
-        onChange={(e) => setMotto(e.target.value)}
-        placeholder="Group Motto"
-      />
-      <textarea
-        value={vision}
-        onChange={(e) => setVision(e.target.value)}
-        placeholder="Group Vision"
-      ></textarea>
-      <input
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-        placeholder="Group Location"
-      />
-      {/* Add a component for handling tags input */}
-      <button type="submit">Create Group</button>
-    </form>
+    <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow-md">
+      <h1 className="text-2xl font-semibold mb-4">Create New Group</h1>
+      <form onSubmit={handleSubmit}>
+        {/* Form fields */}
+        {/* ... (rest of the form code) ... */}
+      </form>
+    </div>
   );
 };
 

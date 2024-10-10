@@ -1,18 +1,15 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
-import Header from './layout/Header';
-import Footer from './layout/Footer';
-import ErrorDisplay from './ErrorDisplay';
+import GlobalSearch from './GlobalSearch';
 
-const Layout: React.FC = () => {
+const Layout: React.FC = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow container mx-auto p-4">
-        <ErrorDisplay />
-        <Outlet />
-      </main>
-      <Footer />
+    <div className="app-layout">
+      <header>
+        <nav>{/* Your navigation items */}</nav>
+        <GlobalSearch />
+      </header>
+      <main>{children}</main>
+      <footer>{/* Your footer content */}</footer>
     </div>
   );
 };
