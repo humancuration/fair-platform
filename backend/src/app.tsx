@@ -7,8 +7,8 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import wishlistRoutes from './routes/wishlistRoutes';
 import testimonialRoutes from './routes/testimonialRoutes';
 import { sequelize } from './models';
-import Wishlist from '@models/Wishlist';
-import CommunityWishlist from '@models/CommunityWishlist';
+import Wishlist from './models/Wishlist';
+import CommunityWishlist from './models/CommunityWishlist';
 
 
 dotenv.config();

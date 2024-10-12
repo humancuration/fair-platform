@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { UserDocument } from '../models/User';
+import User from '../models/User'; // Use User instead of UserDocument
 
 interface AuthRequest extends Request {
-  user?: UserDocument;
+  user?: User; // Update this to use User
 }
 
 export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -15,9 +15,9 @@ export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunct
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
-    req.user = decoded as any;
+    req.user = decoded as any; // You might want to fetch the user from the database here
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Token is not valid' });
+    return res.status(401).json({ message: 'Token is not valid' });
   }
 };

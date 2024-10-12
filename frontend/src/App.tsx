@@ -85,7 +85,7 @@ const App: React.FC = () => {
                     <Route path="/playlists" element={<PlaylistListPage />} />
                     <Route path="/playlists/create" element={<PlaylistCreationPage />} />
                     <Route path="/playlists/:playlistId" element={<PlaylistDetailsPage />} />
-
+                    <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
                     {/* Fallback route */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
