@@ -11,11 +11,12 @@ import { addReward, getRewardsByCampaign } from '../controllers/rewardController
 import auth from '../middleware/auth';
 import bodyParser from 'body-parser';
 import Stripe from 'stripe';
+import { authenticate } from '../middleware/auth';
 
 const router = express.Router();
 
 // Campaign CRUD Routes
-router.post('/', auth, createCampaign);
+router.post('/', authenticate, createCampaign);
 router.get('/', getCampaigns);
 router.get('/:id', getCampaignById);
 router.put('/:id', auth, updateCampaign);
@@ -34,5 +35,6 @@ router.post(
   bodyParser.raw({ type: 'application/json' }), // Stripe requires raw body
   handleStripeWebhook
 );
-
+router.put('/:id', authenticate, updateCampaign);
+router.delete('/:id', authenticate, deleteCampaign);
 export default router;

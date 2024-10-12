@@ -1,23 +1,61 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import User from './User';
 
-export interface ICommunityWishlistItem extends Document {
-  user: mongoose.Types.ObjectId;
-  name: string;
-  description: string;
-  image: string;
-  targetAmount: number;
-  currentAmount: number;
-  date: Date;
+class CommunityWishlistItem extends Model {
+  public id!: number;
+  public userId!: number;
+  public name!: string;
+  public description?: string;
+  public image?: string;
+  public price!: number;
+  public contributors!: number[];
+  public totalContributions!: number;
+
 }
 
-const CommunityWishlistItemSchema: Schema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  image: { type: String, default: '' },
-  targetAmount: { type: Number, required: true },
-  currentAmount: { type: Number, default: 0 },
-  date: { type: Date, default: Date.now },
-});
+CommunityWishlistItem.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+    },
+    image: {
+      type: DataTypes.STRING,
+    },
+    price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    contributors: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
+    totalContributions: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+  },
+  {
+    sequelize,
+    tableName: 'community_wishlist_items',
+  }
+);
 
-export default mongoose.model<ICommunityWishlistItem>('CommunityWishlistItem', CommunityWishlistItemSchema);
+// Correct association definition
+CommunityWishlistItem.belongsTo(User, { foreignKey: 'userId' });
+
+export default CommunityWishlistItem;
+

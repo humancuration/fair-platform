@@ -1,23 +1,70 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import Campaign from './Campaign';
+import User from './User';
 
-export interface ContributionDocument extends Document {
-  campaign: mongoose.Types.ObjectId;
-  contributor: mongoose.Types.ObjectId;
-  amount: number;
-  reward?: string;
-  paymentIntentId: string;
-  createdAt: Date;
+class Contribution extends Model {
+  public id!: number;
+  public campaignId!: number;
+  public contributorId!: number;
+  public amount!: number;
+  public reward?: string;
+  public paymentIntentId!: string;
+  public createdAt!: Date;
+
+  // Associations
+  public readonly campaign?: Campaign;
+  public readonly contributor?: User;
 }
 
-const ContributionSchema: Schema = new Schema(
+Contribution.init(
   {
-    campaign: { type: Schema.Types.ObjectId, ref: 'Campaign', required: true },
-    contributor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    amount: { type: Number, required: true },
-    reward: { type: String },
-    paymentIntentId: { type: String, required: true },
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    campaignId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Campaigns',
+        key: 'id',
+      },
+    },
+    contributorId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
+    amount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    reward: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    paymentIntentId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
-  { timestamps: true }
+  {
+    sequelize,
+    tableName: 'contributions',
+    timestamps: false,
+  }
 );
 
-export default mongoose.model<ContributionDocument>('Contribution', ContributionSchema);
+Contribution.belongsTo(Campaign, { foreignKey: 'campaignId' });
+Contribution.belongsTo(User, { foreignKey: 'contributorId' });
+
+export default Contribution;

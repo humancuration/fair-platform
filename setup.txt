@@ -3,71 +3,71 @@
 ## Frontend Setup (React.js with TypeScript)
 
 1. **Initialize the Project:**
-   ```bash
-   npx create-react-app frontend --template typescript
-   cd frontend
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½npx create-react-app frontend --template typescript
+ï¿½ ï¿½cd frontend
+ï¿½ ï¿½```
 
 2. **Install Necessary Dependencies:**
-   ```bash
-   npm install axios react-router-dom @reduxjs/toolkit react-redux
-   npm install -D tailwindcss postcss autoprefixer
-   npx tailwindcss init -p
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½npm install axios react-router-dom @reduxjs/toolkit react-redux
+ï¿½ ï¿½npm install -D tailwindcss postcss autoprefixer
+ï¿½ ï¿½npx tailwindcss init -p
+ï¿½ ï¿½```
 
 3. **Configure Tailwind CSS:**
-   - Update `tailwind.config.js`:
-   ```javascript
-   module.exports = {
-     purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-     darkMode: 'class', // Enable dark mode
-     theme: {
-       extend: {},
-     },
-     variants: {
-       extend: {},
-     },
-     plugins: [],
-   };
-   ```
+ï¿½ ï¿½- Update `tailwind.config.js`:
+ï¿½ ï¿½```javascript
+ï¿½ ï¿½module.exports = {
+ï¿½ ï¿½ ï¿½purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+ï¿½ ï¿½ ï¿½darkMode: 'class', // Enable dark mode
+ï¿½ ï¿½ ï¿½theme: {
+ï¿½ ï¿½ ï¿½ ï¿½extend: {},
+ï¿½ ï¿½ ï¿½},
+ï¿½ ï¿½ ï¿½variants: {
+ï¿½ ï¿½ ï¿½ ï¿½extend: {},
+ï¿½ ï¿½ ï¿½},
+ï¿½ ï¿½ ï¿½plugins: [],
+ï¿½ ï¿½};
+ï¿½ ï¿½```
 
-   - Update `src/index.css`:
-   ```css
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   ```
+ï¿½ ï¿½- Update `src/index.css`:
+ï¿½ ï¿½```css
+ï¿½ ï¿½@tailwind base;
+ï¿½ ï¿½@tailwind components;
+ï¿½ ï¿½@tailwind utilities;
+ï¿½ ï¿½```
 
 4. **Set Up Routing:**
-   - Update `src/App.tsx` to include your routes.
+ï¿½ ï¿½- Update `src/App.tsx` to include your routes.
 
 ## Backend Setup (Node.js with Express.js)
 
 1. **Initialize the Project:**
-   ```bash
-   mkdir backend
-   cd backend
-   npm init -y
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½mkdir backend
+ï¿½ ï¿½cd backend
+ï¿½ ï¿½npm init -y
+ï¿½ ï¿½```
 
 2. **Install Necessary Dependencies:**
-   ```bash
-   npm install express cors dotenv mongoose pg sequelize
-   npm install -D typescript ts-node @types/express @types/node nodemon
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½npm install express cors dotenv pg sequelize
+ï¿½ ï¿½npm install -D typescript ts-node @types/express @types/node nodemon
+ï¿½ ï¿½```
 
 3. **Configure TypeScript:**
-   ```bash
-   npx tsc --init
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½npx tsc --init
+ï¿½ ï¿½```
 
 4. **Set Up Basic Server:**
-   - Create `src/index.ts` and set up your Express server.
+ï¿½ ï¿½- Create `src/index.ts` and set up your Express server.
 
 5. **Run the Server:**
-   ```bash
-   npm run dev
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½npm run dev
+ï¿½ ï¿½```
 
 ## Additional Steps
 
@@ -77,18 +77,18 @@
 ## Running the Application
 
 1. **Start the Backend:**
-   ```bash
-   cd backend
-   npm run dev
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½cd backend
+ï¿½ ï¿½npm run dev
+ï¿½ ï¿½```
 
 2. **Start the Frontend:**
-   ```bash
-   cd frontend
-   npm start
-   ```
+ï¿½ ï¿½```bash
+ï¿½ ï¿½cd frontend
+ï¿½ ï¿½npm start
+ï¿½ ï¿½```
 
 3. **Access the Application:**
-   - Frontend: [http://localhost:3000](http://localhost:3000)
-   - Backend: [http://localhost:5000](http://localhost:5000)
+ï¿½ ï¿½- Frontend: [http://localhost:3000](http://localhost:3000)
+ï¿½ ï¿½- Backend: [http://localhost:5000](http://localhost:5000)
 

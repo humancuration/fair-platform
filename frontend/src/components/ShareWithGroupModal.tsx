@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Modal from './common/Modal';
-import api from '../services/api';
+import Modal from '@/components/common/Modal';
+import api from '@/services/api';
 import { toast } from 'react-toastify';
 
 interface ShareWithGroupModalProps {

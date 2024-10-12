@@ -1,7 +1,6 @@
 import express from 'express';
 import { App } from 'uWebSockets.js';
 import SurveyController from './controllers/SurveyController';
-import mongoose from 'mongoose';
 import surveyRoutes from './routes/surveyRoutes';
 import searchRoutes from './routes/searchRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
@@ -10,6 +9,7 @@ import { errorHandler } from './middleware/errorHandler';
 import dataRetentionTask from './tasks/dataRetentionTask';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import { sequelize } from './config/database'; // Sequelize instance
 
 const app = express();
 const uWS = App();
@@ -32,14 +32,13 @@ app.use(limiter);
 // Error handling middleware
 app.use(errorHandler);
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/fairplatform', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch((err) => console.error('MongoDB connection error:', err));
+// Connect to the SQL database (replace MongoDB connection)
+sequelize.authenticate()
+  .then(() => {
+    console.log('Connected to SQL database');
+    return sequelize.sync();  // Synchronize models
+  })
+  .catch((err) => console.error('SQL connection error:', err));
 
 // Set up uWebSockets.js
 uWS.ws('/surveys/:surveyId', {

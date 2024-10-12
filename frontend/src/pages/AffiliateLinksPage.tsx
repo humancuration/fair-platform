@@ -1,8 +1,8 @@
 // frontend/src/pages/AffiliateLinksPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
-import { exportAsStatic } from '../utils/staticExport'; // Ensure the export function is correctly imported
+import api from '@/services/api';
+import { exportAsStatic } from '@/utils/staticExport'; // Ensure the export function is correctly imported
 
 interface AffiliateProgram {
   id: number;
@@ -145,7 +145,7 @@ const AffiliateLinksPage: React.FC = () => {
         ))}
       </div>
 
-      // Add a new button for static export
+      {/* Add a new button for static export */}
       <button onClick={handleStaticExport} className="mt-4 bg-gray-500 text-white px-4 py-2 rounded">
         Export as Static
       </button>

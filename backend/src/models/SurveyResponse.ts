@@ -1,22 +1,60 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import Survey from './Survey';
+import User from './User';
 
-export interface ISurveyResponse extends Document {
-  survey: mongoose.Types.ObjectId;
-  respondent: mongoose.Types.ObjectId;
-  answers: Array<{
-    question: mongoose.Types.ObjectId;
-    answer: string | string[];
-  }>;
-  createdAt: Date;
+class SurveyResponse extends Model {
+  public id!: number;
+  public surveyId!: number;
+  public respondentId!: number;
+  public answers!: any; // Adjust the type as needed
+  public createdAt!: Date;
+
+  // Associations
+  public readonly survey?: Survey;
+  public readonly respondent?: User;
 }
 
-const SurveyResponseSchema: Schema = new Schema({
-  survey: { type: Schema.Types.ObjectId, ref: 'Survey', required: true },
-  respondent: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  answers: [{
-    question: { type: Schema.Types.ObjectId, required: true },
-    answer: { type: Schema.Types.Mixed, required: true }
-  }]
-}, { timestamps: true });
+SurveyResponse.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    surveyId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Surveys',
+        key: 'id',
+      },
+    },
+    respondentId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
+    answers: {
+      type: DataTypes.JSON,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    tableName: 'survey_responses',
+    timestamps: false,
+  }
+);
 
-export default mongoose.model<ISurveyResponse>('SurveyResponse', SurveyResponseSchema);
+SurveyResponse.belongsTo(Survey, { foreignKey: 'surveyId' });
+SurveyResponse.belongsTo(User, { foreignKey: 'respondentId' });
+
+export default SurveyResponse;

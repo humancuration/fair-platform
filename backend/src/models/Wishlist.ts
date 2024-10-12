@@ -1,10 +1,19 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
+import { sequelize } from '@config/database';
 
 class Wishlist extends Model {
   public id!: number;
+  public userId!: number;
   public name!: string;
-  // ... other fields
+  public description?: string;
+  public isPublic!: boolean;
+  public items!: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    image?: string;
+    price?: number;
+  }>;
 }
 
 Wishlist.init(
@@ -14,11 +23,25 @@ Wishlist.init(
       autoIncrement: true,
       primaryKey: true,
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    // ... other fields
+    description: {
+      type: DataTypes.TEXT,
+    },
+    isPublic: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    items: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
   },
   {
     sequelize,

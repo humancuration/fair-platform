@@ -1,46 +1,74 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import User from './User';
+import Reward from './Reward';
+import Contribution from './Contribution';
 
-export interface Reward {
-  title: string;
-  description: string;
-  amount: number;
+class Campaign extends Model {
+  public id!: number;
+  public title!: string;
+  public description!: string;
+  public goalAmount!: number;
+  public currentAmount!: number;
+  public creatorId!: number;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+
+  // Associations
+  public readonly creator?: User;
+  public readonly rewards?: Reward[];
+  public readonly contributions?: Contribution[];
 }
 
-export interface CampaignDocument extends Document {
-  title: string;
-  description: string;
-  goal: number;
-  amountRaised: number;
-  deadline: Date;
-  creator: mongoose.Types.ObjectId;
-  rewards: Reward[];
-  category: string;
-  image: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const RewardSchema: Schema = new Schema({
-  title: { type: String, required: true },
-  description: { type: String },
-  amount: { type: Number, required: true },
-});
-
-const CampaignSchema: Schema = new Schema(
+Campaign.init(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
-    goal: { type: Number, required: true },
-    amountRaised: { type: Number, default: 0 },
-    deadline: { type: Date, required: true },
-    creator: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    rewards: [RewardSchema],
-    category: { type: String, required: true },
-    image: { type: String, default: '' },
-    isActive: { type: Boolean, default: true },
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    goalAmount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    currentAmount: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    creatorId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
-  { timestamps: true }
+  {
+    sequelize,
+    tableName: 'campaigns',
+    timestamps: true,
+  }
 );
 
-export default mongoose.model<CampaignDocument>('Campaign', CampaignSchema);
+Campaign.belongsTo(User, { foreignKey: 'creatorId' });
+Campaign.hasMany(Reward, { foreignKey: 'campaignId', as: 'rewards' });
+Campaign.hasMany(Contribution, { foreignKey: 'campaignId', as: 'contributions' });
+
+export default Campaign;

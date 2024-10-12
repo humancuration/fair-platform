@@ -30,4 +30,23 @@ export const fetchProducts = () => api.get('/marketplace/products');
 export const searchProducts = (params: any) => api.get('/marketplace/search', { params });
 export const fetchRecommendations = () => api.get('/marketplace/recommendations');
 
+export const createAffiliateLink = (data: any) => api.post('/affiliate-links', data);
+export const getAffiliateLinks = () => api.get('/affiliate-links');
+export const trackAffiliateClick = (trackingCode: string) => api.get(`/affiliate-links/track/${trackingCode}`);
+
+export const createAffiliateProgram = (data: any) => api.post('/affiliate-programs', data);
+export const getAffiliatePrograms = () => api.get('/affiliate-programs');
+
+export const createCampaign = (data: any) => api.post('/campaigns', data);
+export const getCampaigns = () => api.get('/campaigns');
+export const getCampaignById = (id: string) => api.get(`/campaigns/${id}`);
+export const updateCampaign = (id: string, data: any) => api.put(`/campaigns/${id}`, data);
+export const deleteCampaign = (id: string) => api.delete(`/campaigns/${id}`);
+
+export const trackEvent = (eventData: any) => api.post('/analytics/track', eventData);
+export const getAggregateData = (params: any) => api.get('/analytics/aggregate', { params });
+
+export const createAIEthicsCourse = (data: any) => api.post('/ai-ethics/courses', data);
+export const addReflectionActivity = (data: any) => api.post('/ai-ethics/activities', data);
+
 export default api;

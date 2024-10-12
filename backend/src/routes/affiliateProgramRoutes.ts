@@ -1,14 +1,12 @@
 // routes/affiliateProgramRoutes.ts
 
-import { Router } from 'express';
-import { createAffiliateProgram, getAffiliatePrograms } from '../controllers/affiliateProgramController';
-import { authenticateToken, authorizeRole } from '../middleware/auth';
+import express from 'express';
+import { createAffiliateProgram, getAffiliatePrograms } from '@controllers/affiliateProgramController';
+import { authenticateJWT } from '@middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-// Only brands can create affiliate programs
-router.post('/programs', authenticateToken, authorizeRole('brand'), createAffiliateProgram);
-router.get('/programs', authenticateToken, getAffiliatePrograms);
+router.post('/', authenticateJWT, createAffiliateProgram);
+router.get('/', getAffiliatePrograms);
 
 export default router;
- 

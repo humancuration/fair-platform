@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import mongoose from 'mongoose';
+import { connectDatabase } from './index';
 import routes from './routes';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -19,24 +19,15 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
-
 app.use('/api', routes);
 
-mongoose
-  .connect(process.env.MONGODB_URI!, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  } as mongoose.ConnectOptions)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    server.listen(process.env.PORT || 5000, () => {
-      console.log(`Server running on port ${process.env.PORT || 5000}`);
-    });
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
+connectDatabase().then(() => {
+  server.listen(process.env.PORT || 5000, () => {
+    console.log(`Server running on port ${process.env.PORT || 5000}`);
   });
+});
 
+// Socket.io setup
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 

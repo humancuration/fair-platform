@@ -1,17 +1,13 @@
 // routes/affiliateLinkRoutes.ts
 
-import { Router } from 'express';
-import {
-  createAffiliateLink,
-  getAffiliateLinks,
-  // Other controller functions
-} from '../controllers/affiliateLinkController';
-import { authenticateToken } from '../middleware/auth';
+import express from 'express';
+import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from '@controllers/affiliateController';
+import { authenticateJWT } from '@middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
-router.post('/', authenticateToken, createAffiliateLink);
-router.get('/', authenticateToken, getAffiliateLinks);
-// Add routes for updating, deleting
+router.post('/', authenticateJWT, createAffiliateLink);
+router.get('/', authenticateJWT, getAffiliateLinks);
+router.get('/track/:trackingCode', trackAffiliateClick);
 
 export default router;

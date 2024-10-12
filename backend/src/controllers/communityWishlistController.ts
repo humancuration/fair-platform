@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { CommunityWishlist } from '../models/CommunityWishlist';
-import { User } from '../models/User';
+import CommunityWishlist from '@models/CommunityWishlist';
+import User from '@models/User';
 
 export const getCommunityWishlist = async (req: Request, res: Response) => {
   try {

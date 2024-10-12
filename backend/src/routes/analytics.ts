@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
-import auth from '../middleware/auth';
-import Company from '../models/Company';
-import Product from '../models/Product';
+import authenticateJWT from '@middleware/auth';
+import Company from '@models/Company';
+import Product from '@models/Product';
 
 const router = Router();
 

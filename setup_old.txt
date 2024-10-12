@@ -22,7 +22,7 @@ npm init -y
 
 2. Install Necessary Dependencies:
 
-npm install express cors dotenv mongoose pg sequelize
+npm install express cors dotenv pg sequelize
 npm install -D typescript ts-node @types/express @types/node nodemon
 
 3. Configure TypeScript:
@@ -169,7 +169,7 @@ Install Necessary Dependencies:
 
 bash
 
-npm install express cors dotenv mongoose pg sequelize
+npm install express cors dotenv pg sequelize
 npm install -D typescript ts-node @types/express @types/node nodemon
 
 Configure TypeScript:
@@ -363,7 +363,7 @@ Install Necessary Dependencies:
 
 bash
 
-npm install express cors dotenv mongoose pg sequelize
+npm install express cors dotenv pg sequelize
 npm install -D typescript ts-node @types/express @types/node nodemon
 
 Configure TypeScript:

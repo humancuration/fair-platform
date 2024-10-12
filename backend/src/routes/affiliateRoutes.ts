@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from '../controllers/affiliateController';
-import { authenticateToken } from '../middleware/auth';
+import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from '@controllers/affiliateController';
+import { authenticateJWT } from '@middleware/auth';
 import { body, param, ValidationChain } from 'express-validator';
-import { validate } from '../middleware/validate';
+import { validate } from '@middleware/validate';
 
 const router = Router();
 
@@ -46,7 +46,7 @@ const trackAffiliateClickValidation: ValidationChain[] = [
  *       500:
  *         description: Internal Server Error
  */
-router.post('/links', authenticateToken, createAffiliateLinkValidation, validate, createAffiliateLink);
+router.post('/links', authenticateJWT, createAffiliateLinkValidation, validate, createAffiliateLink);
 
 /**
  * @swagger
@@ -61,7 +61,7 @@ router.post('/links', authenticateToken, createAffiliateLinkValidation, validate
  *       500:
  *         description: Internal Server Error
  */
-router.get('/links', authenticateToken, getAffiliateLinks);
+router.get('/links', authenticateJWT, getAffiliateLinks);
 
 /**
  * @swagger

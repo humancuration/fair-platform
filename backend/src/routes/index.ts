@@ -23,12 +23,22 @@ import eventRoutes from './eventRoutes';
 import n8nRoutes from './n8nRoutes';
 import mauticRoutes from './mauticRoutes';
 import gitRoutes from './gitRoutes';
+import authRoutes from './authRoutes';
+import aiEthicsRoutes from './aiEthicsRoutes';
 
 const router = express.Router();
 
 // Import other routes
+import * as campaignController from '../controllers/campaignController';
 
 const router = Router();
+
+// Campaign routes
+router.post('/campaigns', campaignController.createCampaign);
+router.get('/campaigns', campaignController.getAllCampaigns);
+router.get('/campaigns/:id', campaignController.getCampaignById);
+router.put('/campaigns/:id', campaignController.updateCampaign);
+router.delete('/campaigns/:id', campaignController.deleteCampaign);
 
 router.use('/users', userRoutes);
 router.use('/companies', companyRoutes);
@@ -53,6 +63,12 @@ router.use('/events', eventRoutes);
 router.use('/n8n', n8nRoutes);
 router.use('/mautic', mauticRoutes);
 router.use('/git', gitRoutes);
+router.use('/auth', authRoutes);
+router.use('/affiliate-links', affiliateLinkRoutes);
+router.use('/affiliate-programs', affiliateProgramRoutes);
+router.use('/campaigns', campaignRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/ai-ethics', aiEthicsRoutes);
 // Use other routes
 
 export default router;

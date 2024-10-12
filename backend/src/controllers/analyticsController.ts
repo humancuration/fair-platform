@@ -1,7 +1,5 @@
-// controllers/analyticsController.ts
-
 import { Request, Response } from 'express';
-import AnalyticsService from '../services/AnalyticsService';
+import AnalyticsService from '@services/AnalyticsService';
 
 class AnalyticsController {
   async trackEvent(req: Request, res: Response) {

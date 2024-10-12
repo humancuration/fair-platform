@@ -1,17 +1,44 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
 
-export interface GroupTypeDocument extends Document {
-  name: string;
-  description: string;
-  levelOfFormality: 'Informal' | 'Formal';
-  scope: 'Local' | 'Regional' | 'Global';
+class GroupType extends Model {
+  public id!: number;
+  public name!: string;
+  public description!: string;
+  public levelOfFormality!: 'Informal' | 'Formal';
+  public scope!: 'Local' | 'Regional' | 'Global';
 }
 
-const GroupTypeSchema: Schema = new Schema({
-  name: { type: String, required: true, unique: true },
-  description: { type: String, required: true },
-  levelOfFormality: { type: String, enum: ['Informal', 'Formal'], required: true },
-  scope: { type: String, enum: ['Local', 'Regional', 'Global'], required: true },
-});
+GroupType.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    levelOfFormality: {
+      type: DataTypes.ENUM('Informal', 'Formal'),
+      allowNull: false,
+    },
+    scope: {
+      type: DataTypes.ENUM('Local', 'Regional', 'Global'),
+      allowNull: false,
+    },
+  },
+  {
+    sequelize,
+    tableName: 'group_types',
+    timestamps: false,
+  }
+);
 
-export default mongoose.model<GroupTypeDocument>('GroupType', GroupTypeSchema);
+export default GroupType;

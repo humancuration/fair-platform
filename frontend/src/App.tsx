@@ -16,6 +16,7 @@ import ErrorDisplay from '@components/ErrorDisplay';
 import PlaylistCreationPage from './pages/PlaylistCreationPage';
 import PlaylistListPage from './pages/PlaylistListPage';
 import PlaylistDetailsPage from './pages/PlaylistDetailsPage';
+import CreateCampaignPage from './pages/CreateCampaignPage';
 
 // Lazy-loaded components
 const Home = lazy(() => import('@pages/Home'));
@@ -68,6 +69,7 @@ const App: React.FC = () => {
                       <Route path="settings" element={<UserSettings />} />
                     </Route>
                     <Route path="/minsite/:id?" element={<ProtectedRoute><MinsiteBuilder /></ProtectedRoute>} />
+                    <Route path="/campaigns/create" element={<CreateCampaignPage />} />
                     <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
                     <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
                     <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />

@@ -11,7 +11,10 @@
       "@services/*": ["services/*"],
       "@utils/*": ["utils/*"],
       "@contexts/*": ["contexts/*"],
-      "@config/*": ["config/*"]
+      "@config/*": ["config/*"],
+      "@hooks/*": ["hooks/*"],
+      "@constants/*": ["constants/*"],
+      "@api/*": ["api/*"]
     },
     "strict": true,
     "moduleResolution": "node",

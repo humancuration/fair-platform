@@ -1,10 +1,15 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
+import { sequelize } from '@config/database';
 
 class CommunityWishlist extends Model {
   public id!: number;
   public communityName!: string;
-  // ... other fields
+  public productId!: string;
+  public name!: string;
+  public image!: string;
+  public price!: number;
+  public highlighted!: boolean;
+  public date!: Date;
 }
 
 CommunityWishlist.init(
@@ -18,7 +23,30 @@ CommunityWishlist.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    // ... other fields
+    productId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    highlighted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    date: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     sequelize,

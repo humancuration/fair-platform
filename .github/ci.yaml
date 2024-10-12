@@ -49,6 +49,13 @@ jobs:
           BASE_URL: http://localhost:5000
         run: npm test
         working-directory: ./backend
+      - name: Lint Backend Code
+        run: npm run lint
+        working-directory: ./backend
+      // Add Code Coverage Step for Backend
+      - name: Run Backend Tests with Coverage
+        run: npm test -- --coverage
+        working-directory: ./backend
 
   frontend-tests:
     runs-on: ubuntu-latest
@@ -70,6 +77,13 @@ jobs:
         working-directory: ./frontend
       - name: Run Tests
         run: npm test
+        working-directory: ./frontend
+      - name: Lint Frontend Code
+        run: npm run lint
+        working-directory: ./frontend
+      // Add Code Coverage Step for Frontend
+      - name: Run Frontend Tests with Coverage
+        run: npm test -- --coverage
         working-directory: ./frontend
 
   docker-build-push:

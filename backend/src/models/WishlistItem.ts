@@ -1,21 +1,63 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import User from './User';
 
-export interface IWishlistItem extends Document {
-  user: mongoose.Types.ObjectId;
-  name: string;
-  description: string;
-  image: string;
-  isPublic: boolean;
-  createdAt: Date;
+class WishlistItem extends Model {
+  public id!: number;
+  public userId!: number;
+  public name!: string;
+  public description!: string;
+  public image!: string;
+  public isPublic!: boolean;
+  public createdAt!: Date;
+
+  // Associations
+  public readonly user?: User;
 }
 
-const WishlistItemSchema: Schema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  image: { type: String, default: '' },
-  isPublic: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-});
+WishlistItem.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    image: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    isPublic: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    tableName: 'wishlist_items',
+    timestamps: false,
+  }
+);
 
-export default mongoose.model<IWishlistItem>('WishlistItem', WishlistItemSchema);
+WishlistItem.belongsTo(User, { foreignKey: 'userId' });
+
+export default WishlistItem;

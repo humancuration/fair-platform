@@ -1,31 +1,77 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import { GroupTypeDocument } from './GroupType';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import GroupType from './GroupType';
+import User from './User';
+import Event from './Event';
 
-export interface GroupDocument extends Document {
-  name: string;
-  description: string;
-  groupType: GroupTypeDocument['_id'];
-  profilePicture: string;
-  categoryBadge: string;
-  members: mongoose.Types.ObjectId[];
-  delegates: mongoose.Types.ObjectId[];
-  events: mongoose.Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
+class Group extends Model {
+  public id!: number;
+  public name!: string;
+  public description!: string;
+  public groupTypeId!: number;
+  public profilePicture!: string;
+  public categoryBadge!: string;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+
+  // Associations
+  public readonly groupType?: GroupType;
+  public readonly members?: User[];
+  public readonly delegates?: User[];
+  public readonly events?: Event[];
 }
 
-const GroupSchema: Schema = new Schema(
+Group.init(
   {
-    name: { type: String, required: true, unique: true },
-    description: { type: String, required: true },
-    groupType: { type: Schema.Types.ObjectId, ref: 'GroupType', required: true },
-    profilePicture: { type: String, default: '' },
-    categoryBadge: { type: String, required: true },
-    members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    delegates: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-    events: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    groupTypeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'GroupTypes',
+        key: 'id',
+      },
+    },
+    profilePicture: {
+      type: DataTypes.STRING,
+      defaultValue: '',
+    },
+    categoryBadge: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
-  { timestamps: true }
+  {
+    sequelize,
+    tableName: 'groups',
+    timestamps: true,
+  }
 );
 
-export default mongoose.model<GroupDocument>('Group', GroupSchema);
+Group.belongsTo(GroupType, { foreignKey: 'groupTypeId' });
+Group.belongsToMany(User, { through: 'GroupMembers', as: 'members' });
+Group.belongsToMany(User, { through: 'GroupDelegates', as: 'delegates' });
+Group.hasMany(Event, { foreignKey: 'groupId' });
+
+export default Group;

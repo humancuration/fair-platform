@@ -1,20 +1,63 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
+import Campaign from './Campaign';
 
-export interface RewardDocument extends Document {
-  campaign: mongoose.Types.ObjectId;
-  title: string;
-  description: string;
-  amount: number;
+class Reward extends Model {
+  public id!: number;
+  public campaignId!: number;
+  public title!: string;
+  public description?: string;
+  public amount!: number;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+
+  // Associations
+  public readonly campaign?: Campaign;
 }
 
-const RewardSchema: Schema = new Schema(
+Reward.init(
   {
-    campaign: { type: Schema.Types.ObjectId, ref: 'Campaign', required: true },
-    title: { type: String, required: true },
-    description: { type: String },
-    amount: { type: Number, required: true },
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    campaignId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Campaigns',
+        key: 'id',
+      },
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    amount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
-  { timestamps: true }
+  {
+    sequelize,
+    tableName: 'rewards',
+    timestamps: true,
+  }
 );
 
-export default mongoose.model<RewardDocument>('Reward', RewardSchema);
+Reward.belongsTo(Campaign, { foreignKey: 'campaignId' });
+
+export default Reward;

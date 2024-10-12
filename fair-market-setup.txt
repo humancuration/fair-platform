@@ -5,16 +5,16 @@ Comprehensive Setup Guide for Your Platform
 1. Define the Project Scope and Requirements
 Before diving into the technical setup, ensure you have a clear understanding of the features and functionalities your Minimum Viable Product (MVP) will include.
 MVP Features:
-    • Directory:
+    ï¿½ Directory:
         ? Company listings with referral program details
         ? User reviews and ratings
         ? Basic ranking system based on generosity scores
-    • Marketplace:
+    ï¿½ Marketplace:
         ? User registration and profiles for creators and businesses
         ? Product listings
         ? Basic search and filter functionality
         ? Transaction handling (initially in fiat)
-    • Shared Features:
+    ï¿½ Shared Features:
         ? Fair fee structure
         ? Universal dividend and micro-grants integration
         ? Data privacy and security measures
@@ -22,22 +22,22 @@ MVP Features:
 2. Choose Your Technology Stack
 Selecting the right technologies is crucial for scalability and maintainability.
 Recommended Stack:
-    • Frontend:
+    ï¿½ Frontend:
         ? Framework: React.js with TypeScript
         ? Styling: Tailwind CSS or Material-UI
         ? State Management: Redux Toolkit or Context API
-    • Backend:
+    ï¿½ Backend:
         ? Runtime: Node.js
         ? Framework: Express.js
         ? Database: PostgreSQL with Sequelize ORM (for relational data) and MongoDB (for unstructured data)
-    • Authentication:
+    ï¿½ Authentication:
         ? Library: Passport.js or Auth0
         ? Tokens: JWT (JSON Web Tokens)
-    • Hosting and Deployment:
+    ï¿½ Hosting and Deployment:
         ? Platforms: AWS, Heroku, or Vercel
         ? Containerization: Docker
         ? CI/CD: GitHub Actions or GitLab CI
-    • Other Tools:
+    ï¿½ Other Tools:
         ? Version Control: Git with GitHub or GitLab
         ? API Documentation: Swagger or Postman
         ? Testing: Jest and React Testing Library (frontend), Jest or Mocha (backend)
@@ -46,17 +46,17 @@ Recommended Stack:
 a. Frontend Setup (React.js with TypeScript):
     1. Initialize the Project:
        bash
-    • npx create-react-app my-platform --template typescript
+    ï¿½ npx create-react-app my-platform --template typescript
 cd my-platform
-    • Install Necessary Dependencies:
+    ï¿½ Install Necessary Dependencies:
 bash
-    • npm install axios react-router-dom @reduxjs/toolkit react-redux
+    ï¿½ npm install axios react-router-dom @reduxjs/toolkit react-redux
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
-    • Configure Tailwind CSS:
-    • tailwind.config.js:
+    ï¿½ Configure Tailwind CSS:
+    ï¿½ tailwind.config.js:
       javascript
-    • module.exports = {
+    ï¿½ module.exports = {
   purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   darkMode: 'class', // Enable dark mode
   theme: {
@@ -67,13 +67,13 @@ npx tailwindcss init -p
   },
   plugins: [],
 };
-    • src/index.css:
+    ï¿½ src/index.css:
 css
-    • @tailwind base;
+    ï¿½ @tailwind base;
       @tailwind components;
       @tailwind utilities;
-    • Set Up Routing:
-    • src/App.tsx:
+    ï¿½ Set Up Routing:
+    ï¿½ src/App.tsx:
       tsx
         ? import React from 'react';
           import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
@@ -101,20 +101,20 @@ css
 b. Backend Setup (Node.js with Express.js):
     1. Initialize the Project:
        bash
-    • mkdir backend
+    ï¿½ mkdir backend
 cd backend
 npm init -y
-    • Install Necessary Dependencies:
+    ï¿½ Install Necessary Dependencies:
 bash
-    • npm install express cors dotenv mongoose pg sequelize bcryptjs jsonwebtoken
+    ï¿½ npm install express cors dotenv pg sequelize bcryptjs jsonwebtoken
 npm install -D typescript ts-node @types/express @types/node @types/bcryptjs @types/jsonwebtoken nodemon jest ts-jest @types/jest supertest @types/supertest
 npx tsc --init
-    • Configure TypeScript:
-    • Ensure tsconfig.json is set up correctly for your project needs.
-    • Set Up Basic Server:
-    • backend/src/index.ts:
+    ï¿½ Configure TypeScript:
+    ï¿½ Ensure tsconfig.json is set up correctly for your project needs.
+    ï¿½ Set Up Basic Server:
+    ï¿½ backend/src/index.ts:
       typescript
-    • import express from 'express';
+    ï¿½ import express from 'express';
       import cors from 'cors';
       import dotenv from 'dotenv';
       
@@ -133,15 +133,15 @@ npx tsc --init
       app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
       });
-    • Add Scripts to package.json:
+    ï¿½ Add Scripts to package.json:
 json
-    • "scripts": {
+    ï¿½ "scripts": {
   "start": "node dist/index.js",
   "dev": "nodemon src/index.ts",
   "build": "tsc",
   "test": "jest"
 }
-    • Run the Server:
+    ï¿½ Run the Server:
 bash
     6. npm run dev
 
@@ -149,12 +149,12 @@ bash
 a. PostgreSQL Setup Using Sequelize ORM:
     1. Install Sequelize and Related Packages:
        bash
-    • npm install sequelize pg pg-hstore
+    ï¿½ npm install sequelize pg pg-hstore
 npm install -D @types/sequelize
-    • Initialize Sequelize:
-    • backend/src/models/index.ts:
+    ï¿½ Initialize Sequelize:
+    ï¿½ backend/src/models/index.ts:
       typescript
-    • import { Sequelize } from 'sequelize';
+    ï¿½ import { Sequelize } from 'sequelize';
       import dotenv from 'dotenv';
       
       dotenv.config();
@@ -171,10 +171,10 @@ npm install -D @types/sequelize
       );
       
       export { sequelize };
-    • Define Models:
-    • User Model (with Roles):
+    ï¿½ Define Models:
+    ï¿½ User Model (with Roles):
       typescript
-    • // backend/src/models/User.ts
+    ï¿½ // backend/src/models/User.ts
 
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from './index';
@@ -219,9 +219,9 @@ User.init(
 );
 
 export default User;
-    • Brand Model:
+    ï¿½ Brand Model:
 typescript
-    • // backend/src/models/Brand.ts
+    ï¿½ // backend/src/models/Brand.ts
 
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from './index';
@@ -265,9 +265,9 @@ Brand.init(
 Brand.belongsTo(User, { foreignKey: 'userId' });
 
 export default Brand;
-    • AffiliateProgram Model:
+    ï¿½ AffiliateProgram Model:
 typescript
-    • // backend/src/models/AffiliateProgram.ts
+    ï¿½ // backend/src/models/AffiliateProgram.ts
 
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from './index';
@@ -317,9 +317,9 @@ AffiliateProgram.init(
 AffiliateProgram.belongsTo(Brand, { foreignKey: 'brandId' });
 
 export default AffiliateProgram;
-    • AffiliateLink Model:
+    ï¿½ AffiliateLink Model:
 typescript
-    • // backend/src/models/AffiliateLink.ts
+    ï¿½ // backend/src/models/AffiliateLink.ts
 
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from './index';
@@ -399,7 +399,7 @@ AffiliateLink.belongsTo(AffiliateProgram, { foreignKey: 'affiliateProgramId' });
 AffiliateLink.belongsTo(User, { foreignKey: 'creatorId' });
 
 export default AffiliateLink;
-    • Payout Model:
+    ï¿½ Payout Model:
 typescript
         ? // backend/src/models/Payout.ts
           
@@ -467,12 +467,12 @@ Secure your platform by implementing robust authentication and authorization mec
 a. Backend:
     1. Install Authentication Libraries:
        bash
-    • npm install bcryptjs jsonwebtoken
+    ï¿½ npm install bcryptjs jsonwebtoken
 npm install -D @types/bcryptjs @types/jsonwebtoken
-    • Authentication Middleware:
-    • backend/src/middleware/auth.ts:
+    ï¿½ Authentication Middleware:
+    ï¿½ backend/src/middleware/auth.ts:
       typescript
-    • import { Request, Response, NextFunction } from 'express';
+    ï¿½ import { Request, Response, NextFunction } from 'express';
       import jwt from 'jsonwebtoken';
       import User from '../models/User';
       
@@ -506,10 +506,10 @@ npm install -D @types/bcryptjs @types/jsonwebtoken
           next();
         };
       };
-    • User Registration and Login Controllers:
-    • backend/src/controllers/userController.ts:
+    ï¿½ User Registration and Login Controllers:
+    ï¿½ backend/src/controllers/userController.ts:
       typescript
-    • import { Request, Response } from 'express';
+    ï¿½ import { Request, Response } from 'express';
       import bcrypt from 'bcryptjs';
       import jwt from 'jsonwebtoken';
       import { validationResult } from 'express-validator';
@@ -568,10 +568,10 @@ npm install -D @types/bcryptjs @types/jsonwebtoken
           res.status(500).json({ message: 'Internal Server Error' });
         }
       };
-    • User Routes:
-    • backend/src/routes/userRoutes.ts:
+    ï¿½ User Routes:
+    ï¿½ backend/src/routes/userRoutes.ts:
       typescript
-    • import { Router } from 'express';
+    ï¿½ import { Router } from 'express';
       import { register, login } from '../controllers/userController';
       import { body } from 'express-validator';
       
@@ -597,8 +597,8 @@ npm install -D @types/bcryptjs @types/jsonwebtoken
       );
       
       export default router;
-    • Integrate Routes:
-    • backend/src/routes/index.ts:
+    ï¿½ Integrate Routes:
+    ï¿½ backend/src/routes/index.ts:
       typescript
         ? import { Router } from 'express';
           import userRoutes from './userRoutes';
@@ -620,7 +620,7 @@ b. Frontend:
     1. Setup Redux Store:
         ? frontend/src/store/store.ts:
           typescript
-    • import { configureStore } from '@reduxjs/toolkit';
+    ï¿½ import { configureStore } from '@reduxjs/toolkit';
       import userReducer from './slices/userSlice';
       
       export const store = configureStore({
@@ -632,8 +632,8 @@ b. Frontend:
       
       export type RootState = ReturnType<typeof store.getState>;
       export type AppDispatch = typeof store.dispatch;
-    • User Slice:
-    • frontend/src/store/slices/userSlice.ts:
+    ï¿½ User Slice:
+    ï¿½ frontend/src/store/slices/userSlice.ts:
       typescript
         ? import { createSlice, PayloadAction } from '@reduxjs/toolkit';
           
@@ -669,20 +669,20 @@ a. Backend Security Enhancements:
     1. Environment Variables:
         ? backend/.env:
           makefile
-    • PORT=5000
+    ï¿½ PORT=5000
       DB_NAME=your_db_name
       DB_USER=your_db_user
       DB_PASSWORD=your_db_password
       DB_HOST=localhost
       JWT_SECRET=your_jwt_secret
       BASE_URL=https://yourplatform.com
-    • Input Validation and Sanitization:
-    • Implemented using express-validator in the user routes.
-    • Rate Limiting and Security Headers:
-    • Install Libraries:
+    ï¿½ Input Validation and Sanitization:
+    ï¿½ Implemented using express-validator in the user routes.
+    ï¿½ Rate Limiting and Security Headers:
+    ï¿½ Install Libraries:
       bash
-    • npm install express-rate-limit helmet
-    • Integrate in index.ts:
+    ï¿½ npm install express-rate-limit helmet
+    ï¿½ Integrate in index.ts:
 typescript
         ? import rateLimit from 'express-rate-limit';
           import helmet from 'helmet';
@@ -739,7 +739,7 @@ a. Backend Enhancements:
     1. Affiliate Link Generation Utilities:
         ? backend/src/utils/generateAffiliateLink.ts:
           typescript
-    • import { v4 as uuidv4 } from 'uuid';
+    ï¿½ import { v4 as uuidv4 } from 'uuid';
       
       export const generateTrackingCode = (): string => {
         return uuidv4();
@@ -748,10 +748,10 @@ a. Backend Enhancements:
       export const generateAffiliateLink = (baseURL: string, trackingCode: string): string => {
         return `${baseURL}/affiliate/${trackingCode}`;
       };
-    • Affiliate Controllers:
-    • backend/src/controllers/affiliateController.ts:
+    ï¿½ Affiliate Controllers:
+    ï¿½ backend/src/controllers/affiliateController.ts:
       typescript
-    • import { Request, Response } from 'express';
+    ï¿½ import { Request, Response } from 'express';
       import AffiliateLink from '../models/AffiliateLink';
       import { generateTrackingCode, generateAffiliateLink } from '../utils/generateAffiliateLink';
       
@@ -817,10 +817,10 @@ a. Backend Enhancements:
           res.status(500).json({ message: 'Internal Server Error' });
         }
       };
-    • Affiliate Routes:
-    • backend/src/routes/affiliateRoutes.ts:
+    ï¿½ Affiliate Routes:
+    ï¿½ backend/src/routes/affiliateRoutes.ts:
       typescript
-    • import { Router } from 'express';
+    ï¿½ import { Router } from 'express';
       import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from '../controllers/affiliateController';
       import { authenticateToken } from '../middleware/auth';
       
@@ -834,10 +834,10 @@ a. Backend Enhancements:
       router.get('/links', authenticateToken, getAffiliateLinks);
       
       export default router;
-    • Affiliate Program Controllers and Routes:
-    • backend/src/controllers/affiliateProgramController.ts:
+    ï¿½ Affiliate Program Controllers and Routes:
+    ï¿½ backend/src/controllers/affiliateProgramController.ts:
       typescript
-    • import { Request, Response } from 'express';
+    ï¿½ import { Request, Response } from 'express';
 import AffiliateProgram from '../models/AffiliateProgram';
 import Brand from '../models/Brand';
 
@@ -871,9 +871,9 @@ export const getAffiliatePrograms = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-    • backend/src/routes/affiliateProgramRoutes.ts:
+    ï¿½ backend/src/routes/affiliateProgramRoutes.ts:
 typescript
-    • import { Router } from 'express';
+    ï¿½ import { Router } from 'express';
       import { createAffiliateProgram, getAffiliatePrograms } from '../controllers/affiliateProgramController';
       import { authenticateToken, authorizeRole } from '../middleware/auth';
       
@@ -884,10 +884,10 @@ typescript
       router.get('/programs', authenticateToken, getAffiliatePrograms);
       
       export default router;
-    • Payout Controllers and Routes:
-    • backend/src/controllers/payoutController.ts:
+    ï¿½ Payout Controllers and Routes:
+    ï¿½ backend/src/controllers/payoutController.ts:
       typescript
-    • import { Request, Response } from 'express';
+    ï¿½ import { Request, Response } from 'express';
 import Payout from '../models/Payout';
 import AffiliateLink from '../models/AffiliateLink';
 import { Op } from 'sequelize';
@@ -943,7 +943,7 @@ export const getPayouts = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-    • backend/src/routes/payoutRoutes.ts:
+    ï¿½ backend/src/routes/payoutRoutes.ts:
 typescript
         ? import { Router } from 'express';
           import { initiatePayout, getPayouts } from '../controllers/payoutController';
@@ -960,7 +960,7 @@ b. Frontend Enhancements:
     1. LinkInBioPage Component:
         ? frontend/src/pages/LinkInBioPage.tsx:
           tsx
-    • import React, { useEffect, useState } from 'react';
+    ï¿½ import React, { useEffect, useState } from 'react';
       import api from '../services/api';
       import { useParams } from 'react-router-dom';
       
@@ -1019,10 +1019,10 @@ b. Frontend Enhancements:
       };
       
       export default LinkInBioPage;
-    • AffiliateLinksPage Component:
-    • frontend/src/pages/AffiliateLinksPage.tsx:
+    ï¿½ AffiliateLinksPage Component:
+    ï¿½ frontend/src/pages/AffiliateLinksPage.tsx:
       tsx
-    • import React, { useEffect, useState } from 'react';
+    ï¿½ import React, { useEffect, useState } from 'react';
       import api from '../services/api';
       
       interface AffiliateProgram {
@@ -1153,8 +1153,8 @@ b. Frontend Enhancements:
       };
       
       export default AffiliateLinksPage;
-    • Affiliate Analytics Component:
-    • frontend/src/pages/AffiliateAnalyticsPage.tsx:
+    ï¿½ Affiliate Analytics Component:
+    ï¿½ frontend/src/pages/AffiliateAnalyticsPage.tsx:
       tsx
         ? import React, { useEffect, useState } from 'react';
           import api from '../services/api';
@@ -1251,7 +1251,7 @@ a. Dockerizing the Backend and Frontend
     1. Backend Dockerfile:
         ? backend/Dockerfile:
           dockerfile
-    • FROM node:14
+    ï¿½ FROM node:14
       
       WORKDIR /app
       
@@ -1266,10 +1266,10 @@ a. Dockerizing the Backend and Frontend
       EXPOSE 5000
       
       CMD ["node", "dist/index.js"]
-    • Frontend Dockerfile:
-    • frontend/Dockerfile:
+    ï¿½ Frontend Dockerfile:
+    ï¿½ frontend/Dockerfile:
       dockerfile
-    • FROM node:14 as build
+    ï¿½ FROM node:14 as build
       
       WORKDIR /app
       
@@ -1285,8 +1285,8 @@ a. Dockerizing the Backend and Frontend
       EXPOSE 80
       
       CMD ["nginx", "-g", "daemon off;"]
-    • AI Service Dockerfile:
-    • ai/Dockerfile:
+    ï¿½ AI Service Dockerfile:
+    ï¿½ ai/Dockerfile:
       dockerfile
         ? FROM python:3.9-slim
           
@@ -1301,9 +1301,9 @@ a. Dockerizing the Backend and Frontend
           
           CMD ["python", "app.py"]
 b. Docker Compose Configuration
-    • docker-compose.yml (at root level):
+    ï¿½ docker-compose.yml (at root level):
       yaml
-    • version: '3.8'
+    ï¿½ version: '3.8'
       
       services:
         backend:
@@ -1372,12 +1372,12 @@ a. Backend Testing:
     1. Setup Testing Framework:
         ? Install Testing Libraries:
           bash
-    • npm install -D jest ts-jest @types/jest supertest @types/supertest
-    • Configure Jest:
+    ï¿½ npm install -D jest ts-jest @types/jest supertest @types/supertest
+    ï¿½ Configure Jest:
 bash
-    • npx ts-jest config:init
-    • Write Tests:
-    • Example: backend/src/tests/affiliate.test.ts
+    ï¿½ npx ts-jest config:init
+    ï¿½ Write Tests:
+    ï¿½ Example: backend/src/tests/affiliate.test.ts
       typescript
         ? import request from 'supertest';
           import app from '../app';
@@ -1489,9 +1489,9 @@ bash
 b. Frontend Testing:
     1. Setup Testing Libraries:
        bash
-    • npm install --save-dev @testing-library/react @testing-library/jest-dom
-    • Write Tests:
-    • Example: frontend/src/pages/tests/AffiliateLinksPage.test.tsx
+    ï¿½ npm install --save-dev @testing-library/react @testing-library/jest-dom
+    ï¿½ Write Tests:
+    ï¿½ Example: frontend/src/pages/tests/AffiliateLinksPage.test.tsx
       tsx
         ? import React from 'react';
           import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -1573,9 +1573,9 @@ Ensure that all parts of your application are containerized for consistency.
         ? As defined above.
 b. Environment Variables:
 Manage sensitive information through environment variables and avoid hardcoding them.
-    • backend/.env:
+    ï¿½ backend/.env:
       makefile
-    • DB_HOST=db
+    ï¿½ DB_HOST=db
       DB_USER=postgres
       DB_PASSWORD=postgres
       DB_NAME=yourdb
@@ -1583,9 +1583,9 @@ Manage sensitive information through environment variables and avoid hardcoding 
       BASE_URL=https://yourplatform.com
 c. Continuous Integration/Continuous Deployment (CI/CD):
 Automate your testing and deployment processes using GitHub Actions.
-    • .github/workflows/ci.yml:
+    ï¿½ .github/workflows/ci.yml:
       yaml
-    • name: CI
+    ï¿½ name: CI
       
       on:
         push:
@@ -1670,11 +1670,11 @@ Providing comprehensive documentation facilitates collaboration and onboarding.
 a. API Documentation with Swagger:
     1. Install Swagger Libraries:
        bash
-    • npm install swagger-ui-express swagger-jsdoc
-    • Set Up Swagger in app.ts:
-    • backend/src/app.ts:
+    ï¿½ npm install swagger-ui-express swagger-jsdoc
+    ï¿½ Set Up Swagger in app.ts:
+    ï¿½ backend/src/app.ts:
       typescript
-    • import express from 'express';
+    ï¿½ import express from 'express';
       import cors from 'cors';
       import dotenv from 'dotenv';
       import routes from './routes';
@@ -1715,8 +1715,8 @@ a. API Documentation with Swagger:
       app.use('/api', routes);
       
       export default app;
-    • Annotate Routes for Swagger:
-    • backend/src/routes/affiliateRoutes.ts:
+    ï¿½ Annotate Routes for Swagger:
+    ï¿½ backend/src/routes/affiliateRoutes.ts:
       typescript
         ? import { Router } from 'express';
           import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from '../controllers/affiliateController';
@@ -1811,13 +1811,13 @@ Thank you for your interest in contributing! Here's how you can help:
    cd fair-platform
     3. Create a New Branch
        bash
-    • git checkout -b feature/your-feature-name
-    • Make Your Changes
-    • Add new features, fix bugs, or improve documentation.
-    • Commit Your Changes
+    ï¿½ git checkout -b feature/your-feature-name
+    ï¿½ Make Your Changes
+    ï¿½ Add new features, fix bugs, or improve documentation.
+    ï¿½ Commit Your Changes
 bash
-    • git commit -m "Add feature: your-feature-name"
-    • Push to Your Fork
+    ï¿½ git commit -m "Add feature: your-feature-name"
+    ï¿½ Push to Your Fork
 bash
     6. git push origin feature/your-feature-name
     7. Create a Pull Request
@@ -1826,9 +1826,9 @@ Code of Conduct
 Please follow the Code of Conduct to ensure a welcoming and respectful community.
 Reporting Issues
 If you find a bug or have a feature request, please open an issue.
-    • 
-    • Create CODE_OF_CONDUCT.md:
-    • backend/CODE_OF_CONDUCT.md:
+    ï¿½ 
+    ï¿½ Create CODE_OF_CONDUCT.md:
+    ï¿½ backend/CODE_OF_CONDUCT.md:
       markdown
         ? # Code of Conduct
           
@@ -1852,42 +1852,42 @@ If you find a bug or have a feature request, please open an issue.
           - Public or private harassment
           - Publishing others' private information, such as a physical or electronic address, without explicit permission
 c. Encourage Community Contributions:
-    • Announce on Discord:
+    ï¿½ Announce on Discord:
         ? Share the GitHub repository link.
         ? Highlight areas where help is needed (e.g., frontend development, backend features, documentation).
         ? Encourage members to contribute by following the contribution guidelines.
-    • Tag Issues Appropriately:
+    ï¿½ Tag Issues Appropriately:
         ? Use labels like good first issue to help newcomers find tasks suitable for their skill level.
-    • Provide Recognition:
+    ï¿½ Provide Recognition:
         ? Acknowledge contributors in the README.md or through a CONTRIBUTORS.md file.
 
 12. Continuous Learning and Resources
 Enhance your skills and stay updated with these resources:
-    • JavaScript & TypeScript:
+    ï¿½ JavaScript & TypeScript:
         ? MDN Web Docs - JavaScript
         ? TypeScript Official Documentation
-    • React.js:
+    ï¿½ React.js:
         ? React Official Tutorial
         ? FreeCodeCamp React Course
-    • Node.js & Express:
+    ï¿½ Node.js & Express:
         ? Node.js Official Documentation
         ? Express.js Guide
-    • SQL & Sequelize:
+    ï¿½ SQL & Sequelize:
         ? W3Schools SQL Tutorial
         ? Sequelize Documentation
-    • Git & GitHub:
+    ï¿½ Git & GitHub:
         ? GitHub Learning Lab
         ? Pro Git Book
-    • Tailwind CSS:
+    ï¿½ Tailwind CSS:
         ? Tailwind CSS Documentation
 
 13. Final Steps
     1. Commit and Push Initial Setup:
        bash
-    • git add .
+    ï¿½ git add .
 git commit -m "Initial project structure with backend and frontend setup"
 git push origin main
-    • Create Additional Directories:
+    ï¿½ Create Additional Directories:
 bash
     2. mkdir data-lake data-warehouse ai-models
        git add .
@@ -1919,28 +1919,28 @@ ChatGPT can make mistakes. Check important info.
 
 frontend/
 +-- src/
-¦   +-- components/
-¦   ¦   +-- Button.tsx
-¦   ¦   +-- ThemeSelector.tsx
-¦   ¦   +-- ...
-¦   +-- pages/
-¦   ¦   +-- LinkInBioPage.tsx
-¦   ¦   +-- AffiliateLinksPage.tsx
-¦   ¦   +-- AffiliateAnalyticsPage.tsx
-¦   ¦   +-- PayoutPage.tsx
-¦   ¦   +-- ...
-¦   +-- services/
-¦   ¦   +-- api.ts
-¦   ¦   +-- ...
-¦   +-- store/
-¦   ¦   +-- store.ts
-¦   ¦   +-- slices/
-¦   ¦   ¦   +-- userSlice.ts
-¦   ¦   ¦   +-- ...
-¦   ¦   +-- ...
-¦   +-- App.tsx
-¦   +-- index.tsx
-¦   +-- ...
+ï¿½   +-- components/
+ï¿½   ï¿½   +-- Button.tsx
+ï¿½   ï¿½   +-- ThemeSelector.tsx
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- pages/
+ï¿½   ï¿½   +-- LinkInBioPage.tsx
+ï¿½   ï¿½   +-- AffiliateLinksPage.tsx
+ï¿½   ï¿½   +-- AffiliateAnalyticsPage.tsx
+ï¿½   ï¿½   +-- PayoutPage.tsx
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- services/
+ï¿½   ï¿½   +-- api.ts
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- store/
+ï¿½   ï¿½   +-- store.ts
+ï¿½   ï¿½   +-- slices/
+ï¿½   ï¿½   ï¿½   +-- userSlice.ts
+ï¿½   ï¿½   ï¿½   +-- ...
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- App.tsx
+ï¿½   +-- index.tsx
+ï¿½   +-- ...
 +-- Dockerfile
 +-- package.json
 +-- tailwind.config.js
@@ -1948,51 +1948,51 @@ frontend/
 +-- ...
 backend/
 +-- src/
-¦   +-- controllers/
-¦   ¦   +-- userController.ts
-¦   ¦   +-- affiliateController.ts
-¦   ¦   +-- affiliateProgramController.ts
-¦   ¦   +-- payoutController.ts
-¦   ¦   +-- ...
-¦   +-- models/
-¦   ¦   +-- User.ts
-¦   ¦   +-- Brand.ts
-¦   ¦   +-- AffiliateProgram.ts
-¦   ¦   +-- AffiliateLink.ts
-¦   ¦   +-- Payout.ts
-¦   ¦   +-- ...
-¦   +-- routes/
-¦   ¦   +-- userRoutes.ts
-¦   ¦   +-- affiliateRoutes.ts
-¦   ¦   +-- affiliateProgramRoutes.ts
-¦   ¦   +-- payoutRoutes.ts
-¦   ¦   +-- ...
-¦   +-- middleware/
-¦   ¦   +-- auth.ts
-¦   ¦   +-- ...
-¦   +-- utils/
-¦   ¦   +-- generateAffiliateLink.ts
-¦   ¦   +-- ...
-¦   +-- app.ts
-¦   +-- server.ts
-¦   +-- ...
+ï¿½   +-- controllers/
+ï¿½   ï¿½   +-- userController.ts
+ï¿½   ï¿½   +-- affiliateController.ts
+ï¿½   ï¿½   +-- affiliateProgramController.ts
+ï¿½   ï¿½   +-- payoutController.ts
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- models/
+ï¿½   ï¿½   +-- User.ts
+ï¿½   ï¿½   +-- Brand.ts
+ï¿½   ï¿½   +-- AffiliateProgram.ts
+ï¿½   ï¿½   +-- AffiliateLink.ts
+ï¿½   ï¿½   +-- Payout.ts
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- routes/
+ï¿½   ï¿½   +-- userRoutes.ts
+ï¿½   ï¿½   +-- affiliateRoutes.ts
+ï¿½   ï¿½   +-- affiliateProgramRoutes.ts
+ï¿½   ï¿½   +-- payoutRoutes.ts
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- middleware/
+ï¿½   ï¿½   +-- auth.ts
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- utils/
+ï¿½   ï¿½   +-- generateAffiliateLink.ts
+ï¿½   ï¿½   +-- ...
+ï¿½   +-- app.ts
+ï¿½   +-- server.ts
+ï¿½   +-- ...
     +--eco_consultant_ai/
        +-- agents/
-       ¦   +-- __init__.py
-       ¦   +-- data_ingestion_agent.py
-       ¦   +-- data_cleaning_agent.py
-       ¦   +-- impact_analysis_agent.py
-       ¦   +-- recommendation_agent.py
-       ¦   +-- eco_consultant_agent.py
-       ¦   +-- visualization_agent.py
-       ¦   +-- feedback_agent.py
+       ï¿½   +-- __init__.py
+       ï¿½   +-- data_ingestion_agent.py
+       ï¿½   +-- data_cleaning_agent.py
+       ï¿½   +-- impact_analysis_agent.py
+       ï¿½   +-- recommendation_agent.py
+       ï¿½   +-- eco_consultant_agent.py
+       ï¿½   +-- visualization_agent.py
+       ï¿½   +-- feedback_agent.py
        +-- data/
-       ¦   +-- raw/
-       ¦   +-- processed/
+       ï¿½   +-- raw/
+       ï¿½   +-- processed/
        +-- models/
-       ¦   +-- lca_model.py
-       ¦   +-- recommendation_model.py
-       ¦   +-- ...
+       ï¿½   +-- lca_model.py
+       ï¿½   +-- recommendation_model.py
+       ï¿½   +-- ...
        +-- main.py
        +-- requirements.txt
        +-- README.md
@@ -2002,8 +2002,8 @@ backend/
 +-- tsconfig.json
 +-- ...
 +-- data-lake/
-¦   +-- raw/
-¦   +-- processed/
-¦   +-- README.md
+ï¿½   +-- raw/
+ï¿½   +-- processed/
+ï¿½   +-- README.md
 +-- data-warehouse/
-¦   +-- README.md
+ï¿½   +-- README.md

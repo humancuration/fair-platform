@@ -1,36 +1,54 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '@config/database';
 
-export interface UserSettings {
-  allowSearchAnalytics: boolean;
-  allowBehavioralTracking: boolean;
-  dataRetentionPeriod: number;
-  anonymizeData: boolean;
+class User extends Model {
+  public id!: number;
+  public email!: string;
+  public password!: string;
+  public role!: string;
+  public settings!: {
+    allowSearchAnalytics: boolean;
+    allowBehavioralTracking: boolean;
+    dataRetentionPeriod: number;
+    anonymizeData: boolean;
+  };
 }
 
-export interface UserDocument extends Document {
-  email: string;
-  password: string;
-  role: string;
-  settings: UserSettings;
-  getPublicProfile: () => any;
-}
-
-const UserSchema: Schema = new Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, required: true },
-  settings: {
-    allowSearchAnalytics: { type: Boolean, default: false },
-    allowBehavioralTracking: { type: Boolean, default: false },
-    dataRetentionPeriod: { type: Number, default: 365 },
-    anonymizeData: { type: Boolean, default: false }
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    settings: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      defaultValue: {
+        allowSearchAnalytics: false,
+        allowBehavioralTracking: false,
+        dataRetentionPeriod: 365,
+        anonymizeData: false,
+      },
+    },
+  },
+  {
+    sequelize,
+    tableName: 'users',
   }
-});
+);
 
-UserSchema.methods.getPublicProfile = function() {
-  const userObject = this.toObject();
-  delete userObject.password;
-  return userObject;
-};
-
-export default mongoose.model<UserDocument>('User', UserSchema);
+export default User;
