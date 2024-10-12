@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import Group from '../models/Group';
-import User from '../models/User';
-import GroupType from '../models/GroupType';
+import { Group } from '../models/Group';
+import { User } from '../models/User';
+import { GroupType } from '../models/GroupType';
 import { io } from '../server';
 import { createDiscourseCategory } from '../services/discourseService';
 import { createMoodleCourse } from '../services/moodleService';
@@ -13,16 +13,6 @@ import { sendRocketChatMessage } from '../services/rocketChatService';
 import { createWekanCard } from '../services/wekanService';
 import { createNextcloudFolder } from '../services/nextcloudService';
 
-interface Group {
-  name: string;
-  // Add other properties as needed
-}
-
-interface User {
-  username: string;
-  // Add other properties as needed
-}
-
 // Create a new group
 export const createGroup = async (req: Request, res: Response) => {
   try {
@@ -30,16 +20,16 @@ export const createGroup = async (req: Request, res: Response) => {
     const creatorId = req.user.id;
 
     // Validate group type
-    const groupType = await GroupType.findById(groupTypeId);
+    const groupType = await GroupType.findByPk(groupTypeId);
     if (!groupType) {
       return res.status(400).json({ message: 'Invalid group type' });
     }
 
     // Create the group
-    const group = new Group({
+    const group = await Group.create({
       name,
       description,
-      groupType: groupTypeId,
+      groupTypeId,
       categoryBadge,
       profilePicture,
       members: [creatorId],
@@ -47,14 +37,11 @@ export const createGroup = async (req: Request, res: Response) => {
       events: [],
     });
 
-    await group.save();
-
     // Update user's groups and roles
-    const user = await User.findById(creatorId);
+    const user = await User.findByPk(creatorId);
     if (user) {
-      user.groups.push(group._id);
-      user.roles.set(group._id.toString(), 'Admin');
-      await user.save();
+      await user.addGroup(group);
+      await user.setRole(group.id, 'Admin');
     }
 
     // Create Discourse category for the group
@@ -64,18 +51,19 @@ export const createGroup = async (req: Request, res: Response) => {
     const moodleCourse = await createMoodleCourse(group.name, group.description);
 
     // Update group with Discourse and Moodle IDs
-    group.discourseCategoryId = discourseCategory.id;
-    group.moodleCourseId = moodleCourse.id;
-    await group.save();
+    await group.update({
+      discourseCategoryId: discourseCategory.id,
+      moodleCourseId: moodleCourse.id,
+    });
 
     // Trigger n8n workflow
-    await triggerN8nWorkflow('newGroupWorkflow', { groupId: group._id, groupName: group.name });
+    await triggerN8nWorkflow('newGroupWorkflow', { groupId: group.id, groupName: group.name });
 
     // Create Mautic contact for group creator
     const mauticContact = await createMauticContact({
-      firstname: user.firstName,
-      lastname: user.lastName,
-      email: user.email,
+      firstname: user?.firstName,
+      lastname: user?.lastName,
+      email: user?.email,
       tags: ['Group Creator'],
     });
 
@@ -86,8 +74,8 @@ export const createGroup = async (req: Request, res: Response) => {
     await triggerCampaign(1, mauticContact.contact.id);
 
     // Notify Discord channel
-    const discordChannelId = process.env.DISCORD_CHANNEL_ID!; // Use non-null assertion
-    const message = `🎉 New Group Created: **${group.name}** by ${user.username}! Join us to collaborate and innovate.`;
+    const discordChannelId = process.env.DISCORD_CHANNEL_ID!;
+    const message = `🎉 New Group Created: **${group.name}** by ${user?.username}! Join us to collaborate and innovate.`;
     await sendMessageToChannel(discordChannelId, message);
 
     // Send Discord webhook notification
@@ -101,7 +89,7 @@ export const createGroup = async (req: Request, res: Response) => {
     // Create Wekan card
     const wekanBoardId = process.env.WEKAN_BOARD_ID!;
     const wekanListId = process.env.WEKAN_LIST_ID!;
-    await createWekanCard(wekanBoardId, wekanListId, `New Group: ${group.name}`, `Created by ${user.username}`);
+    await createWekanCard(wekanBoardId, wekanListId, `New Group: ${group.name}`, `Created by ${user?.username}`);
 
     // Create Nextcloud folder
     await createNextcloudFolder(`Groups/${group.name}`);
@@ -114,13 +102,17 @@ export const createGroup = async (req: Request, res: Response) => {
   }
 };
 
+
 // Get all groups
 export const getGroups = async (req: Request, res: Response) => {
   try {
-    const groups = await Group.find()
-      .populate('groupType', 'name description')
-      .populate('members', 'username')
-      .populate('delegates', 'username');
+    const groups = await Group.findAll({
+      include: [
+        { model: GroupType, attributes: ['name', 'description'] },
+        { model: User, as: 'members', attributes: ['username'] },
+        { model: User, as: 'delegates', attributes: ['username'] },
+      ],
+    });
 
     res.status(200).json(groups);
   } catch (error) {
@@ -132,11 +124,14 @@ export const getGroups = async (req: Request, res: Response) => {
 // Get a single group by ID
 export const getGroupById = async (req: Request, res: Response) => {
   try {
-    const group = await Group.findById(req.params.id)
-      .populate('groupType', 'name description')
-      .populate('members', 'username')
-      .populate('delegates', 'username')
-      .populate('events');
+    const group = await Group.findByPk(req.params.id, {
+      include: [
+        { model: GroupType, attributes: ['name', 'description'] },
+        { model: User, as: 'members', attributes: ['username'] },
+        { model: User, as: 'delegates', attributes: ['username'] },
+        'events',
+      ],
+    });
 
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
@@ -152,34 +147,34 @@ export const getGroupById = async (req: Request, res: Response) => {
 // Update a group
 export const updateGroup = async (req: Request, res: Response) => {
   try {
-    const group = await Group.findById(req.params.id);
+    const group = await Group.findByPk(req.params.id);
 
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
     // Check if the user is an Admin of the group
-    const user = await User.findById(req.user.id);
-    if (!user || user.roles.get(group._id.toString()) !== 'Admin') {
+    const user = await User.findByPk(req.user.id);
+    if (!user || !(await user.hasRole(group.id, 'Admin'))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
     const { name, description, groupTypeId, categoryBadge, profilePicture } = req.body;
 
     if (groupTypeId) {
-      const groupType = await GroupType.findById(groupTypeId);
+      const groupType = await GroupType.findByPk(groupTypeId);
       if (!groupType) {
         return res.status(400).json({ message: 'Invalid group type' });
       }
-      group.groupType = groupTypeId;
     }
 
-    if (name) group.name = name;
-    if (description) group.description = description;
-    if (categoryBadge) group.categoryBadge = categoryBadge;
-    if (profilePicture) group.profilePicture = profilePicture;
-
-    await group.save();
+    await group.update({
+      name: name || group.name,
+      description: description || group.description,
+      groupTypeId: groupTypeId || group.groupTypeId,
+      categoryBadge: categoryBadge || group.categoryBadge,
+      profilePicture: profilePicture || group.profilePicture,
+    });
 
     io.emit('groupUpdated', group);
     res.status(200).json(group);
@@ -192,25 +187,26 @@ export const updateGroup = async (req: Request, res: Response) => {
 // Delete a group
 export const deleteGroup = async (req: Request, res: Response) => {
   try {
-    const group = await Group.findById(req.params.id);
+    const group = await Group.findByPk(req.params.id);
 
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
     // Check if the user is an Admin of the group
-    const user = await User.findById(req.user.id);
-    if (!user || user.roles.get(group._id.toString()) !== 'Admin') {
+    const user = await User.findByPk(req.user.id);
+    if (!user || !(await user.hasRole(group.id, 'Admin'))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    await group.remove();
+    await group.destroy();
 
-    // Remove group from all members' group lists
-    await User.updateMany(
-      { groups: group._id },
-      { $pull: { groups: group._id }, $unset: { [`roles.${group._id.toString()}`]: '' } }
-    );
+    // Remove group from all members' group lists and roles
+    const members = await group.getMembers();
+    for (const member of members) {
+      await member.removeGroup(group);
+      await member.removeRole(group.id);
+    }
 
     io.emit('groupDeleted', { groupId: req.params.id });
     res.status(200).json({ message: 'Group deleted successfully' });
@@ -225,35 +221,32 @@ export const addMember = async (req: Request, res: Response) => {
   try {
     const { groupId, userId } = req.body;
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findByPk(groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
     // Check if requester is an Admin or Delegate
-    const requester = await User.findById(req.user.id);
+    const requester = await User.findByPk(req.user.id);
     if (
       !requester ||
-      (requester.roles.get(groupId) !== 'Admin' && requester.roles.get(groupId) !== 'Delegate')
+      !(await requester.hasRole(groupId, 'Admin')) &&
+      !(await requester.hasRole(groupId, 'Delegate'))
     ) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const userToAdd = await User.findById(userId);
+    const userToAdd = await User.findByPk(userId);
     if (!userToAdd) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (group.members.includes(userId)) {
+    if (await group.hasMember(userToAdd)) {
       return res.status(400).json({ message: 'User is already a member' });
     }
 
-    group.members.push(userId);
-    await group.save();
-
-    userToAdd.groups.push(group._id);
-    userToAdd.roles.set(group._id.toString(), 'Member');
-    await userToAdd.save();
+    await group.addMember(userToAdd);
+    await userToAdd.setRole(group.id, 'Member');
 
     res.status(200).json({ message: 'Member added successfully' });
   } catch (error) {
@@ -267,34 +260,33 @@ export const removeMember = async (req: Request, res: Response) => {
   try {
     const { groupId, userId } = req.body;
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findByPk(groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
     // Check if requester is an Admin or Delegate
-    const requester = await User.findById(req.user.id);
+    const requester = await User.findByPk(req.user.id);
     if (
       !requester ||
-      (requester.roles.get(groupId) !== 'Admin' && requester.roles.get(groupId) !== 'Delegate')
+      !(await requester.hasRole(groupId, 'Admin')) &&
+      !(await requester.hasRole(groupId, 'Delegate'))
     ) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    if (!group.members.includes(userId)) {
+    const userToRemove = await User.findByPk(userId);
+    if (!userToRemove) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!(await group.hasMember(userToRemove))) {
       return res.status(400).json({ message: 'User is not a member' });
     }
 
-    group.members.pull(userId);
-    group.delegates.pull(userId); // Also remove from delegates if applicable
-    await group.save();
-
-    const user = await User.findById(userId);
-    if (user) {
-      user.groups.pull(group._id);
-      user.roles.delete(group._id.toString());
-      await user.save();
-    }
+    await group.removeMember(userToRemove);
+    await group.removeDelegate(userToRemove);
+    await userToRemove.removeRole(group.id);
 
     res.status(200).json({ message: 'Member removed successfully' });
   } catch (error) {
@@ -308,33 +300,32 @@ export const assignDelegate = async (req: Request, res: Response) => {
   try {
     const { groupId, userId } = req.body;
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findByPk(groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
     // Check if requester is an Admin
-    const requester = await User.findById(req.user.id);
-    if (!requester || requester.roles.get(groupId) !== 'Admin') {
+    const requester = await User.findByPk(req.user.id);
+    if (!requester || !(await requester.hasRole(groupId, 'Admin'))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    if (!group.members.includes(userId)) {
+    const userToAssign = await User.findByPk(userId);
+    if (!userToAssign) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!(await group.hasMember(userToAssign))) {
       return res.status(400).json({ message: 'User is not a member of the group' });
     }
 
-    if (group.delegates.includes(userId)) {
+    if (await group.hasDelegate(userToAssign)) {
       return res.status(400).json({ message: 'User is already a delegate' });
     }
 
-    group.delegates.push(userId);
-    await group.save();
-
-    const user = await User.findById(userId);
-    if (user) {
-      user.roles.set(groupId.toString(), 'Delegate');
-      await user.save();
-    }
+    await group.addDelegate(userToAssign);
+    await userToAssign.setRole(group.id, 'Delegate');
 
     res.status(200).json({ message: 'Delegate assigned successfully' });
   } catch (error) {
@@ -348,29 +339,28 @@ export const revokeDelegate = async (req: Request, res: Response) => {
   try {
     const { groupId, userId } = req.body;
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findByPk(groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
     // Check if requester is an Admin
-    const requester = await User.findById(req.user.id);
-    if (!requester || requester.roles.get(groupId) !== 'Admin') {
+    const requester = await User.findByPk(req.user.id);
+    if (!requester || !(await requester.hasRole(groupId, 'Admin'))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    if (!group.delegates.includes(userId)) {
+    const userToRevoke = await User.findByPk(userId);
+    if (!userToRevoke) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!(await group.hasDelegate(userToRevoke))) {
       return res.status(400).json({ message: 'User is not a delegate' });
     }
 
-    group.delegates.pull(userId);
-    await group.save();
-
-    const user = await User.findById(userId);
-    if (user) {
-      user.roles.set(groupId.toString(), 'Member');
-      await user.save();
-    }
+    await group.removeDelegate(userToRevoke);
+    await userToRevoke.setRole(group.id, 'Member');
 
     res.status(200).json({ message: 'Delegate revoked successfully' });
   } catch (error) {
