@@ -2,7 +2,7 @@
 
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from './index';
-import Brand from './Brand';
+import Brand from './Brands';
 
 class AffiliateProgram extends Model {
   public id!: number;

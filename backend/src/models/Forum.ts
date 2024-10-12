@@ -34,4 +34,3 @@ Forum.init(
 );
 
 export default Forum;
-F

@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '@config/database';
-import User from './user.model';
+import User from './User';
 import Group from './group.model';
 
 class GroupMember extends Model {

@@ -1,7 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '@config/database';
 import Group from './group.model';
-import User from './user.model';
+import User from './User';
 
 class Petition extends Model {
   public id!: number;

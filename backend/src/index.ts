@@ -1,3 +1,4 @@
+import 'reflect-metadata'; // Import this at the top
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
