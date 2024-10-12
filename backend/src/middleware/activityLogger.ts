@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { getRepository } from 'typeorm';
+import { AppDataSource } from '../data-source';
 import { UserActivity } from '../models/UserActivity';
-import { awardPoints } from '../../../frontend/src/services/rewardsService';
+import { awardPoints } from '../services/rewardsService';
 
 export const activityLogger = (activityType: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (userId) {
       await logActivity(userId, activityType);
     }
@@ -14,7 +14,7 @@ export const activityLogger = (activityType: string) => {
 };
 
 const logActivity = async (userId: number, activityType: string) => {
-  const activityRepository = getRepository(UserActivity);
+  const activityRepository = AppDataSource.getRepository(UserActivity);
   const activity = activityRepository.create({
     user_id: userId,
     activity_type: activityType,

@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import express, { Express } from 'express';
 import { authenticateJWT } from './auth';
 import { errorHandler } from './errorHandler';
 import { validate } from './validate';

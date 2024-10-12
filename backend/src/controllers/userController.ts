@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
 import User, { UserDocument } from '../models/User';
-import AnalyticsService from '../services/AnalyticsService';
+import AnalyticsService from '../services/analyticsService';
 import { AuthRequest } from '../middleware/auth';
 
 class UserController {

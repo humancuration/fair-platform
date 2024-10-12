@@ -1,18 +1,23 @@
-import { getRepository } from 'typeorm';
-import { UserReward } from '@models/UserReward';
-import { rewardsConfig } from '@config/rewardsConfig';
+import axios from 'axios';
 
-export const awardPoints = async (userId: number, activityType: string) => {
-  const points = rewardsConfig.activities[activityType] || 0;
-  if (points > 0) {
-    const userRewardRepository = getRepository(UserReward);
-    let userReward = await userRewardRepository.findOne({ user_id: userId });
-    
-    if (!userReward) {
-      userReward = userRewardRepository.create({ user_id: userId, total_points: 0, rewards_earned: [] });
-    }
-    
-    userReward.total_points += points;
-    await userRewardRepository.save(userReward);
-  }
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+export const getAvailableRewards = async () => {
+  const response = await axios.get(`${API_URL}/rewards`);
+  return response.data;
+};
+
+export const redeemReward = async (rewardId: string) => {
+  const response = await axios.post(`${API_URL}/rewards/redeem`, { rewardId });
+  return response.data;
+};
+
+export const addReward = async (campaignId: string, rewardData: any) => {
+  const response = await axios.post(`${API_URL}/rewards`, { campaignId, ...rewardData });
+  return response.data;
+};
+
+export const getRewardsByCampaign = async (campaignId: string) => {
+  const response = await axios.get(`${API_URL}/rewards/campaign/${campaignId}`);
+  return response.data;
 };

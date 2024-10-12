@@ -7,6 +7,21 @@ import { createDiscourseCategory } from '../services/discourseService';
 import { createMoodleCourse } from '../services/moodleService';
 import { triggerN8nWorkflow } from '../services/n8nService';
 import { createMauticContact, addContactToSegment, triggerCampaign } from '../services/mauticService';
+import { sendMessageToChannel } from '../discordBot';
+import { sendDiscordWebhook } from '../services/discordService';
+import { sendRocketChatMessage } from '../services/rocketChatService';
+import { createWekanCard } from '../services/wekanService';
+import { createNextcloudFolder } from '../services/nextcloudService';
+
+interface Group {
+  name: string;
+  // Add other properties as needed
+}
+
+interface User {
+  username: string;
+  // Add other properties as needed
+}
 
 // Create a new group
 export const createGroup = async (req: Request, res: Response) => {
@@ -69,6 +84,27 @@ export const createGroup = async (req: Request, res: Response) => {
 
     // Trigger a welcome campaign for new group creators (assuming campaign ID 1)
     await triggerCampaign(1, mauticContact.contact.id);
+
+    // Notify Discord channel
+    const discordChannelId = process.env.DISCORD_CHANNEL_ID!; // Use non-null assertion
+    const message = `🎉 New Group Created: **${group.name}** by ${user.username}! Join us to collaborate and innovate.`;
+    await sendMessageToChannel(discordChannelId, message);
+
+    // Send Discord webhook notification
+    const webhookURL = process.env.DISCORD_WEBHOOK_URL!;
+    await sendDiscordWebhook(webhookURL, message);
+
+    // Send Rocket.Chat message
+    const rocketChatRoomId = process.env.ROCKET_CHAT_ROOM_ID!;
+    await sendRocketChatMessage(rocketChatRoomId, message);
+
+    // Create Wekan card
+    const wekanBoardId = process.env.WEKAN_BOARD_ID!;
+    const wekanListId = process.env.WEKAN_LIST_ID!;
+    await createWekanCard(wekanBoardId, wekanListId, `New Group: ${group.name}`, `Created by ${user.username}`);
+
+    // Create Nextcloud folder
+    await createNextcloudFolder(`Groups/${group.name}`);
 
     io.emit('groupCreated', group);
     res.status(201).json(group);

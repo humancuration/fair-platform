@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import User from '../models/User';
-import AnalyticsService from '../services/AnalyticsService';
+import AnalyticsService from '../services/analyticsService';
 
 const dataRetentionTask = () => {
   cron.schedule('0 0 * * *', async () => {

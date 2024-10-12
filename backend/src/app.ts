@@ -1,5 +1,5 @@
 import express from 'express';
-import { App } from 'uWebSockets.js';
+import { Server } from 'socket.io';
 import SurveyController from './controllers/SurveyController';
 import surveyRoutes from './routes/surveyRoutes';
 import searchRoutes from './routes/searchRoutes';
@@ -12,7 +12,8 @@ import helmet from 'helmet';
 import { sequelize } from './config/database'; // Sequelize instance
 
 const app = express();
-const uWS = App();
+const httpServer = createServer(app);
+const io = new Server(httpServer);
 
 app.use(express.json());
 app.use('/api/surveys', surveyRoutes);
@@ -40,24 +41,25 @@ sequelize.authenticate()
   })
   .catch((err) => console.error('SQL connection error:', err));
 
-// Set up uWebSockets.js
-uWS.ws('/surveys/:surveyId', {
-  open: (ws) => {
-    const surveyId = ws.getParameter(0);
-    SurveyController.handleWebSocket(ws, surveyId);
-  },
-  message: (ws, message, isBinary) => {
-    const surveyId = ws.getParameter(0);
-    SurveyController.handleMessage(ws, surveyId, Buffer.from(message).toString());
-  },
-  close: (ws) => {
-    SurveyController.handleDisconnect(ws);
-  }
+// Set up Socket.IO
+io.of('/surveys').on('connection', (socket) => {
+  const surveyId = socket.handshake.query.surveyId as string;
+  
+  SurveyController.handleWebSocket(socket, surveyId);
+
+  socket.on('message', (message: string) => {
+    SurveyController.handleMessage(socket, surveyId, message);
+  });
+
+  socket.on('disconnect', () => {
+    SurveyController.handleDisconnect(socket);
+  });
 });
 
-// Serve Express app through uWebSockets.js
-uWS.any('/*', (res, req) => {
-  app(req, res);
+// Start the server
+const PORT = process.env.PORT || 3000;
+httpServer.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 // Start data retention task
@@ -65,4 +67,4 @@ dataRetentionTask();
 
 app.use(helmet());
 
-export { uWS as server };
+export { io as server };

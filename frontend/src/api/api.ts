@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -48,5 +48,11 @@ export const getAggregateData = (params: any) => api.get('/analytics/aggregate',
 
 export const createAIEthicsCourse = (data: any) => api.post('/ai-ethics/courses', data);
 export const addReflectionActivity = (data: any) => api.post('/ai-ethics/activities', data);
+
+// New reward-related functions
+export const getAvailableRewards = () => api.get('/rewards');
+export const redeemReward = (rewardId: string) => api.post('/rewards/redeem', { rewardId });
+export const addReward = (campaignId: string, rewardData: any) => api.post('/rewards', { campaignId, ...rewardData });
+export const getRewardsByCampaign = (campaignId: string) => api.get(`/rewards/campaign/${campaignId}`);
 
 export default api;
