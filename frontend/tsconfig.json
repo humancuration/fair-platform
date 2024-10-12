@@ -18,16 +18,18 @@
     "baseUrl": "src",
     "paths": {
       "@/*": ["*"],
-      "@components/*": ["components/*"],
-      "@pages/*": ["pages/*"],
       "@api/*": ["api/*"],
-      "@services/*": ["services/*"],
-      "@utils/*": ["utils/*"],
-      "@styles/*": ["styles/*"],
-      "@assets/*": ["assets/*"],
+      "@components/*": ["components/*"],
+      "@config/*": ["config/*"],
+      "@constants/*": ["constants/*"],
+      "@contexts/*": ["contexts/*"],
       "@hooks/*": ["hooks/*"],
-      "@context/*": ["context/*"],
-      "@types/*": ["types/*"]
+      "@pages/*": ["pages/*"],
+      "@providers/*": ["providers/*"],
+      "@services/*": ["services/*"],
+      "@store/*": ["store/*"],
+      "@styles/*": ["styles/*"],
+      "@utils/*": ["utils/*"],
     }
   },
   "include": ["src"]

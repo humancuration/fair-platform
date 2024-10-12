@@ -2,6 +2,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import Button from '../common/Button';
+import '@testing-library/jest-dom';
 
 test('Button renders with correct label and handles click', () => {
   const handleClick = jest.fn();

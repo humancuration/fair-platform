@@ -34,7 +34,7 @@ fair-platform/
 ├── backend/
 │   ├── src/
 │   │   ├── activitypub/
-│   │   │   ├── activitypub.js
+│   │   │   ├── activitypub.ts
 │   │   │   └── index.ts
 │   │   ├── ai/
 │   │   │   ├── Dockerfile
@@ -45,7 +45,7 @@ fair-platform/
 │   │   ├── config/
 │   │   │   ├── constants.ts
 │   │   │   ├── database.ts
-│   │   │   └── keycloak-config.js
+│   │   │   └── keycloak-config.ts
 │   │   ├── controllers/
 │   │   │   ├── affiliateController.ts
 │   │   │   ├── affiliateLinkController.ts
@@ -59,9 +59,9 @@ fair-platform/
 │   │   │   ├── contributionController.ts
 │   │   │   ├── eventController.ts
 │   │   │   ├── gitController.ts
-│   │   │   ├── giteaController.js
+│   │   │   ├── giteaController.ts
 │   │   │   ├── githubController.js
-│   │   │   ├── groupController.js
+│   │   │   ├── groupController.ts
 │   │   │   ├── groupMemberController.ts
 │   │   │   ├── linkInBioController.ts
 │   │   │   ├── marketplaceController.ts
@@ -144,8 +144,8 @@ fair-platform/
 │   ├── .env
 │   ├── .eslintrc.json
 │   ├── Dockerfile
-│   ├── greenlock.js
-│   ├── jest.config.js
+│   ├── greenlock.ts
+│   ├── jest.config.ts
 │   ├── main.py
 │   └── package.json
 │
@@ -168,14 +168,14 @@ fair-platform/
 │   │   │   ├── AddWishlistItemModal.tsx
 │   │   │   ├── AIDashboard.tsx
 │   │   │   ├── AIJobMarketplace.tsx
-│   │   │   ├── AnimatedHeading.jsx
-│   │   │   ├── AnimatedRoutes.jsx
-│   │   │   ├── AvatarGenerator.jsx
-│   │   │   ├── BackgroundMusic.jsx
-│   │   │   ├── BarChart.jsx
+│   │   │   ├── AnimatedHeading.tsx
+│   │   │   ├── AnimatedRoutes.tsx
+│   │   │   ├── AvatarGenerator.tsx
+│   │   │   ├── BackgroundMusic.tsx
+│   │   │   ├── BarChart.tsx
 │   │   │   ├── Breadcrumbs.tsx
-│   │   │   ├── Button.jsx
-│   │   │   ├── Button.test.jsx
+│   │   │   ├── Button.tsx
+│   │   │   ├── Button.test.tsx
 │   │   │   ├── Calendar.tsx
 │   │   │   ├── CampaignCard.tsx
 │   │   │   ├── CampaignDetail.tsx

@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Particles from '@tsparticles/react';
-import { Engine } from "@tsparticles/engine";
+import type { Engine } from "@tsparticles/engine";
 import { loadFull } from "tsparticles";
 
 const ParticleBackground: React.FC = () => {
-  const particlesInit = async (main: Engine) => {
-    await loadFull(main);
-  };
+  const particlesInit = useCallback(async (engine: Engine) => {
+    await loadFull(engine);
+  }, []);
 
   return (
     <Particles
       id="tsparticles"
+      particlesLoaded={undefined}
       init={particlesInit}
       options={{
         background: {
@@ -40,7 +41,6 @@ const ParticleBackground: React.FC = () => {
           number: {
             density: {
               enable: true,
-              area: 800,
             },
             value: 80,
           },

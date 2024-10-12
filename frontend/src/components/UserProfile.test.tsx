@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
 import UserProfile from './UserProfile';
 
+
 test('renders user profile with name and email', () => {
   const user = { name: 'John Doe', email: 'john@example.com' };
   const { getByText } = render(<UserProfile user={user} onEdit={() => {}} />);
