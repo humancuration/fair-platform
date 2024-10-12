@@ -10,8 +10,9 @@ import dataRetentionTask from './tasks/dataRetentionTask';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { sequelize } from './config/database'; // Sequelize instance
-
+import { createServer } from 'http';
 const app = express();
+
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
@@ -45,17 +46,17 @@ sequelize.authenticate()
 io.of('/surveys').on('connection', (socket) => {
   const surveyId = socket.handshake.query.surveyId as string;
   
-  SurveyController.handleWebSocket(socket, surveyId);
+  SurveyController.handleSocket(socket, surveyId);
 
   socket.on('message', (message: string) => {
-    SurveyController.handleMessage(socket, surveyId, message);
+    // Use a public method to handle the message
+    SurveyController.processMessage(socket, surveyId, message);
   });
 
   socket.on('disconnect', () => {
-    SurveyController.handleDisconnect(socket);
+    SurveyController.onDisconnect(socket);
   });
 });
-
 // Start the server
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
