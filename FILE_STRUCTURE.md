@@ -80,11 +80,15 @@ fair-platform/
 │   │   │   ├── voteController.ts
 │   │   │   └── wishlistController.ts
 │   │   ├── middleware/
+│   │   │   ├── activityLogger.ts
+│   │   │   ├── auth.ts
 │   │   │   ├── errorHandler.ts
+│   │   │   ├── setupMiddleware.ts
 │   │   │   └── validate.ts
 │   │   ├── models/
 │   │   │   ├── AffiliateLink.ts
 │   │   │   ├── AffiliateProgram.ts
+│   │   │   ├── AnalyticsEvent.ts
 │   │   │   ├── Brands.ts
 │   │   │   ├── Campaign.ts
 │   │   │   ├── ClickTracking.ts
@@ -103,6 +107,7 @@ fair-platform/
 │   │   │   ├── GroupType.ts
 │   │   │   ├── index.ts
 │   │   │   ├── LinkPage.ts
+│   │   │   ├── LinkedContent.ts
 │   │   │   ├── Minsite.ts
 │   │   │   ├── Notification.ts
 │   │   │   ├── Payout.ts
@@ -119,13 +124,23 @@ fair-platform/
 │   │   │   ├── UserReward.ts
 │   │   │   ├── vote.model.ts
 │   │   │   ├── Wishlist.ts
-│   │   │   └── Wishlistitem.ts
+│   │   │   └── WishlistItem.ts
 │   │   ├── routes/
 │   │   │   ├── affiliateRoutes.ts
-│   │   │   └── authRoutes.ts
+│   │   │   ├── analyticsRoutes.ts
+│   │   │   ├── authRoutes.ts
+│   │   │   └── setupRoutes.ts
+│   │   ├── socket/
+│   │   │   └── setupSocketIO.ts
+│   │   ├── graphql/
+│   │   │   ├── resolvers.ts
+│   │   │   ├── schema.ts
+│   │   │   └── setupApolloServer.ts
 │   │   ├── utils/
 │   │   │   └── logger.ts
-│   │   └── app.ts
+│   │   ├── app.ts
+│   │   ├── index.ts
+│   │   └── server.ts
 │   ├── .env
 │   ├── .eslintrc.json
 │   ├── Dockerfile
@@ -164,7 +179,11 @@ fair-platform/
 │   │   │   ├── Calendar.tsx
 │   │   │   ├── CampaignCard.tsx
 │   │   │   ├── CampaignDetail.tsx
-│   │   │   └── CampaignList.tsx
+│   │   │   ├── CampaignList.tsx
+│   │   │   ├── CheckoutOrderSummary.tsx
+│   │   │   ├── AdminPanel.tsx
+│   │   │   ├── AdminSidebar.tsx
+│   │   │   └── MusicPlayerControls.tsx
 │   │   ├── contexts/
 │   │   ├── hooks/
 │   │   ├── pages/
