@@ -25,4 +25,3 @@ export const connectToDatabase = async () => {
     process.exit(1);
   }
 };
-export { sequelize };

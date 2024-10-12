@@ -4,7 +4,10 @@ import { sequelize } from '@config/database';
 interface CompanyAttributes {
   id: number;
   name: string;
+  industry: string;
   description: string;
+  referralTerms: string;
+  generosityScore: number;
   website: string;
   logo: string;
   createdAt?: Date;
@@ -22,7 +25,6 @@ class Company extends Model<CompanyAttributes, CompanyCreationAttributes> implem
   public generosityScore!: number;
   public website!: string;
   public logo!: string;
-  // timestamps!
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -52,12 +54,14 @@ Company.init(
     },
     generosityScore: {
       type: DataTypes.FLOAT,
-        allowNull: true,
-        website: {
-          type: DataTypes.STRING,
-          defaultValue: 0,
-          logo: {
-            type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 0,
+    },
+    website: {
+      type: DataTypes.STRING,
+    },
+    logo: {
+      type: DataTypes.STRING,
     },
   },
   {

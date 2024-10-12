@@ -1,6 +1,6 @@
 // backend/src/models/Grant.ts
 import { DataTypes, Model } from 'sequelize';
-import sequelize from './index';
+import { sequelize } from '@config/database';
 
 class Grant extends Model {
   public id!: number;

@@ -3,7 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { setupMiddleware } from './middleware/setupMiddleware';
-import { setupRoutes } from ',/routes/setupRoutes';
+import { setupRoutes } from './routes/setupRoutes';
 import { setupApolloServer } from './graphql/setupApolloServer';
 import { connectToDatabase } from '@config/database';
 import { setupSocketIO } from './socket/setupSocketIO';

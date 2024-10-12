@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/database';
+import { sequelize } from '@config/database';
 import User from './user.model';
 import Group from './group.model';
 

@@ -1,6 +1,6 @@
 // backend/src/models/Dividend.ts
 import { DataTypes, Model } from 'sequelize';
-import sequelize from './index';
+import { sequelize } from '@config/database';
 
 class Dividend extends Model {
   public id!: number;

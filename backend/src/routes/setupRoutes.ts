@@ -8,7 +8,7 @@ import affiliateLinkRoutes from './affiliateLinkRoutes';
 import affiliateRoutes from './affiliateRoutes';
 import clickTrackingRoutes from './clickTrackingRoutes';
 import analyticsRoutes from './analyticsRoutes';
-import linkInBioRoutes from './linkInBioRoutes';
+import linkInBioRoutes from './LinkInBioRoutes';
 import recommendationRoutes from './recommendationRoutes';
 import payoutRoutes from './payoutRoutes';
 import minsiteRoutes from './minsiteRoutes';

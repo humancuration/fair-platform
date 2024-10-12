@@ -1,6 +1,6 @@
 // backend/src/models/Forum.ts
 import { DataTypes, Model } from 'sequelize';
-import sequelize from './index';
+import { sequelize } from '@config/database';
 
 class Forum extends Model {
   public id!: number;

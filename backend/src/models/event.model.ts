@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/database';
+import { sequelize } from '@config/database';
 import Group from './group.model';
 
 class Event extends Model {

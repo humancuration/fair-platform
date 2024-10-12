@@ -1,6 +1,6 @@
-const axios = require('axios');
+import axios from 'axios';
 
-const sendDiscordWebhook = async (webhookURL, content) => {
+export const sendDiscordWebhook = async (webhookURL: string, content: string): Promise<void> => {
   try {
     await axios.post(webhookURL, {
       content,
@@ -9,5 +9,3 @@ const sendDiscordWebhook = async (webhookURL, content) => {
     console.error('Error sending Discord webhook:', error);
   }
 };
-
-module.exports = { sendDiscordWebhook };
