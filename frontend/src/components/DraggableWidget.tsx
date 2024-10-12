@@ -1,9 +1,7 @@
-// DraggableWidget.jsx
-
 import React from 'react';
 import { Rnd } from 'react-rnd';
 
-const DraggableWidget = () => (
+const DraggableWidget: React.FC = () => (
   <Rnd
     default={{
       x: 50,

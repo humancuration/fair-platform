@@ -1,7 +1,7 @@
 // frontend/src/pages/AffiliateAnalyticsPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
+import api from '@api/api';
 import { Bar } from 'react-chartjs-2';
 import { AxiosResponse } from 'axios';
 

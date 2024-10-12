@@ -1,8 +1,6 @@
-// CustomCursor.jsx
-
 import React, { useEffect } from 'react';
 
-const CustomCursor = () => {
+const CustomCursor: React.FC = () => {
   useEffect(() => {
     const cursor = document.createElement('div');
     cursor.id = 'custom-cursor';
@@ -16,7 +14,7 @@ const CustomCursor = () => {
     cursor.style.transition = 'transform 0.1s ease-out';
     document.body.appendChild(cursor);
 
-    const moveCursor = (e) => {
+    const moveCursor = (e: MouseEvent) => {
       cursor.style.transform = `translate3d(${e.clientX - 10}px, ${e.clientY - 10}px, 0)`;
     };
 

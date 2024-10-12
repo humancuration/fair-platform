@@ -2,13 +2,16 @@ import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars, Text, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import { RootState } from '@react-three/fiber';
 
-const FloatingCube = () => {
-  const mesh = useRef();
-  useFrame((state) => {
-    mesh.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.2;
-    mesh.current.rotation.y = Math.cos(state.clock.elapsedTime) * 0.2;
-    mesh.current.position.y = Math.sin(state.clock.elapsedTime) * 0.5;
+const FloatingCube: React.FC = () => {
+  const mesh = useRef<THREE.Mesh>(null);
+  useFrame((state: RootState) => {
+    if (mesh.current) {
+      mesh.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.2;
+      mesh.current.rotation.y = Math.cos(state.clock.elapsedTime) * 0.2;
+      mesh.current.position.y = Math.sin(state.clock.elapsedTime) * 0.5;
+    }
   });
 
   const texture = useTexture('/path/to/your/logo.png');
@@ -21,10 +24,17 @@ const FloatingCube = () => {
   );
 };
 
-const FloatingText = ({ text, position }) => {
-  const textRef = useRef();
-  useFrame((state) => {
-    textRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + position[0]) * 0.5;
+interface FloatingTextProps {
+  text: string;
+  position: [number, number, number];
+}
+
+const FloatingText: React.FC<FloatingTextProps> = ({ text, position }) => {
+  const textRef = useRef<THREE.Mesh>(null);
+  useFrame((state: RootState) => {
+    if (textRef.current) {
+      textRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + position[0]) * 0.5;
+    }
   });
 
   return (
@@ -46,7 +56,7 @@ const FloatingText = ({ text, position }) => {
   );
 };
 
-const ThreeDScene = () => {
+const ThreeDScene: React.FC = () => {
   return (
     <Canvas style={{ height: '100vh' }} camera={{ position: [0, 0, 10] }}>
       <ambientLight intensity={0.5} />

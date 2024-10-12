@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../services/api';
+import api from '@api/api';
 import EventList from './EventList';
 import CreateEvent from './CreateEvent';
 import ManageMembers from './ManageMembers';

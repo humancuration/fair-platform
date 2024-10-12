@@ -1,8 +1,6 @@
-// BackgroundMusic.jsx
-
 import React, { useState, useEffect } from 'react';
 
-const BackgroundMusic = () => {
+const BackgroundMusic: React.FC = () => {
   const [audio] = useState(new Audio('/music/background.mp3'));
   const [playing, setPlaying] = useState(false);
 

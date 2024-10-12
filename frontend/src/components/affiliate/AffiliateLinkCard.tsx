@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { LinkIcon, AnalyticsIcon, EditIcon, DeleteIcon } from '@heroicons/react/outline';
-import api from '../../services/api';
+import api from '@api/api';
 
 interface AffiliateLink {
   id: number;

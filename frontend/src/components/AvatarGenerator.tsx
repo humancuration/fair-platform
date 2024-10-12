@@ -1,7 +1,6 @@
 import React from 'react';
 
-// Seedable random number generator function
-function mulberry32(seed) {
+function mulberry32(seed: number): () => number {
   return function() {
     let t = (seed += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
@@ -10,13 +9,24 @@ function mulberry32(seed) {
   };
 }
 
-const AvatarGenerator = ({ seed, colors = null, unlockedShapes = ['rectangle'], accessories = [] }) => {
+interface AvatarGeneratorProps {
+  seed: string;
+  colors?: string[] | null;
+  unlockedShapes?: string[];
+  accessories?: string[];
+}
+
+const AvatarGenerator: React.FC<AvatarGeneratorProps> = ({ 
+  seed, 
+  colors = null, 
+  unlockedShapes = ['rectangle'], 
+  accessories = [] 
+}) => {
   const size = 100;
   const blockSize = size / 5;
   const defaultColors = ['#ff6f61', '#ffec5c', '#9ccc65', '#00f7ff'];
   const colorPalette = colors || defaultColors;
 
-  // Initialize the seedable RNG
   const rng = mulberry32(parseInt(seed, 10));
 
   const getRandomColor = () => {
@@ -24,9 +34,9 @@ const AvatarGenerator = ({ seed, colors = null, unlockedShapes = ['rectangle'], 
   };
 
   const generatePattern = () => {
-    const pattern = [];
+    const pattern: boolean[][] = [];
     for (let y = 0; y < 5; y++) {
-      const row = [];
+      const row: boolean[] = [];
       for (let x = 0; x < 3; x++) {
         row.push(rng() > 0.5);
       }
@@ -37,8 +47,7 @@ const AvatarGenerator = ({ seed, colors = null, unlockedShapes = ['rectangle'], 
 
   const pattern = generatePattern();
 
-  // Shape functions
-  const shapes = {
+  const shapes: { [key: string]: (x: number, y: number, color: string) => JSX.Element } = {
     rectangle: (x, y, color) => (
       <>
         <rect
@@ -101,7 +110,6 @@ const AvatarGenerator = ({ seed, colors = null, unlockedShapes = ['rectangle'], 
     ),
   };
 
-  // Select a shape based on the unlocked shapes and seed
   const selectedShape = unlockedShapes[Math.floor(rng() * unlockedShapes.length)];
 
   return (
@@ -112,7 +120,6 @@ const AvatarGenerator = ({ seed, colors = null, unlockedShapes = ['rectangle'], 
           return shapes[selectedShape](x, y, color);
         })
       )}
-      {/* Accessories */}
       {accessories.includes('hat') && (
         <rect x={35} y={0} width={30} height={15} fill="#000" />
       )}

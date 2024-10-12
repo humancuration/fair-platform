@@ -3,7 +3,7 @@ import FullCalendar, { EventInput, DateSelectArg, EventApi } from '@fullcalendar
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
-import api from '../services/api';
+import api from '@api/api';
 import { useSocket } from '../contexts/SocketContext';
 
 interface CalendarProps {

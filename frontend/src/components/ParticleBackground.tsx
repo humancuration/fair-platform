@@ -1,9 +1,10 @@
 import React from 'react';
-import Particles from 'react-tsparticles';
+import Particles from '@tsparticles/react';
+import { Engine } from "@tsparticles/engine";
 import { loadFull } from "tsparticles";
 
-const ParticleBackground = () => {
-  const particlesInit = async (main) => {
+const ParticleBackground: React.FC = () => {
+  const particlesInit = async (main: Engine) => {
     await loadFull(main);
   };
 
@@ -52,25 +53,25 @@ const ParticleBackground = () => {
           size: {
             value: { min: 1, max: 5 },
           },
-          interactivity: {
-            events: {
-              onHover: {
-                enable: true,
-                mode: "repulse",
-              },
-              onClick: {
-                enable: true,
-                mode: "push",
-              },
+        },
+        interactivity: {
+          events: {
+            onHover: {
+              enable: true,
+              mode: "repulse",
             },
-            modes: {
-              repulse: {
-                distance: 100,
-                duration: 0.4,
-              },
-              push: {
-                quantity: 4,
-              },
+            onClick: {
+              enable: true,
+              mode: "push",
+            },
+          },
+          modes: {
+            repulse: {
+              distance: 100,
+              duration: 0.4,
+            },
+            push: {
+              quantity: 4,
             },
           },
         },

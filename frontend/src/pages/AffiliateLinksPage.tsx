@@ -1,7 +1,7 @@
 // frontend/src/pages/AffiliateLinksPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import api from '@/services/api';
+import api from '@api/api';
 import { exportAsStatic } from '@/utils/staticExport'; // Ensure the export function is correctly imported
 
 interface AffiliateProgram {

@@ -4,20 +4,30 @@ import { RootState } from '../store/store';
 import Button from './common/Button';
 import { toast } from 'react-toastify';
 
-const UserProfile: React.FC = () => {
-  const user = useSelector((state: RootState) => state.auth.user);
+interface User {
+  name: string;
+  email: string;
+}
 
-  const shareWishlist = () => {
-    const wishlistURL = `${window.location.origin}/u/${user.username}/wishlist`;
-    navigator.clipboard.writeText(wishlistURL);
-    toast.success('Wishlist link copied to clipboard!');
+interface UserProfileProps {
+  user: User;
+  onEdit: () => void;
+}
+
+const UserProfile: React.FC<UserProfileProps> = ({ user, onEdit }) => {
+  const handleFollow = () => {
+    // Implement follow functionality
+    console.log(`Following ${user.name}`);
   };
 
   return (
-    <div className="profile-container">
-      <h2 className="text-xl font-semibold">{user.username}</h2>
-      {/* ... other profile details */}
-      <Button onClick={shareWishlist}>Share Wishlist</Button>
+    <div className="user-profile">
+      <h2>{user.name}</h2>
+      <svg className="icon follow-button" viewBox="0 0 64 64" onClick={handleFollow}>
+        <circle cx="32" cy="32" r="30" stroke="#FF6F61" strokeWidth="4" fill="none" />
+      </svg>
+      <p>Email: {user.email}</p>
+      <button onClick={onEdit}>Edit Profile</button>
     </div>
   );
 };

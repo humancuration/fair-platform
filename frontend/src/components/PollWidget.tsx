@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import api from '../services/api';
+import api from '@api/api';
 import './PollWidget.css';
 
-const PollWidget = () => {
-  const [pollData, setPollData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+interface PollOption {
+  id: string;
+  text: string;
+}
+
+interface PollData {
+  question: string;
+  options: PollOption[];
+}
+
+const PollWidget: React.FC = () => {
+  const [pollData, setPollData] = useState<PollData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchPollData = async () => {
       try {
-        const response = await api.get('/polls/current');
+        const response = await api.get<PollData>('/polls/current');
         setPollData(response.data);
       } catch (err) {
         console.error('Error fetching poll data:', err);
@@ -25,6 +35,7 @@ const PollWidget = () => {
 
   if (loading) return <div className="poll-widget">Loading poll...</div>;
   if (error) return <div className="poll-widget error">{error}</div>;
+  if (!pollData) return null;
 
   return (
     <div className="poll-widget">

@@ -1,6 +1,12 @@
 import React from 'react';
 
-const Mascot = ({ color = '#FF6F61', accessory = 'none', expression = 'happy' }) => {
+interface MascotProps {
+  color?: string;
+  accessory?: 'glasses' | 'hat' | 'bowtie' | 'none';
+  expression?: 'happy' | 'surprised' | 'wink';
+}
+
+const Mascot: React.FC<MascotProps> = ({ color = '#FF6F61', accessory = 'none', expression = 'happy' }) => {
   const accessories = {
     glasses: (
       <g>
@@ -14,7 +20,8 @@ const Mascot = ({ color = '#FF6F61', accessory = 'none', expression = 'happy' })
     ),
     bowtie: (
       <path d="M85 140 L75 150 L85 160 L100 155 L115 160 L125 150 L115 140 Z" fill="#e74c3c" />
-    )
+    ),
+    none: null
   };
 
   const expressions = {

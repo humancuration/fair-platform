@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AffiliateLinksPage from '../AffiliateLinksPage';
 import { Provider } from 'react-redux';
 import { store } from '../../store/store';
-import api from '../../services/api';
+import api from '@api/api';
 import axios from 'axios';
 
 jest.mock('axios');

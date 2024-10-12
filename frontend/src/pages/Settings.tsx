@@ -1,7 +1,7 @@
 // frontend/src/pages/SettingsPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
+import api from '@api/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleDarkMode } from '../store/slices/themeSlice'; // Create a theme slice
 import { RootState } from '../store/store';
