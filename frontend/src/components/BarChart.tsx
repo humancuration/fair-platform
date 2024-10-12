@@ -1,10 +1,21 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const BarChart = ({ data }) => {
-  const ref = useRef();
+interface DataPoint {
+  name: string;
+  value: number;
+}
+
+interface BarChartProps {
+  data: DataPoint[];
+}
+
+const BarChart: React.FC<BarChartProps> = ({ data }) => {
+  const ref = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    if (!ref.current) return;
+
     const svg = d3.select(ref.current);
     svg.selectAll('*').remove();
 
@@ -22,10 +33,10 @@ const BarChart = ({ data }) => {
       .padding(0.4);
 
     const y = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.value)])
+      .domain([0, d3.max(data, d => d.value) || 0])
       .range([height, 0]);
 
-    const color = d3.scaleOrdinal()
+    const color = d3.scaleOrdinal<string>()
       .domain(data.map(d => d.name))
       .range(d3.schemeCategory10);
 
@@ -44,18 +55,18 @@ const BarChart = ({ data }) => {
       .data(data)
       .enter().append('rect')
       .attr('class', 'bar')
-      .attr('x', d => x(d.name))
+      .attr('x', d => x(d.name) || 0)
       .attr('width', x.bandwidth())
       .attr('y', height)
       .attr('height', 0)
       .attr('fill', d => color(d.name))
-      .on('mouseover', (event, d) => {
+      .on('mouseover', (event: MouseEvent, d: DataPoint) => {
         tooltip.transition()
           .duration(200)
           .style('opacity', .9);
         tooltip.html(`${d.name}: ${d.value}`)
-          .style('left', (event.pageX) + 'px')
-          .style('top', (event.pageY - 28) + 'px');
+          .style('left', `${event.pageX}px`)
+          .style('top', `${event.pageY - 28}px`);
       })
       .on('mouseout', () => {
         tooltip.transition()

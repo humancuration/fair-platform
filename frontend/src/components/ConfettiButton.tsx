@@ -1,7 +1,13 @@
 import React from 'react';
 import confetti from 'canvas-confetti';
 
-const ConfettiButton = ({ 
+interface ConfettiButtonProps {
+  text?: string;
+  colors?: string[];
+  onConfetti?: () => void;
+}
+
+const ConfettiButton: React.FC<ConfettiButtonProps> = ({ 
   text = 'Celebrate!', 
   colors = ['#ff6f61', '#ffec5c', '#2f1b0c'],
   onConfetti = () => {} 
