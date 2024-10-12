@@ -79,11 +79,11 @@ export const register = async (req: Request, res: Response) => {
 
     // Create Moodle user
     await createMoodleUser({
-      username: user.username,
+      username: User.username,
       password: req.body.password, // Note: Consider security implications
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
+      firstName: User.firstName,
+      lastName: User.lastName,
+      email: User.email,
     });
 
     res.status(201).json({ user, token });
