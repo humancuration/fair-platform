@@ -1,17 +1,13 @@
 import { Request, Response } from 'express';
-import { Group } from '../models/Group';
-import { User } from '../models/User';
-import { GroupType } from '../models/GroupType';
+import Group from '../models/Group';
+import User from '../models/User';
+import GroupType from '../models/GroupType';
 import { io } from '../server';
-import { createDiscourseCategory } from '../services/discourseService';
-import { createMoodleCourse } from '../services/moodleService';
+import { createDiscourseUser } from '../services/discourseService';
+import { createMoodleUser } from '../services/moodleService';
 import { triggerN8nWorkflow } from '../services/n8nService';
 import { createMauticContact, addContactToSegment, triggerCampaign } from '../services/mauticService';
 import { sendMessageToChannel } from '../discordBot';
-import { sendDiscordWebhook } from '../services/discordService';
-import { sendRocketChatMessage } from '../services/rocketChatService';
-import { createWekanCard } from '../services/wekanService';
-import { createNextcloudFolder } from '../services/nextcloudService';
 
 // Create a new group
 export const createGroup = async (req: Request, res: Response) => {
