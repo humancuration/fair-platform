@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import Resource from '../models/resource.model';
-import Group from '../models/group.model';
-import User from '../models/user.model';
+import Group from '../models/Group';
 
 export const offerResource = async (req: Request, res: Response) => {
   try {

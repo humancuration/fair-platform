@@ -207,7 +207,6 @@ fair-platform/
 │   │   │   ├── Event.ts
 │   │   │   ├── Forum.ts
 │   │   │   ├── Grant.ts
-│   │   │   ├── group.model.ts
 │   │   │   ├── Group.ts
 │   │   │   ├── groupMember.model.ts
 │   │   │   ├── GroupType.ts

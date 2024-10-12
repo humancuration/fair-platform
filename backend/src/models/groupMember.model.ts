@@ -1,7 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '@config/database';
 import User from './User';
-import Group from './group.model';
+import Group from './Group';
 
 class GroupMember extends Model {
   public userId!: number;

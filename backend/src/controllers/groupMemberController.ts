@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import GroupMember from '../models/groupMember.model';
-import Group from '../models/group.model';
-import User from '../models/user.model';
+import Group from '../models/Group';
+import User from '../models/User';
 
 export const addMember = async (req: Request, res: Response) => {
   try {

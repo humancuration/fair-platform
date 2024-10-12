@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '@config/database';
-import Group from './group.model';
+import Group from './Group';
 
 class Event extends Model {
   public id!: number;
