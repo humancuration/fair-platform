@@ -1,7 +1,8 @@
 // frontend/src/pages/ActivityLogPage.tsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../services/api';
+import { AxiosResponse } from 'axios';
 
 interface Activity {
   id: number;
@@ -10,27 +11,29 @@ interface Activity {
   details: string;
 }
 
+interface APIResponseActivity extends Activity {}
+
 const ActivityLogPage: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get('/user/activity-log'); // Implement this endpoint
+      const response: AxiosResponse<APIResponseActivity[]> = await api.get('/user/activity-log');
       setActivities(response.data);
-      setLoading(false);
     } catch (err) {
       console.error('Error fetching activity log:', err);
       setError('Failed to load activity log. Please try again later.');
+    } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchActivities();
-  }, []);
+  }, [fetchActivities]);
 
   if (loading) return <div>Loading activity log...</div>;
   if (error) return <div>Error: {error}</div>;

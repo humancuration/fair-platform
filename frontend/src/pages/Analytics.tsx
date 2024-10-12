@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState, useContext, useMemo } from 'react';
+import axios, { AxiosResponse } from 'axios';
 import { AuthContext } from '../contexts/AuthContext';
 
 interface AnalyticsData {
@@ -13,10 +13,13 @@ const Analytics: React.FC = () => {
   const { token } = useContext(AuthContext);
   const companyId = 1; // Replace with dynamic company ID based on user
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await axios.get(`/api/analytics/company/${companyId}`, {
+        const res: AxiosResponse<AnalyticsData> = await axios.get(`/api/analytics/company/${companyId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -24,11 +27,20 @@ const Analytics: React.FC = () => {
         setData(res.data);
       } catch (err) {
         console.error(err);
-        alert('Failed to fetch analytics');
+        setError('Failed to fetch analytics.');
+      } finally {
+        setLoading(false);
       }
     };
     fetchAnalytics();
   }, [token, companyId]);
+
+  const totalDividends = useMemo(() => {
+    return data ? data.totalRevenue / data.totalProducts : 0;
+  }, [data]);
+
+  if (loading) return <p>Loading analytics...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   if (!data) return <p>Loading analytics...</p>;
 

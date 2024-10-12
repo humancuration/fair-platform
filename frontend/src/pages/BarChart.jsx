@@ -1,6 +1,7 @@
 // BarChart.jsx
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import PropTypes from 'prop-types';
 
 const BarChart = ({ data }) => {
   const ref = useRef();
@@ -9,7 +10,7 @@ const BarChart = ({ data }) => {
     const svg = d3.select(ref.current);
     svg.selectAll('*').remove(); // Clear previous content
 
-    const width = 500;
+    const width = ref.current.parentElement ? ref.current.parentElement.offsetWidth : 500;
     const height = 300;
 
     svg.attr('width', width).attr('height', height);
@@ -47,7 +48,16 @@ const BarChart = ({ data }) => {
       .attr('height', (d) => height - y(d.value));
   }, [data]);
 
-  return <svg ref={ref}></svg>;
+  return <svg ref={ref} width={ref.current.parentElement ? ref.current.parentElement.offsetWidth : 500} height={300}></svg>;
+};
+
+BarChart.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+    })
+  ).isRequired,
 };
 
 export default BarChart;

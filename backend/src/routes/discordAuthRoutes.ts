@@ -29,7 +29,7 @@ router.get('/discord/callback', async (req: Request, res: Response) => {
         redirect_uri: `${process.env.BASE_URL}/api/auth/discord/callback`,
         scope: 'identify guilds',
       }),
-      {
+      { 
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },

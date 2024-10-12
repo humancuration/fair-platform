@@ -3,6 +3,15 @@ import Table from '../components/Table';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Pagination from '../components/Pagination';
 import api from '../utils/api';
+import { AxiosResponse } from 'axios';
+
+interface Grant {
+  id: number;
+  name: string;
+  amount: number;
+  status: string;
+  // Add more fields as needed
+}
 
 const AdminGrants: React.FC = () => {
   const [grants, setGrants] = useState([]);
@@ -11,18 +20,20 @@ const AdminGrants: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchGrants = async () => {
       try {
-        const response = await api.get('/grants', {
+        const response: AxiosResponse<{ grants: Grant[]; totalPages: number }> = await api.get('/grants', {
           params: { page: currentPage, limit: itemsPerPage },
         });
         setGrants(response.data.grants);
         setTotalPages(response.data.totalPages);
-        setLoading(false);
       } catch (err) {
-        // Handle error
+        console.error('Error fetching grants:', err);
+        setError('Failed to load grants. Please try again later.');
+      } finally {
         setLoading(false);
       }
     };
@@ -54,6 +65,7 @@ const AdminGrants: React.FC = () => {
   ];
 
   if (loading) return <LoadingSpinner />;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div>

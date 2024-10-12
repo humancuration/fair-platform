@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Bar } from 'react-chartjs-2';
+import { AxiosResponse } from 'axios';
 
 interface AffiliateLink {
   id: number;
@@ -12,13 +13,27 @@ interface AffiliateLink {
   commissionEarned: number;
 }
 
+interface APIResponseLink {
+  id: number;
+  customAlias: string;
+  clicks: number;
+  conversions: number;
+  affiliateProgram: {
+    commissionRate: number;
+    name: string;
+  };
+}
+
 const AffiliateAnalyticsPage: React.FC = () => {
   const [affiliateLinks, setAffiliateLinks] = useState<AffiliateLink[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
   const fetchAffiliateLinks = async () => {
     try {
-      const response = await api.get('/affiliate/links');
-      const links = response.data.map((link: any) => ({
+      setLoading(true);
+      const response: AxiosResponse<APIResponseLink[]> = await api.get('/affiliate/links');
+      const links = response.data.map((link) => ({
         id: link.id,
         customAlias: link.customAlias || link.affiliateProgram.name,
         clicks: link.clicks,
@@ -28,6 +43,9 @@ const AffiliateAnalyticsPage: React.FC = () => {
       setAffiliateLinks(links);
     } catch (error) {
       console.error('Error fetching affiliate links', error);
+      setError('Failed to load affiliate analytics.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +73,9 @@ const AffiliateAnalyticsPage: React.FC = () => {
       },
     ],
   };
+
+  if (loading) return <div>Loading affiliate analytics...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="container mx-auto p-4">
