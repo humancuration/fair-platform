@@ -53,7 +53,7 @@ const PublicWishlistPage: React.FC = () => {
         {wishlist && (
           <ul className="mt-4">
             {wishlist.items.map((item) => (
-              <WishlistItem key={item.id} item={item} />
+              <WishlistItem key={item.id} item={{...item, isPublic: true}} />
             ))}
           </ul>
         )}

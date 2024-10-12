@@ -1,6 +1,6 @@
 // backend/src/models/Post.ts
 import { DataTypes, Model } from 'sequelize';
-import sequelize from './index';
+import { sequelize } from './index';
 import User from './User';
 import Forum from './Forum';
 
