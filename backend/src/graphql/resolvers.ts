@@ -1,4 +1,6 @@
 import { PubSub } from 'graphql-subscriptions';
+import { initializeRepo } from '../services/versionControlService';
+import { v4 as uuidv4 } from 'uuid';
 
 const pubsub = new PubSub();
 
@@ -24,6 +26,14 @@ export const resolvers = {
       const updatedGroup = await dataSources.groupAPI.addMemberToGroup(groupId, currentUser.id);
       pubsub.publish('NEW_GROUP_MEMBER', { newGroupMember: currentUser, groupId });
       return updatedGroup;
+    },
+    initializeRepository: async (_, { name }) => {
+      await initializeRepo(name);
+      return { 
+        id: uuidv4(), 
+        name, 
+        createdAt: new Date().toISOString() 
+      };
     },
   },
   Subscription: {

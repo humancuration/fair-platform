@@ -24,6 +24,12 @@ export const typeDefs = gql`
     group: Group!
   }
 
+  type Repository {
+    id: ID!
+    name: String!
+    createdAt: String!
+  }
+
   type Query {
     user(id: ID!): User
     group(id: ID!): Group
@@ -33,6 +39,7 @@ export const typeDefs = gql`
   type Mutation {
     createGroup(name: String!, description: String): Group!
     joinGroup(groupId: ID!): Group!
+    initializeRepository(name: String!): Repository!
   }
 
   type Subscription {

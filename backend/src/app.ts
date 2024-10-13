@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { sequelize } from './config/database'; // Sequelize instance
 import { createServer } from 'http';
+import versionControlRoutes from './routes/versionControlRoutes';
 const app = express();
 
 const httpServer = createServer(app);
@@ -21,6 +22,7 @@ app.use('/api/surveys', surveyRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/version-control', versionControlRoutes);
 
 // Apply rate limiting to all requests
 const limiter = rateLimit({

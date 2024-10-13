@@ -1,16 +1,20 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '@config/database';
 import User from './User';
+import Repository from './Repository';
 
 class Notification extends Model {
   public id!: number;
   public userId!: number;
   public message!: string;
+  public type!: 'version-control' | 'other'; // Added type field
   public read!: boolean;
-  public date!: Date;
+  public createdAt!: Date; // Renamed 'date' to 'createdAt' for consistency
+  public repositoryId?: number; // Added optional repositoryId
 
   // Associations
   public readonly user?: User;
+  public readonly repository?: Repository; // Added repository association
 }
 
 Notification.init(
@@ -32,13 +36,25 @@ Notification.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    type: {
+      type: DataTypes.ENUM('version-control', 'other'),
+      allowNull: false,
+    },
     read: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    date: {
+    createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+    },
+    repositoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Repositories',
+        key: 'id',
+      },
     },
   },
   {
@@ -49,5 +65,6 @@ Notification.init(
 );
 
 Notification.belongsTo(User, { foreignKey: 'userId' });
+Notification.belongsTo(Repository, { foreignKey: 'repositoryId' });
 
 export default Notification;
