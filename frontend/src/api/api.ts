@@ -55,4 +55,9 @@ export const redeemReward = (rewardId: string) => api.post('/rewards/redeem', { 
 export const addReward = (campaignId: string, rewardData: any) => api.post('/rewards', { campaignId, ...rewardData });
 export const getRewardsByCampaign = (campaignId: string) => api.get(`/rewards/campaign/${campaignId}`);
 
+// Add the new initializeRepository function
+export const initializeRepository = (repoName: string) => {
+  return api.post('/version-control/initialize', { repoName });
+};
+
 export default api;

@@ -17,6 +17,7 @@ import PlaylistCreationPage from './pages/PlaylistCreationPage';
 import PlaylistListPage from './pages/PlaylistListPage';
 import PlaylistDetailsPage from './pages/PlaylistDetailsPage';
 import CreateCampaignPage from './pages/CreateCampaignPage';
+import RepositoryBrowser from './components/versionControl/RepositoryBrowser';
 
 // Lazy-loaded components
 const Home = lazy(() => import('@pages/Home'));
@@ -86,6 +87,7 @@ const App: React.FC = () => {
                     <Route path="/playlists/create" element={<PlaylistCreationPage />} />
                     <Route path="/playlists/:playlistId" element={<PlaylistDetailsPage />} />
                     <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
+                    <Route path="/versionControl" element={<RepositoryBrowser />} />  
                     {/* Fallback route */}
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
