@@ -1,5 +1,5 @@
 import { PubSub } from 'graphql-subscriptions';
-import { initializeRepo } from '../services/versionControlService';
+import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../services/versionControlService';
 import { v4 as uuidv4 } from 'uuid';
 
 const pubsub = new PubSub();
@@ -32,8 +32,26 @@ export const resolvers = {
       return { 
         id: uuidv4(), 
         name, 
-        createdAt: new Date().toISOString() 
+        createdAt: new Date().toISOString(),
+        lfsEnabled: true
       };
+    },
+    cloneRepository: async (_, { url, name }) => {
+      await cloneRepo(url, name);
+      return {
+        id: uuidv4(),
+        name,
+        createdAt: new Date().toISOString(),
+        lfsEnabled: true
+      };
+    },
+    commitChanges: async (_, { repoName, filepath, message }) => {
+      await addAndCommit(repoName, filepath, message);
+      return true;
+    },
+    pushChanges: async (_, { repoName }) => {
+      await pushChanges(repoName);
+      return true;
     },
   },
   Subscription: {

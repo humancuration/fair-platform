@@ -28,6 +28,7 @@ export const typeDefs = gql`
     id: ID!
     name: String!
     createdAt: String!
+    lfsEnabled: Boolean!
   }
 
   type Query {
@@ -40,6 +41,9 @@ export const typeDefs = gql`
     createGroup(name: String!, description: String): Group!
     joinGroup(groupId: ID!): Group!
     initializeRepository(name: String!): Repository!
+    cloneRepository(url: String!, name: String!): Repository!
+    commitChanges(repoName: String!, filepath: String!, message: String!): Boolean!
+    pushChanges(repoName: String!): Boolean!
   }
 
   type Subscription {
