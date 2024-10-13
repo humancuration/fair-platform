@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
-import Reward from '../models/Reward';
+import { Reward } from '../models/Reward';
 import { UserReward } from '../models/UserReward';
-import Campaign from '../models/Campaign';
+import { Campaign } from '../models/Campaign';
 
 export const getAvailableRewards = async (req: Request, res: Response) => {
   const rewardRepository = AppDataSource.getRepository(Reward);

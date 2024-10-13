@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Survey from '../models/Survey';
+import { Survey } from '../models/Survey';
 // Import other models as needed (Discussion, LearningModule, etc.)
 
 class SearchController {

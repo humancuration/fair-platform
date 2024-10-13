@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import Wishlist from '@models/Wishlist';
-import User from '@models/User';
-import CommunityWishlistItem from '@models/CommunityWishlistItem';
+import { Wishlist } from '@models/Wishlist';
+import { User } from '@models/User';
+import { CommunityWishlistItem } from '@models/CommunityWishlistItem';
 
 export const upsertWishlist = async (req: Request, res: Response) => {
   const userId = (req.user as any).id;

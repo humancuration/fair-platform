@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createAIEthicsCourse, addReflectionActivity } from '../services/moodleService';
+import { createAIEthicsCourse, addReflectionActivity } from '@services/moodleService';
 
 export const createAIEthicsCourseHandler = async (req: Request, res: Response) => {
   try {

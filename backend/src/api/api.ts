@@ -1,5 +1,5 @@
 import express from 'express';
-import { userAPI } from '../datasources/UserAPI'; // Corrected import to match the exported member
+import { userAPI } from '@api/UserAPI'; // Corrected import to match the exported member
 
 const router = express.Router();
 

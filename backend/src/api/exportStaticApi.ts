@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateStaticFiles } from '../services/staticExportService';
+import { generateStaticFiles } from '@services/staticExportService';
 
 const router = express.Router();
 

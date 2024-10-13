@@ -1,8 +1,8 @@
 // controllers/clickTrackingController.ts
 
 import { Request, Response } from 'express';
-import AffiliateLink from '../models/AffiliateLink';
-import ClickTracking from '../models/ClickTracking';
+import AffiliateLink from '@models/AffiliateLink';
+import ClickTracking from '@models/ClickTracking';
 
 export const handleAffiliateClick = async (req: Request, res: Response) => {
   try {
@@ -24,9 +24,9 @@ export const handleAffiliateClick = async (req: Request, res: Response) => {
     });
 
     // Redirect to the original link
-    res.redirect(affiliateLink.originalLink);
+    return res.redirect(affiliateLink.originalLink); // Ensure to return the response
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' }); // Ensure to return the response
   }
 };

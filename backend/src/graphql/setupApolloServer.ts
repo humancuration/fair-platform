@@ -3,15 +3,15 @@ import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import http from 'http';
-import { typeDefs } from './schema';
-import { resolvers } from './resolvers';
-import { userAPI } from '../datasources/UserAPI'; // Ensure userAPI is imported correctly
+import { typeDefs } from '@graphql/schema';
+import { resolvers } from '@graphql/resolvers';
+import { userAPI } from '@api/UserAPI'; // Ensure userAPI is imported correctly
 
 // Define your custom context type
 interface Context {
   user: any; // Adjust this type as needed
   dataSources: {
-    userAPI: InstanceType<typeof UserAPI>; // Use the class type directly
+    userAPI: InstanceType<typeof userAPI>; // Use the class type directly
   };
 }
 

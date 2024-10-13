@@ -1,8 +1,8 @@
 // controllers/payoutController.ts
 
 import { Request, Response } from 'express';
-import Payout from '../models/Payout';
-import AffiliateLink from '../models/AffiliateLink';
+import { Payout } from '../models/Payout';
+import { AffiliateLink } from '../models/AffiliateLink';
 import { Op } from 'sequelize';
 
 export const initiatePayout = async (req: Request, res: Response) => {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import Event from '../models/Event';
-import Group from '../models/Group';
-import User from '../models/User';
+import Event from '@models/Event';
+import Group from '@models/Group';
+import User from '@models/User';
 import { io } from '../server';
 
 export const createEvent = async (req: Request, res: Response) => {
@@ -9,12 +9,12 @@ export const createEvent = async (req: Request, res: Response) => {
     const { groupId, title, description, date, location } = req.body;
     const creatorId = req.user.id;
 
-    const group = await Group.findById(groupId);
+    const group = await Group.findByPk(groupId);
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    if (!group.members.includes(creatorId)) {
+    if (!(group.members?.includes(creatorId))) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
@@ -30,15 +30,18 @@ export const createEvent = async (req: Request, res: Response) => {
 
     await event.save();
 
-    group.events.push(event._id);
+    if (!group.events) {
+      group.events = []; // Initialize as an empty array if undefined
+    }
+    group.events = [...group.events, event._id]; // Create a new array with the new event ID
     await group.save();
 
     io.to(groupId).emit('eventCreated', event);
 
-    res.status(201).json(event);
+    return res.status(201).json(event); // Ensure this return statement is reached
   } catch (error) {
     console.error('Error creating event:', error);
-    res.status(500).json({ message: 'Server Error' });
+    return res.status(500).json({ message: 'Server Error' }); // Ensure this return statement is reached
   }
 };
 

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import Campaign from '../models/Campaign';
-import Reward from '../models/Reward';
-import Contribution from '../models/Contribution';
+import { Campaign } from '../models/Campaign';
+import Reward from '@models/Reward';
+import Contribution from '@models/Contribution';
 
 // Create a new campaign
 export const createCampaign = async (req: Request, res: Response) => {
@@ -15,7 +15,7 @@ export const createCampaign = async (req: Request, res: Response) => {
 };
 
 // Get all campaigns
-export const getAllCampaigns = async (req: Request, res: Response) => {
+export const getAllCampaigns = async (_req: Request, res: Response) => {
   try {
     const campaigns = await Campaign.findAll({
       include: [

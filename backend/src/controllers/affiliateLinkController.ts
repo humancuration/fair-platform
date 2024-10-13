@@ -1,8 +1,8 @@
 // controllers/affiliateLinkController.ts
 
 import { Request, Response } from 'express';
-import AffiliateLink from '../models/AffiliateLink';
-import AffiliateProgram from '../models/AffiliateProgram';
+import AffiliateLink from '@models/AffiliateLink';
+import AffiliateProgram from '@models/AffiliateProgram';
 import { v4 as uuidv4 } from 'uuid';
 
 // Create Affiliate Link
@@ -28,10 +28,10 @@ export const createAffiliateLink = async (req: Request, res: Response) => {
       generatedLink,
     });
 
-    res.status(201).json(affiliateLink);
+    return res.status(201).json(affiliateLink);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 };
 

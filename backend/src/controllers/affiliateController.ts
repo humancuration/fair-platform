@@ -1,10 +1,10 @@
 // controllers/affiliateController.ts
 
 import { Request, Response } from 'express';
-import { Request as ExpressRequest } from 'express';
-import AffiliateLink from '../models/AffiliateLink';
-import { generateTrackingCode, generateAffiliateLink } from '../utils/generateAffiliateLink';
-import logger from '../utils/logger'; // Import the centralized logger
+import AffiliateLink from '@models/AffiliateLink'; // Changed to default import
+import AffiliateProgram from '@models/AffiliateProgram';
+import { generateTrackingCode, generateAffiliateLink } from '@utils/generateAffiliateLink';
+import logger from '@utils/logger'; // Import the centralized logger
 
 export const createAffiliateLink = async (req: Request, res: Response) => {
   const { affiliateProgramId, originalLink, customAlias } = req.body;
@@ -63,10 +63,10 @@ export const trackAffiliateClick = async (req: Request, res: Response) => {
     await affiliateLink.save();
 
     // Redirect to the original link
-    res.redirect(affiliateLink.originalLink);
+    return res.redirect(affiliateLink.originalLink);
   } catch (error) {
     console.error('Error tracking affiliate click:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

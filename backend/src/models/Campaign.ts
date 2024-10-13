@@ -1,74 +1,63 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import User from './User';
-import Reward from './Reward';
-import Contribution from './Contribution';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-class Campaign extends Model {
-  public id!: number;
-  public title!: string;
-  public description!: string;
-  public goalAmount!: number;
-  public currentAmount!: number;
-  public creatorId!: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+@Table({
+  tableName: 'campaigns',
+  timestamps: true, // if you want createdAt and updatedAt fields
+})
+export class Campaign extends Model<Campaign> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number; // Added id field
 
-  // Associations
-  public readonly creator?: User;
-  public readonly rewards?: Reward[];
-  public readonly contributions?: Contribution[];
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string; // Changed from name to title
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  description!: string; // Added description field
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  goalAmount!: number; // Added goalAmount field
+
+  @Column({
+    type: DataType.FLOAT,
+    defaultValue: 0,
+  })
+  currentAmount!: number; // Added currentAmount field
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  creatorId!: number; // Added creatorId field
+
+  @Column({
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
+  })
+  createdAt!: Date; // Added createdAt field
+
+  @Column({
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
+  })
+  updatedAt!: Date; // Added updatedAt field
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  isActive!: boolean; // Merged isActive field
 }
-
-Campaign.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    goalAmount: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    currentAmount: {
-      type: DataTypes.FLOAT,
-      defaultValue: 0,
-    },
-    creatorId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'campaigns',
-    timestamps: true,
-  }
-);
-
-Campaign.belongsTo(User, { foreignKey: 'creatorId' });
-Campaign.hasMany(Reward, { foreignKey: 'campaignId', as: 'rewards' });
-Campaign.hasMany(Contribution, { foreignKey: 'campaignId', as: 'contributions' });
-
-export default Campaign;

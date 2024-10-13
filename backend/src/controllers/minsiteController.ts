@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import Minsite from '../models/Minsite'; // Ensure this path is correct based on your project structure
+import { Minsite } from '../models/Minsite'; // Ensure this path is correct based on your project structure
 
 interface AuthRequest extends Request {
   user?: {

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { createGiteaRepository, getGiteaIssues } from '../services/giteaService';
-import { triggerDroneBuild, getDroneBuildStatus } from '../services/droneService';
+import { triggerDroneBuild, _getDroneBuildStatus } from '../services/droneService';
 
 export const createRepository = async (req: Request, res: Response) => {
   try {

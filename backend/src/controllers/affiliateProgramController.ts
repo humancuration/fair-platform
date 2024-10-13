@@ -1,8 +1,8 @@
 // controllers/affiliateProgramController.ts
 
 import { Request, Response } from 'express';
-import AffiliateProgram from '../models/AffiliateProgram';
-import Brand from '../models/Brand';
+import AffiliateProgram from '@models/AffiliateProgram';
+import Brand from '@models/Brands';
 
 export const createAffiliateProgram = async (req: Request, res: Response) => {
   const { name, description, commissionRate } = req.body;
@@ -23,7 +23,7 @@ export const createAffiliateProgram = async (req: Request, res: Response) => {
   }
 };
 
-export const getAffiliatePrograms = async (req: Request, res: Response) => {
+export const getAffiliatePrograms = async (_req: Request, res: Response) => {
   try {
     const programs = await AffiliateProgram.findAll({
       include: [{ model: Brand }],
