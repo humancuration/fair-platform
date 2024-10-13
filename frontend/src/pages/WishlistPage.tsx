@@ -3,7 +3,7 @@ import Layout from '@components/Layout';
 import WishlistItem from '@components/WishlistItem';
 import AddWishlistItemModal from '@components/AddWishlistItemModal';
 import Button from '@components/common/Button';
-import api from '@utils/api';
+import api from '@api/api';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store/store';
 import { toast } from 'react-toastify';

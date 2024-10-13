@@ -1,15 +1,13 @@
-import React from 'react';
-import GlobalSearch from './GlobalSearch';
+import React, { ReactNode } from 'react';
 
-const Layout: React.FC = ({ children }) => {
+interface LayoutProps {
+  children: ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="app-layout">
-      <header>
-        <nav>{/* Your navigation items */}</nav>
-        <GlobalSearch />
-      </header>
-      <main>{children}</main>
-      <footer>{/* Your footer content */}</footer>
+      {children}
     </div>
   );
 };

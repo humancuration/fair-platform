@@ -1,10 +1,8 @@
-// CursorTrail.jsx
-
 import React, { useEffect } from 'react';
 
-const CursorTrail = () => {
+const CursorTrail: React.FC = () => {
   useEffect(() => {
-    const dots = [];
+    const dots: HTMLDivElement[] = [];
     const mouse = { x: 0, y: 0 };
 
     const createDot = () => {
@@ -34,15 +32,18 @@ const CursorTrail = () => {
       requestAnimationFrame(animateDots);
     };
 
-    window.addEventListener('mousemove', (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-    });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
 
     animateDots();
 
     return () => {
       dots.forEach((dot) => document.body.removeChild(dot));
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 

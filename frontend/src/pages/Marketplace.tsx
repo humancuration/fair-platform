@@ -8,8 +8,8 @@ import { motion } from 'framer-motion';
 import Skeleton from 'react-loading-skeleton';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet';
-import InfiniteScrollComponent from '../components/InfiniteScrollComponent';
-import ProductCard from '../components/ProductCard';
+import InfiniteScrollComponent from '../components/infiniteScrollComponent';
+import ProductCard from '../components/marketplace/ProductCard';
 
 interface Product {
   id: number;
@@ -22,24 +22,31 @@ interface Product {
 const Marketplace: React.FC = () => {
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, _setRecommendations] = useState<Product[]>([]);
   const [filters, setFilters] = useState({});
   const [sortOption, setSortOption] = useState('price-asc');
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const productsPerPage = 12;
-
-  const { isLoading, error } = useQuery<Product[]>('products', fetchProducts, {
-    onSuccess: (data) => {
-      setProducts(data.slice(0, productsPerPage));
-      setHasMore(data.length > productsPerPage);
-    },
-  });
+  const { isLoading, error } = useQuery<{ data: Product[] }>('products', 
+    () => fetchProducts({ 
+      page: 1, 
+      limit: productsPerPage, 
+      filters, 
+      sort: sortOption, 
+      query 
+    }),
+    {
+      onSuccess: (response) => {
+        setProducts(response.data.slice(0, productsPerPage));
+      }
+    }
+  );
 
   const fetchMoreData = useCallback(async () => {
     try {
-      const response = await fetchProducts({ page: page + 1, limit: productsPerPage, ...filters, sort: sortOption, query });
+      const response = await fetchProducts({ page: page + 1, limit: productsPerPage, filters, sort: sortOption, query });
       const newProducts = response.data;
       if (newProducts.length === 0) {
         setHasMore(false);
@@ -93,8 +100,7 @@ const Marketplace: React.FC = () => {
   }, [sortOption]);
 
   if (isLoading) return <Skeleton count={12} />;
-  if (error) return <div>Error: {error.message}</div>;
-
+  if (error) return <div>Error: {(error as Error)?.message || 'An error occurred'}</div>;
   return (
     <motion.div
       key="marketplace"
@@ -108,7 +114,7 @@ const Marketplace: React.FC = () => {
       </Helmet>
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">{t('marketplace.title')}</h1>
-        <RecommendationCarousel recommendations={recommendations} />
+        <RecommendationCarousel products={recommendations} />
         <SearchBar onSearch={handleSearch} />
         <div className="flex flex-wrap -mx-4">
           <div className="w-full md:w-1/4 px-4">
@@ -119,7 +125,7 @@ const Marketplace: React.FC = () => {
               <option value="price-asc">{t('marketplace.sortPriceAsc')}</option>
               <option value="price-desc">{t('marketplace.sortPriceDesc')}</option>
             </select>
-            <InfiniteScrollComponent
+            <InfiniteScrollComponent<Product>
               fetchMoreData={fetchMoreData}
               hasMore={hasMore}
               renderItem={(product: Product) => <ProductCard key={product.id} product={product} />}

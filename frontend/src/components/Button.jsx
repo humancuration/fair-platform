@@ -2,12 +2,12 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Button = ({ onClick, label }) => (
+const ButtonComponent = ({ onClick, label }) => (
   <button onClick={onClick} className="btn">
     {label}
   </button>
 );
-const Button = styled.button`
+const Button = styled(ButtonComponent)`
   background: ${({ theme }) => theme.primary};
   color: ${({ theme }) => theme.text};
   padding: 0.5rem 1rem;

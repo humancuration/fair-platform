@@ -28,6 +28,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   } catch (err) {
     res.status(401).json({ message: 'Token is not valid' });
   }
+  return next();
 };
 
 export const authorizeVersionControl = (req: AuthRequest, res: Response, next: NextFunction) => {

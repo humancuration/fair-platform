@@ -1,15 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from './common/Button';
 
-const SearchBar: React.FC = () => {
-  const [query, setQuery] = useState('');
+interface SearchBarProps {
+  onSearch?: (searchQuery: string) => Promise<void>;
+  initialQuery?: string;
+}
+
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, initialQuery = '' }) => {
+  const [query, setQuery] = useState(initialQuery);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?query=${encodeURIComponent(query.trim())}`);
+      if (onSearch) {
+        onSearch(query.trim());
+      } else {
+        navigate(`/search?query=${encodeURIComponent(query.trim())}`);
+      }
     }
   };
 
@@ -22,11 +35,10 @@ const SearchBar: React.FC = () => {
         placeholder="Search..."
         className="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:text-gray-200"
       />
-      <Button type="submit" variant="secondary">
+      <Button variant="secondary">
         Search
       </Button>
     </form>
   );
 };
-
 export default SearchBar;

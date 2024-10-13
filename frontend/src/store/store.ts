@@ -11,6 +11,23 @@ import communityWishlistReducer from './slices/communityWishlistSlice';
 import testimonialsReducer from './slices/testimonialsSlice';
 import groupsReducer from './slices/groupsSlice';
 import playlistsReducer from './slices/playlistsSlice';
+import cartReducer from './slices/cartSlice';
+
+import { combineReducers } from '@reduxjs/toolkit';
+
+const rootReducer = combineReducers({
+  auth: authReducer,
+  theme: themeReducer,
+  userSettings: userSettingsReducer,
+  notifications: notificationsReducer,
+  wishlist: wishlistReducer,
+  publicWishlist: publicWishlistReducer,
+  communityWishlist: communityWishlistReducer,
+  testimonials: testimonialsReducer,
+  groups: groupsReducer,
+  playlists: playlistsReducer,
+  cart: cartReducer,
+});
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +41,7 @@ export const store = configureStore({
     testimonials: testimonialsReducer,
     groups: groupsReducer,
     playlists: playlistsReducer,
+    cart: cartReducer,
   },
 });
 

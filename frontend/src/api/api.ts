@@ -26,7 +26,13 @@ api.interceptors.response.use(
   }
 );
 
-export const fetchProducts = () => api.get('/marketplace/products');
+export const fetchProducts = (params: {
+  page: number;
+  limit: number;
+  filters: any;
+  sort: string;
+  query: string;
+}) => api.get('/marketplace/products', { params });
 export const searchProducts = (params: any) => api.get('/marketplace/search', { params });
 export const fetchRecommendations = () => api.get('/marketplace/recommendations');
 

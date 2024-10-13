@@ -3,9 +3,9 @@ import { useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SearchBar from '../components/SearchBar';
-import ProductCard from '../components/ProductCard';
-import InfiniteScrollComponent from '../components/InfiniteScrollComponent';
-import api from '../utils/api';
+import ProductCard from '../components/marketplace/ProductCard';
+import InfiniteScrollComponent from '../components/infiniteScrollComponent';
+import api from '../api/api';
 import { handleError } from '../utils/errorHandler';
 
 const SearchResultsPage: React.FC = () => {
@@ -47,6 +47,7 @@ const SearchResultsPage: React.FC = () => {
           hasMore={hasMore}
           renderItem={(item) => <ProductCard key={item.id} product={item} />}
           initialData={results}
+          
         />
       </main>
       <Footer />
