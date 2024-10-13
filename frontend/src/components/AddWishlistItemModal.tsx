@@ -6,7 +6,7 @@ import TextInput from './forms/TextInput';
 import Checkbox from './forms/Checkbox';
 
 interface AddWishlistItemModalProps {
-  onAdd: (item: { name: string; description: string; image?: string; isPublic: boolean }) => void;
+  onAdd: (item: { name: string; description: string; image?: string; isPublic?: boolean }) => void; // Make isPublic optional
   onClose: () => void;
 }
 
@@ -34,30 +34,27 @@ const AddWishlistItemModal: React.FC<AddWishlistItemModalProps> = ({ onAdd, onCl
   return (
     <form onSubmit={formik.handleSubmit} className="space-y-4">
       <TextInput
+        // Removed name prop to avoid duplication
         label="Item Name"
-        name="name"
         type="text"
         {...formik.getFieldProps('name')}
       />
       <TextInput
         label="Description"
-        name="description"
         type="textarea"
         {...formik.getFieldProps('description')}
       />
       <TextInput
         label="Image URL (optional)"
-        name="image"
         type="url"
         {...formik.getFieldProps('image')}
       />
       <Checkbox
-        name="isPublic"
         label="Make Public"
         {...formik.getFieldProps('isPublic')}
       />
       <div className="flex justify-end space-x-2">
-        <Button type="button" onClick={onClose} variant="secondary">
+        <Button onClick={onClose} variant="secondary">
           Cancel
         </Button>
         <Button type="submit">Add Item</Button>

@@ -10,7 +10,11 @@ router.post('/initialize', authenticate, async (req, res) => {
     await initializeRepo(repoName);
     res.status(201).send({ message: 'Repository initialized with Git LFS support.' });
   } catch (error) {
-    res.status(500).send({ message: 'Error initializing repository', error: error.message });
+    if (error instanceof Error) {
+      res.status(500).send({ message: 'Error initializing repository', error: error.message });
+    } else {
+      res.status(500).send({ message: 'Error initializing repository', error: String(error) });
+    }
   }
 });
 
@@ -20,7 +24,11 @@ router.post('/clone', authenticate, async (req, res) => {
     await cloneRepo(url, dir);
     res.status(200).send({ message: 'Repository cloned successfully.' });
   } catch (error) {
-    res.status(500).send({ message: 'Error cloning repository', error: error.message });
+    if (error instanceof Error) {
+      res.status(500).send({ message: 'Error cloning repository', error: error.message });
+    } else {
+      res.status(500).send({ message: 'Error cloning repository', error: String(error) });
+    }
   }
 });
 
@@ -30,7 +38,11 @@ router.post('/commit', authenticate, async (req, res) => {
     await addAndCommit(dir, filepath, message);
     res.status(200).send({ message: 'Changes committed successfully.' });
   } catch (error) {
-    res.status(500).send({ message: 'Error committing changes', error: error.message });
+    if (error instanceof Error) {
+      res.status(500).send({ message: 'Error committing changes', error: error.message });
+    } else {
+      res.status(500).send({ message: 'Error committing changes', error: String(error) });
+    }
   }
 });
 
@@ -40,7 +52,11 @@ router.post('/push', authenticate, async (req, res) => {
     await pushChanges(dir);
     res.status(200).send({ message: 'Changes pushed successfully.' });
   } catch (error) {
-    res.status(500).send({ message: 'Error pushing changes', error: error.message });
+    if (error instanceof Error) {
+      res.status(500).send({ message: 'Error pushing changes', error: error.message });
+    } else {
+      res.status(500).send({ message: 'Error pushing changes', error: String(error) });
+    }
   }
 });
 

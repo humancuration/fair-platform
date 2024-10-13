@@ -25,6 +25,12 @@ interface WishlistType {
   items: WishlistItemType[];
 }
 
+interface AddWishlistItemModalProps {
+  isOpen: boolean; // Ensure isOpen is defined as a required boolean
+  onClose: () => void;
+  onAdd: (item: Partial<WishlistItemType>) => Promise<void>;
+}
+
 const WishlistPage: React.FC = () => {
   const [wishlist, setWishlist] = useState<WishlistType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -47,7 +53,8 @@ const WishlistPage: React.FC = () => {
     fetchWishlist();
   }, [user.id]);
 
-  const handleAddItem = async (item: Partial<WishlistItemType>) => {
+  const handleAddItem = async (item: { name: string; description: string; image?: string; isPublic?: boolean }) => {
+    // Ensure the item structure matches what AddWishlistItemModal expects
     try {
       const response = await api.post(`/wishlist/private/items`, item);
       setWishlist(prev => prev ? { ...prev, items: [...prev.items, response.data] } : null);
@@ -100,5 +107,4 @@ const WishlistPage: React.FC = () => {
     </Layout>
   );
 };
-
 export default WishlistPage;

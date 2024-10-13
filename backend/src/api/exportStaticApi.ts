@@ -3,7 +3,7 @@ import { generateStaticFiles } from '../services/staticExportService';
 
 const router = express.Router();
 
-router.post('/export-static', async (req, res) => {
+router.post('/export-static', async (_, res) => {
   try {
     const staticFiles = await generateStaticFiles();
     res.json(staticFiles);
