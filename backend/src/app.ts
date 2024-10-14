@@ -1,11 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import { setupApolloServer } from '@graphql/setupApolloServer';
-import { setupSocketIO } from '@socket/setupSocketIO';
-import { setupSwagger } from '@config/setupSwagger';
-import { errorHandler } from '@middleware/errorHandler';
-import dataRetentionTask from '@tasks/dataRetentionTask';
+import { setupApolloServer } from './graphql/setupApolloServer';
+import { setupSocketIO } from './socket/setupSocketIO';
+import { setupSwagger } from './config/setupSwagger';
+import { errorHandler } from './middleware/errorHandler';
+import dataRetentionTask from './tasks/dataRetentionTask';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { sequelize } from './config/database';
@@ -80,4 +80,4 @@ httpServer.listen(PORT, () => {
 // Start data retention task
 dataRetentionTask();
 
-export { io as server };
+export { app, httpServer, io };

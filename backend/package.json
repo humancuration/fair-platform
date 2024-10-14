@@ -1,11 +1,13 @@
 {
-  "name": "fair-platform-backend",
+  "name": "fair-platform",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "description": "Fair Platform Backend",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "node dist/app.js",
     "build": "tsc",
-    "dev": "nodemon --exec ts-node src/server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "test": "jest"
   },
   "dependencies": {
     "@apollo/server": "^4.11.0",
