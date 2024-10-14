@@ -38,11 +38,11 @@ export const createAffiliateLink = async (req: Request, res: Response, next: Nex
     await transaction.commit();
 
     logger.info(`Affiliate link created for user ${creatorId}`);
-    res.status(201).json(newAffiliateLink);
+    res.status(201).json({ message: 'Affiliate link created successfully', data: newAffiliateLink });
   } catch (error) {
     await transaction.rollback();
     logger.error('Error creating affiliate link:', error);
-    next(error);
+    next(new Error('Failed to create affiliate link'));
   }
 };
 

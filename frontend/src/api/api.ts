@@ -66,4 +66,11 @@ export const initializeRepository = (repoName: string) => {
   return api.post('/version-control/initialize', { repoName });
 };
 
+// Avatar methods
+api.createAvatar = (userId: string, avatarData: any) => axios.post(`/api/avatar`, { userId, ...avatarData });
+api.getAvatar = (userId: string) => axios.get(`/api/avatar/${userId}`);
+api.updateAvatar = (userId: string, avatarData: any) => axios.put(`/api/avatar/${userId}`, avatarData);
+api.getUserInventory = (userId: string) => axios.get(`/api/inventory/${userId}`);
+api.addItemToInventory = (userId: string, itemId: string) => axios.post(`/api/inventory`, { userId, itemId });
+
 export default api;

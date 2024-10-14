@@ -12,11 +12,13 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
+      logger.warn(`Login attempt with non-existent email: ${email}`);
       return next(new ValidationError('User not found'));
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      logger.warn(`Invalid credentials for email: ${email}`);
       return next(new ValidationError('Invalid credentials'));
     }
 
@@ -32,10 +34,10 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       { expiresIn: REFRESH_EXPIRATION }
     );
 
-    res.json({ accessToken, refreshToken });
+    res.json({ message: 'Login successful', accessToken, refreshToken });
   } catch (error) {
     logger.error('Login error:', error);
-    next(error);
+    next(new Error('Failed to login'));
   }
 };
 
