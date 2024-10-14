@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '@components/Layout';
 import WishlistItem from '@components/WishlistItem';
 import { useParams } from 'react-router-dom';
-import api from '@utils/api';
+import api from '@api/api';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '@components/LoadingSpinner';
 

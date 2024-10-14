@@ -1,41 +1,63 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { Campaign } from '@models/Campaign';
 import Reward from '@models/Reward';
 import Contribution from '@models/Contribution';
+import { CampaignRepository } from '@repositories/CampaignRepository';
+import { RewardRepository } from '@repositories/RewardRepository';
+import { NotFoundError, ValidationError } from '@utils/errors';
+import logger from '@utils/logger';
+import { sequelize } from '@config/database';
+
+const campaignRepo = new CampaignRepository();
+const rewardRepo = new RewardRepository();
 
 // Create a new campaign
-export const createCampaign = async (req: Request, res: Response) => {
+export const createCampaign = async (req: Request, res: Response, next: NextFunction) => {
+  const { title, description, goalAmount } = req.body;
+  const creatorId = req.user?.id;
+
+  if (!creatorId) {
+    return next(new ValidationError('User not authenticated'));
+  }
+
+  const transaction = await sequelize.transaction();
+
   try {
-    const { title, description, goalAmount, creatorId } = req.body;
-    
-    const campaign = await Campaign.create({
+    const campaign = await campaignRepo.create({
       title,
       description,
       goalAmount,
       creatorId,
       currentAmount: 0,
       isActive: true
-    } as Campaign);
+    }, { transaction });
 
+    await transaction.commit();
+
+    logger.info(`Campaign created by user ${creatorId}`);
     res.status(201).json(campaign);
   } catch (error) {
-    console.error('Error creating campaign:', error);
-    res.status(500).json({ error: 'Failed to create campaign.' });
+    await transaction.rollback();
+    logger.error('Error creating campaign:', error);
+    next(error);
   }
 };
 
 // Get all campaigns
-export const getAllCampaigns = async (_req: Request, res: Response) => {
+export const getAllCampaigns = async (req: Request, res: Response, next: NextFunction) => {
+  const { page = 1, limit = 10 } = req.query;
+
   try {
-    const campaigns = await Campaign.findAll({
-      include: [
-        { model: Reward, as: 'rewards' },
-        { model: Contribution, as: 'contributions' },
-      ],
+    const campaigns = await campaignRepo.findAll({
+      page: Number(page),
+      limit: Number(limit),
+      include: ['rewards', 'contributions'],
     });
+
     res.status(200).json(campaigns);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch campaigns.' });
+    logger.error('Error fetching campaigns:', error);
+    next(error);
   }
 };
 

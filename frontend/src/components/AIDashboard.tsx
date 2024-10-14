@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { useToast } from '../hooks/useToast';
+import Button from './common/Button';
+import Spinner from './common/Spinner';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -11,9 +14,17 @@ const AIDashboard: React.FC = () => {
   const [apiKey, setApiKey] = useState('');
   const [hostedService, setHostedService] = useState('');
   const [data, setData] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (apiType === 'byok' && (!apiUrl || !apiKey)) {
+      toast.warning('Please provide both API URL and API Key for BYOK option.');
+    }
+  }, [apiType, apiUrl, apiKey, toast]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       let response;
       switch (apiType) {
@@ -30,9 +41,12 @@ const AIDashboard: React.FC = () => {
           break;
       }
       setData(response.data);
-      setError(null);
+      toast.success('Data fetched successfully');
     } catch (err) {
-      setError('Failed to fetch data');
+      console.error('Error fetching data:', err);
+      toast.error('Failed to fetch data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,39 +68,54 @@ const AIDashboard: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>AI-Powered Analytics Dashboard</h1>
-      <div>
-        <select value={apiType} onChange={(e) => setApiType(e.target.value as 'byok' | 'hosted' | 'distributed')}>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">AI-Powered Analytics Dashboard</h1>
+      <div className="mb-4">
+        <select 
+          value={apiType} 
+          onChange={(e) => setApiType(e.target.value as 'byok' | 'hosted' | 'distributed')}
+          className="w-full p-2 border rounded mb-2"
+        >
           <option value="byok">Bring Your Own Key</option>
           <option value="hosted">Hosted Solution</option>
           <option value="distributed">Distributed Solution</option>
         </select>
         {apiType === 'byok' && (
           <>
-            <label>
-              API Endpoint:
-              <input type="text" value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} />
-            </label>
-            <label>
-              API Key:
-              <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
-            </label>
+            <input
+              type="text"
+              placeholder="API Endpoint"
+              value={apiUrl}
+              onChange={(e) => setApiUrl(e.target.value)}
+              className="w-full p-2 border rounded mb-2"
+            />
+            <input
+              type="password"
+              placeholder="API Key"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="w-full p-2 border rounded mb-2"
+            />
           </>
         )}
         {apiType === 'hosted' && (
-          <select value={hostedService} onChange={(e) => setHostedService(e.target.value)}>
+          <select
+            value={hostedService}
+            onChange={(e) => setHostedService(e.target.value)}
+            className="w-full p-2 border rounded mb-2"
+          >
             <option value="">Select a hosted service</option>
             <option value="service1">Hosted Service 1</option>
             <option value="service2">Hosted Service 2</option>
           </select>
         )}
-        <button onClick={fetchData}>Fetch Data</button>
+        <Button onClick={fetchData} disabled={loading}>
+          {loading ? <Spinner size="sm" /> : 'Fetch Data'}
+        </Button>
       </div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
       {data.length > 0 && (
         <div>
-          <h2>Data Visualization</h2>
+          <h2 className="text-xl font-semibold mb-2">Data Visualization</h2>
           <Bar data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </div>
       )}
