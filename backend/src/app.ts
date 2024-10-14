@@ -10,6 +10,9 @@ import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { sequelize } from './config/database';
 import dotenv from 'dotenv';
+import { json } from 'body-parser';
+import { userAPI } from './api/UserAPI';
+import { startDiscordBot } from './integrations/discord/discordBot';
 
 // Import routes
 import surveyRoutes from './routes/surveyRoutes';
@@ -29,7 +32,7 @@ const httpServer = createServer(app);
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(json());
 app.use(helmet());
 
 // Rate limiting
@@ -51,6 +54,11 @@ app.use('/api/testimonials', testimonialRoutes);
 app.use('/api', avatarRoutes);
 app.use('/api', rewardRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the API');
+});
+
 // Setup Swagger
 setupSwagger(app);
 
@@ -66,7 +74,9 @@ sequelize.authenticate()
   .catch((err) => console.error('SQL connection error:', err));
 
 // Setup Apollo Server
-setupApolloServer(app, httpServer);
+setupApolloServer(app, httpServer).then(() => {
+  console.log('Apollo Server setup complete');
+});
 
 // Setup Socket.IO
 const io = setupSocketIO(httpServer);
@@ -74,10 +84,16 @@ const io = setupSocketIO(httpServer);
 // Start the server
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server ready at http://localhost:${PORT}`);
+  console.log(`🚀 GraphQL endpoint: http://localhost:${PORT}/graphql`);
 });
 
 // Start data retention task
 dataRetentionTask();
+
+// Start the Discord bot
+if (process.env.ENABLE_DISCORD_BOT === 'true') {
+  startDiscordBot();
+}
 
 export { app, httpServer, io };

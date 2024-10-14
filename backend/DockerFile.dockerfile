@@ -28,6 +28,6 @@ RUN apk add --no-cache python3 py3-pip && \
 # Clean up to reduce image size
 RUN rm -rf /var/cache/apk/*
 
-EXPOSE 5000
+EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/app.js"]

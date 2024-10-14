@@ -139,7 +139,7 @@ fair-platform/
 │   │   │   └── logger.ts
 │   │   ├── app.ts
 │   │   ├── index.ts
-│   │   └── server.ts
+│   │   └── 
 │   ├── .env
 │   ├── .eslintrc.json
 │   ├── Dockerfile

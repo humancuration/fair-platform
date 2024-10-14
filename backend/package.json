@@ -2,7 +2,7 @@
   "name": "fair-platform",
   "version": "1.0.0",
   "description": "Fair Platform Backend",
-  "main": "dist/server.js",
+  "main": "dist/app.js",
   "scripts": {
     "start": "node dist/app.js",
     "build": "tsc",

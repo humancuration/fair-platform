@@ -1,43 +1,62 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Howl } from 'howler';
+import styled from 'styled-components';
+import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import LyricsDisplay from './LyricsDisplay';
-import { useError } from '../../fair-platform/frontend/src/contexts/ErrorContext';
-import { handleError } from '../../fair-platform/frontend/src/utils/errorHandler';
+import { useError } from '../contexts/ErrorContext';
+import { handleError } from '../utils/errorHandler';
 
 interface MusicPlayerProps {
   trackId: string;
   trackUrl: string;
+  onTrackEnd?: () => void;
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ trackId, trackUrl }) => {
+const MusicPlayer: React.FC<MusicPlayerProps> = ({ trackId, trackUrl, onTrackEnd }) => {
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
-  const soundRef = useRef<Howl | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [volume, setVolume] = useState(0.5);
+  const [muted, setMuted] = useState(false);
+  const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [loading, setLoading] = useState(true);
   const { setError } = useError();
 
-  useEffect(() => {
-    const fetchStreamUrl = async () => {
-      try {
-        const response = await fetch(`https://mirlo.space/api/tracks/${trackId}/stream`);
-        const data = await response.json();
-        setStreamUrl(data.streamUrl);
-      } catch (error) {
-        console.error('Error fetching stream URL:', error);
-        handleError(error);
-        setError('Failed to load the track. Please try again later.');
-      }
-    };
+  const soundRef = useRef<Howl | null>(null);
 
-    fetchStreamUrl();
+  const fetchStreamUrl = useCallback(async () => {
+    try {
+      const response = await fetch(`https://mirlo.space/api/tracks/${trackId}/stream`);
+      const data = await response.json();
+      setStreamUrl(data.streamUrl);
+    } catch (error) {
+      console.error('Error fetching stream URL:', error);
+      handleError(error);
+      setError('Failed to load the track. Please try again later.');
+    }
   }, [trackId, setError]);
+
+  useEffect(() => {
+    fetchStreamUrl();
+  }, [fetchStreamUrl]);
 
   useEffect(() => {
     if (streamUrl) {
       soundRef.current = new Howl({
         src: [streamUrl],
         html5: true,
+        volume: volume,
+        onload: () => {
+          setDuration(soundRef.current?.duration() || 0);
+          setLoading(false);
+        },
+        onend: () => {
+          setIsPlaying(false);
+          if (onTrackEnd) onTrackEnd();
+        },
+        onplay: () => setIsPlaying(true),
+        onpause: () => setIsPlaying(false),
+        onstop: () => setIsPlaying(false),
       });
     }
 
@@ -46,58 +65,23 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ trackId, trackUrl }) => {
         soundRef.current.unload();
       }
     };
-  }, [streamUrl]);
+  }, [streamUrl, volume, onTrackEnd]);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-
-    const onPlay = () => {
-      setIsPlaying(true);
-      intervalId = setInterval(() => {
-        setElapsedSeconds((prev) => {
-          const newElapsed = prev + 1;
-          if (newElapsed % 15 === 0) {
-            reportPlayback(15);
-          }
-          return newElapsed;
-        });
-      }, 1000);
-    };
-
-    const onPause = () => {
-      setIsPlaying(false);
-      clearInterval(intervalId);
-    };
-
-    if (soundRef.current) {
-      soundRef.current.on('play', onPlay);
-      soundRef.current.on('pause', onPause);
-      soundRef.current.on('end', onPause);
-    }
-
-    return () => {
-      clearInterval(intervalId);
+    const updateTime = () => {
       if (soundRef.current) {
-        soundRef.current.off('play', onPlay);
-        soundRef.current.off('pause', onPause);
-        soundRef.current.off('end', onPause);
+        setCurrentTime(soundRef.current.seek());
+      }
+      if (isPlaying) {
+        requestAnimationFrame(updateTime);
       }
     };
-  }, [soundRef.current]);
-
-  useEffect(() => {
-    if (soundRef.current) {
-      soundRef.current.on('play', () => {
-        const updateTime = () => {
-          setCurrentTime(soundRef.current?.seek() || 0);
-          requestAnimationFrame(updateTime);
-        };
-        updateTime();
-      });
+    if (isPlaying) {
+      updateTime();
     }
-  }, [soundRef.current]);
+  }, [isPlaying]);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     if (soundRef.current) {
       if (isPlaying) {
         soundRef.current.pause();
@@ -105,22 +89,42 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ trackId, trackUrl }) => {
         soundRef.current.play();
       }
     }
-  };
+  }, [isPlaying]);
 
-  const reportPlayback = async (seconds: number) => {
-    try {
-      // Replace with actual API call
-      await fetch('/api/report-playback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ trackId, seconds }),
-      });
-    } catch (error) {
-      console.error('Error reporting playback:', error);
-      handleError(error);
+  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    if (soundRef.current) {
+      soundRef.current.volume(newVolume);
     }
+    if (muted && newVolume > 0) {
+      setMuted(false);
+    }
+  }, [muted]);
+
+  const toggleMute = useCallback(() => {
+    if (soundRef.current) {
+      if (muted) {
+        soundRef.current.volume(volume);
+      } else {
+        soundRef.current.volume(0);
+      }
+      setMuted(!muted);
+    }
+  }, [muted, volume]);
+
+  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const seekTime = parseFloat(e.target.value);
+    if (soundRef.current) {
+      soundRef.current.seek(seekTime);
+      setCurrentTime(seekTime);
+    }
+  }, []);
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const downloadForOffline = async () => {
@@ -133,16 +137,118 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ trackId, trackUrl }) => {
     }
   };
 
+  if (loading) {
+    return <LoadingMessage>Loading...</LoadingMessage>;
+  }
+
   return (
-    <div>
-      <button onClick={togglePlayPause} aria-label={isPlaying ? 'Pause' : 'Play'}>
-        {isPlaying ? 'Pause' : 'Play'}
-      </button>
-      <button onClick={downloadForOffline}>Download for Offline</button>
-      <p>Elapsed time: {elapsedSeconds} seconds</p>
+    <PlayerContainer>
+      <Controls>
+        <ControlButton onClick={togglePlayPause}>
+          {isPlaying ? <FaPause /> : <FaPlay />}
+        </ControlButton>
+        <VolumeControl>
+          <MuteButton onClick={toggleMute}>
+            {muted ? <FaVolumeMute /> : <FaVolumeUp />}
+          </MuteButton>
+          <VolumeSlider
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={muted ? 0 : volume}
+            onChange={handleVolumeChange}
+          />
+        </VolumeControl>
+      </Controls>
+      <ProgressContainer>
+        <TimeDisplay>{formatTime(currentTime)}</TimeDisplay>
+        <ProgressBar
+          type="range"
+          min="0"
+          max={duration}
+          value={currentTime}
+          onChange={handleSeek}
+        />
+        <TimeDisplay>{formatTime(duration)}</TimeDisplay>
+      </ProgressContainer>
+      <DownloadButton onClick={downloadForOffline}>Download for Offline</DownloadButton>
       <LyricsDisplay trackId={trackId} currentTime={currentTime} />
-    </div>
+    </PlayerContainer>
   );
 };
+
+const PlayerContainer = styled.div`
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const Controls = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const ControlButton = styled.button`
+  background-color: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 15px;
+`;
+
+const VolumeControl = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const MuteButton = styled.button`
+  background-color: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  margin-right: 5px;
+`;
+
+const VolumeSlider = styled.input`
+  width: 80px;
+`;
+
+const ProgressContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+`;
+
+const TimeDisplay = styled.span`
+  font-size: 14px;
+  margin: 0 10px;
+`;
+
+const ProgressBar = styled.input`
+  flex-grow: 1;
+`;
+
+const DownloadButton = styled.button`
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  &:hover {
+    background-color: #45a049;
+  }
+`;
+
+const LoadingMessage = styled.div`
+  font-size: 18px;
+  color: #666;
+  text-align: center;
+  padding: 20px;
+`;
 
 export default MusicPlayer;
