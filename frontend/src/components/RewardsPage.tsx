@@ -9,7 +9,7 @@ const RewardsPage: React.FC = () => {
   useEffect(() => {
     const fetchRewards = async () => {
       try {
-        const response = await api.get<Reward[]>('/rewards');
+        const response = await api.getAvailableRewards();
         setRewards(response.data);
       } catch (error) {
         console.error('Failed to fetch rewards:', error);

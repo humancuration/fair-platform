@@ -1,6 +1,6 @@
 import React from 'react';
 import api from '@api/api';
-import { Reward } from '../../../backend/src/models/Reward';
+import { Reward } from '../models/Reward';
 
 interface RewardCardProps {
   reward: Reward;
@@ -9,7 +9,7 @@ interface RewardCardProps {
 const RewardCard: React.FC<RewardCardProps> = ({ reward }) => {
   const redeemReward = async () => {
     try {
-      await api.post('/rewards/redeem', { rewardId: reward.id });
+      await api.redeemReward(reward.id.toString());
       alert('Reward redeemed successfully!');
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to redeem reward.');
@@ -18,9 +18,9 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward }) => {
 
   return (
     <div className="reward-card">
-      <h2>{reward.name}</h2>
+      <h2>{reward.title}</h2>
       <p>{reward.description}</p>
-      <p>Points Required: {reward.points_required}</p>
+      <p>Points Required: {reward.amount}</p>
       <button onClick={redeemReward}>Redeem</button>
     </div>
   );

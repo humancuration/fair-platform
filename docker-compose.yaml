@@ -11,7 +11,7 @@ services:
       - DB_PASSWORD=postgres
       - DB_NAME=fair_platform
       - JWT_SECRET=your_jwt_secret
-      - BASE_URL=https://yourplatform.com
+      - BASE_URL=http://localhost:5000  # Changed to match local development
     depends_on:
       - db
     networks:

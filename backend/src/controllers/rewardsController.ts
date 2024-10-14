@@ -25,8 +25,8 @@ export const redeemReward = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User reward or reward not found.' });
     }
 
-    if (userReward.totalPoints >= reward.pointsRequired) {
-      userReward.totalPoints -= reward.pointsRequired;
+    if (userReward.totalPoints >= reward.amount) {
+      userReward.totalPoints -= reward.amount;
       userReward.rewardsEarned.push(reward.id);
       await userReward.save();
 

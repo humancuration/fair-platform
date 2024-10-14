@@ -1,10 +1,10 @@
 import express from 'express';
 import { createAIEthicsCourseHandler, addReflectionActivityHandler } from '@controllers/aiEthicsController';
-import { authenticateJWT } from '@/iddleware/auth';
+import { authenticateJWT } from '@/middleware/auth';
 
 const router = express.Router();
 
-router.post('/courses', authenticate, createAIEthicsCourseHandler);
-router.post('/activities', authenticate, addReflectionActivityHandler);
+router.post('/courses', authenticateJWT, createAIEthicsCourseHandler);
+router.post('/activities', authenticateJWT, addReflectionActivityHandler);
 
 export default router;

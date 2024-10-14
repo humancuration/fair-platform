@@ -20,6 +20,7 @@ import versionControlRoutes from './routes/versionControlRoutes';
 import wishlistRoutes from './routes/wishlistRoutes';
 import testimonialRoutes from './routes/testimonialRoutes';
 import avatarRoutes from './routes/avatarRoutes';
+import rewardRoutes from './routes/rewardRoutes';
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use('/api/version-control', versionControlRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api', avatarRoutes);
+app.use('/api', rewardRoutes);
 
 // Setup Swagger
 setupSwagger(app);
