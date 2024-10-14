@@ -1,8 +1,9 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
 @Table({
   tableName: 'campaigns',
-  timestamps: true, // if you want createdAt and updatedAt fields
+  timestamps: true,
 })
 export class Campaign extends Model<Campaign> {
   @Column({
@@ -10,54 +11,46 @@ export class Campaign extends Model<Campaign> {
     autoIncrement: true,
     primaryKey: true,
   })
-  id!: number; // Added id field
+  id!: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  title!: string; // Changed from name to title
+  title!: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
   })
-  description!: string; // Added description field
+  description!: string;
 
   @Column({
     type: DataType.FLOAT,
     allowNull: false,
   })
-  goalAmount!: number; // Added goalAmount field
+  goalAmount!: number;
 
   @Column({
     type: DataType.FLOAT,
     defaultValue: 0,
   })
-  currentAmount!: number; // Added currentAmount field
+  currentAmount!: number;
 
+  @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  creatorId!: number; // Added creatorId field
-
-  @Column({
-    type: DataType.DATE,
-    defaultValue: DataType.NOW,
-  })
-  createdAt!: Date; // Added createdAt field
-
-  @Column({
-    type: DataType.DATE,
-    defaultValue: DataType.NOW,
-  })
-  updatedAt!: Date; // Added updatedAt field
+  creatorId!: number;
 
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
     defaultValue: true,
   })
-  isActive!: boolean; // Merged isActive field
+  isActive!: boolean;
+
+  @BelongsTo(() => User)
+  creator!: User;
 }

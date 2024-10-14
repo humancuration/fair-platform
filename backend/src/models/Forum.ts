@@ -1,36 +1,29 @@
 // backend/src/models/Forum.ts
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-class Forum extends Model {
-  public id!: number;
-  public title!: string;
-  public description!: string;
-  // timestamps!
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+@Table({
+  tableName: 'forums',
+  timestamps: true,
+})
+export class Forum extends Model<Forum> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  description!: string;
 }
-
-Forum.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'forums',
-  }
-);
 
 export default Forum;

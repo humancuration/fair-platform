@@ -1,52 +1,49 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import { User } from './User';
+import { WishlistItem } from './WishlistItem';
 
-class Wishlist extends Model {
-  public id!: number;
-  public userId!: number;
-  public name!: string;
-  public description?: string;
-  public isPublic!: boolean;
-  public items!: Array<{
-    id: string;
-    name: string;
-    description?: string;
-    image?: string;
-    price?: number;
-  }>;
+@Table({
+  tableName: 'wishlists',
+  timestamps: true,
+})
+export class Wishlist extends Model<Wishlist> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  isPublic!: boolean;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @HasMany(() => WishlistItem)
+  items!: WishlistItem[];
 }
-
-Wishlist.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-    },
-    isPublic: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    items: {
-      type: DataTypes.JSON,
-      defaultValue: [],
-    },
-  },
-  {
-    sequelize,
-    tableName: 'wishlists',
-  }
-);
 
 export default Wishlist;

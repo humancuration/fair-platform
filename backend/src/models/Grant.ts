@@ -1,46 +1,41 @@
 // backend/src/models/Grant.ts
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-class Grant extends Model {
-  public id!: number;
-  public applicantName!: string;
-  public projectDescription!: string;
-  public amountRequested!: number;
-  public amountGranted!: number;
-  // timestamps!
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+@Table({
+  tableName: 'grants',
+  timestamps: true,
+})
+export class Grant extends Model<Grant> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  applicantName!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  projectDescription!: string;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  amountRequested!: number;
+
+  @Column({
+    type: DataType.FLOAT,
+    defaultValue: 0,
+  })
+  amountGranted!: number;
 }
-
-Grant.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    applicantName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    projectDescription: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    amountRequested: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    amountGranted: {
-      type: DataTypes.FLOAT,
-      defaultValue: 0,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'grants',
-  }
-);
 
 export default Grant;

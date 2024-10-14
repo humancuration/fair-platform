@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
 import { User } from './User';
 import { Group } from './Group';
 
@@ -27,12 +27,6 @@ export class GroupMember extends Model<GroupMember> {
     defaultValue: 'Observer',
   })
   role!: 'Observer' | 'Contributor' | 'CoreMember' | 'Delegate';
-
-  @BelongsTo(() => User)
-  user!: User;
-
-  @BelongsTo(() => Group)
-  group!: Group;
 }
 
 export default GroupMember;

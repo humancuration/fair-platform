@@ -1,63 +1,51 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import User from './User';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Wishlist } from './Wishlist';
 
-class WishlistItem extends Model {
-  public id!: number;
-  public userId!: number;
-  public name!: string;
-  public description!: string;
-  public image!: string;
-  public isPublic!: boolean;
-  public createdAt!: Date;
+@Table({
+  tableName: 'wishlist_items',
+  timestamps: true,
+})
+export class WishlistItem extends Model<WishlistItem> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  // Associations
-  public readonly user?: User;
+  @ForeignKey(() => Wishlist)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  wishlistId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: true,
+  })
+  price?: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  url?: string;
+
+  @BelongsTo(() => Wishlist)
+  wishlist!: Wishlist;
 }
-
-WishlistItem.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    image: {
-      type: DataTypes.STRING,
-      defaultValue: '',
-    },
-    isPublic: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'wishlist_items',
-    timestamps: false,
-  }
-);
-
-WishlistItem.belongsTo(User, { foreignKey: 'userId' });
 
 export default WishlistItem;

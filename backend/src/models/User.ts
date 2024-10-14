@@ -1,54 +1,62 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType, HasMany, BelongsToMany } from 'sequelize-typescript';
+import { Event } from './Event';
+import { Group } from './Group';
+import { GroupMember } from './GroupMember';
 
-class User extends Model {
-  public id!: number;
-  public email!: string;
-  public password!: string;
-  public role!: string;
-  public settings!: {
+@Table({
+  tableName: 'users',
+  timestamps: true,
+})
+export class User extends Model<User> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  email!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  password!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  role!: string;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    defaultValue: {
+      allowSearchAnalytics: false,
+      allowBehavioralTracking: false,
+      dataRetentionPeriod: 365,
+      anonymizeData: false,
+    },
+  })
+  settings!: {
     allowSearchAnalytics: boolean;
     allowBehavioralTracking: boolean;
     dataRetentionPeriod: number;
     anonymizeData: boolean;
   };
+
+  @HasMany(() => Event)
+  createdEvents!: Event[];
+
+  @BelongsToMany(() => Event, 'event_attendees')
+  attendingEvents!: Event[];
+
+  @BelongsToMany(() => Group, () => GroupMember)
+  groups!: Group[];
 }
-
-User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    settings: {
-      type: DataTypes.JSON,
-      allowNull: false,
-      defaultValue: {
-        allowSearchAnalytics: false,
-        allowBehavioralTracking: false,
-        dataRetentionPeriod: 365,
-        anonymizeData: false,
-      },
-    },
-  },
-  {
-    sequelize,
-    tableName: 'users',
-  }
-);
-
-export default User;

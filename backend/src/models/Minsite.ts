@@ -1,76 +1,75 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from './index';
-import User from './User';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
-class Minsite extends Model {
-  public id!: number;
-  public title!: string;
-  public content!: string;
-  public userId!: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
-  public template!: string;
-  public customCSS!: string;
-  public seoMetadata!: object;
-  public components!: string[];
-  public versions!: object[];
+@Table({
+  tableName: 'minsites',
+  timestamps: true,
+})
+export class Minsite extends Model<Minsite> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  content!: string;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      isIn: [['blank', 'blog', 'portfolio', 'landing']],
+    },
+  })
+  template!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+    validate: {
+      len: [0, 10000],
+    },
+  })
+  customCSS?: string;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
+  seoMetadata?: object;
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    defaultValue: [],
+  })
+  components!: string[];
+
+  @Column({
+    type: DataType.ARRAY(DataType.JSON),
+    defaultValue: [],
+  })
+  versions!: object[];
+
+  @BelongsTo(() => User)
+  user!: User;
 }
-
-Minsite.init(
-  {
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    content: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    template: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        isIn: [['blank', 'blog', 'portfolio', 'landing']],
-      },
-    },
-    customCSS: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      validate: {
-        len: [0, 10000], // Limit CSS length
-      },
-    },
-    seoMetadata: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
-    components: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-      defaultValue: [],
-    },
-    versions: {
-      type: DataTypes.ARRAY(DataTypes.JSON),
-      allowNull: false,
-      defaultValue: [],
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Minsite',
-    tableName: 'minsites',
-  }
-);
-
-Minsite.belongsTo(User, { foreignKey: 'userId' });
-User.hasMany(Minsite, { foreignKey: 'userId' });
 
 export default Minsite;

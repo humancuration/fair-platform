@@ -1,50 +1,52 @@
 // models/AffiliateProgram.ts
 
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from './index';
-import Brand from './Brands';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import { Brand } from './Brands';
+import { AffiliateLink } from './AffiliateLink';
 
-class AffiliateProgram extends Model {
-  public id!: number;
-  public brandId!: number;
-  public name!: string;
-  public description!: string;
-  public commissionRate!: number; // Percentage (e.g., 5 for 5%)
-  // Other attributes
+@Table({
+  tableName: 'affiliate_programs',
+  timestamps: true,
+})
+export class AffiliateProgram extends Model<AffiliateProgram> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @ForeignKey(() => Brand)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  brandId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+    defaultValue: 5.0,
+  })
+  commissionRate!: number;
+
+  @BelongsTo(() => Brand)
+  brand!: Brand;
+
+  @HasMany(() => AffiliateLink)
+  affiliateLinks!: AffiliateLink[];
 }
-
-AffiliateProgram.init(
-  {
-    brandId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Brand,
-        key: 'id',
-      },
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    commissionRate: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      defaultValue: 5.0, // Default 5%
-    },
-    // Additional fields
-  },
-  {
-    sequelize,
-    modelName: 'AffiliateProgram',
-    tableName: 'affiliate_programs',
-  }
-);
-
-AffiliateProgram.belongsTo(Brand, { foreignKey: 'brandId' });
 
 export default AffiliateProgram;

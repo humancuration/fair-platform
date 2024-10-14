@@ -1,37 +1,41 @@
 // models/LinkPage.ts
 
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from './index';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
-class LinkPage extends Model {
-  public id!: number;
-  public userId!: number;
-  public title!: string;
-  public theme!: string;
-  // Other attributes
+@Table({
+  tableName: 'link_pages',
+  timestamps: true,
+})
+export class LinkPage extends Model<LinkPage> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string;
+
+  @Column({
+    type: DataType.STRING,
+    defaultValue: 'default',
+  })
+  theme!: string;
+
+  @BelongsTo(() => User)
+  user!: User;
 }
-
-LinkPage.init(
-  {
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    theme: {
-      type: DataTypes.STRING,
-      defaultValue: 'default',
-    },
-    // Additional fields
-  },
-  {
-    sequelize,
-    modelName: 'LinkPage',
-    tableName: 'link_pages',
-  }
-);
 
 export default LinkPage;

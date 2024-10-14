@@ -1,18 +1,32 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from "typeorm";
-import User from './User';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
-@Entity("user_rewards")
-export class UserReward {
-  @PrimaryColumn()
-  user_id!: number;
+@Table({
+  tableName: 'user_rewards',
+  timestamps: true,
+})
+export class UserReward extends Model<UserReward> {
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+  })
+  userId!: number;
 
-  @Column({ default: 0 })
-  total_points!: number;
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  totalPoints!: number;
 
-  @Column("simple-array")
-  rewards_earned!: number[];
+  @Column({
+    type: DataType.ARRAY(DataType.INTEGER),
+    defaultValue: [],
+  })
+  rewardsEarned!: number[];
 
-  @ManyToOne(() => User)
-  @JoinColumn({ name: "user_id" })
+  @BelongsTo(() => User)
   user!: User;
 }
+
+export default UserReward;

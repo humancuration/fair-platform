@@ -1,38 +1,34 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-class LinkedContent extends Model {
-  public id!: number;
-  public type!: 'discussion' | 'learningModule' | 'survey';
-  public relatedId!: number;
-  public title!: string;
+@Table({
+  tableName: 'linked_contents',
+  timestamps: false,
+})
+export class LinkedContent extends Model<LinkedContent> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.ENUM('discussion', 'learningModule', 'survey'),
+    allowNull: false,
+  })
+  type!: 'discussion' | 'learningModule' | 'survey';
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  relatedId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string;
 }
-
-LinkedContent.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    type: {
-      type: DataTypes.ENUM('discussion', 'learningModule', 'survey'),
-      allowNull: false,
-    },
-    relatedId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'linked_contents',
-    timestamps: false,
-  }
-);
 
 export default LinkedContent;

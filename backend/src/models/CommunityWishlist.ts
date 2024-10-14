@@ -1,57 +1,56 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
-class CommunityWishlist extends Model {
-  public id!: number;
-  public communityName!: string;
-  public productId!: string;
-  public name!: string;
-  public image!: string;
-  public price!: number;
-  public highlighted!: boolean;
-  public date!: Date;
+@Table({
+  tableName: 'community_wishlists',
+  timestamps: true,
+})
+export class CommunityWishlist extends Model<CommunityWishlist> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  communityName!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  productId!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  image!: string;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  price!: number;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  highlighted!: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
+  })
+  date!: Date;
 }
-
-CommunityWishlist.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    communityName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    productId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    image: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    price: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    highlighted: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    date: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'community_wishlists',
-  }
-);
-
-export default CommunityWishlist;

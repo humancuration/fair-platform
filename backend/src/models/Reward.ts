@@ -1,63 +1,45 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import Campaign from './Campaign';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Campaign } from './Campaign';
 
-class Reward extends Model {
-  public id!: number;
-  public campaignId!: number;
-  public title!: string;
-  public description?: string;
-  public amount!: number;
-  public createdAt!: Date;
-  public updatedAt!: Date;
+@Table({
+  tableName: 'rewards',
+  timestamps: true,
+})
+export class Reward extends Model<Reward> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  // Associations
-  public readonly campaign?: Campaign;
+  @ForeignKey(() => Campaign)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  campaignId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  amount!: number;
+
+  @BelongsTo(() => Campaign)
+  campaign!: Campaign;
 }
-
-Reward.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    campaignId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Campaigns',
-        key: 'id',
-      },
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    amount: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'rewards',
-    timestamps: true,
-  }
-);
-
-Reward.belongsTo(Campaign, { foreignKey: 'campaignId' });
 
 export default Reward;

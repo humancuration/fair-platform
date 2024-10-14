@@ -1,60 +1,50 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import Survey from './Survey';
-import User from './User';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Survey } from './Survey';
+import { User } from './User';
 
-class SurveyResponse extends Model {
-  public id!: number;
-  public surveyId!: number;
-  public respondentId!: number;
-  public answers!: any; // Adjust the type as needed
-  public createdAt!: Date;
+@Table({
+  tableName: 'survey_responses',
+  timestamps: false,
+})
+export class SurveyResponse extends Model<SurveyResponse> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  // Associations
-  public readonly survey?: Survey;
-  public readonly respondent?: User;
+  @ForeignKey(() => Survey)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  surveyId!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  respondentId!: number;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+  })
+  answers!: any;
+
+  @Column({
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
+  })
+  createdAt!: Date;
+
+  @BelongsTo(() => Survey)
+  survey!: Survey;
+
+  @BelongsTo(() => User)
+  respondent!: User;
 }
-
-SurveyResponse.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    surveyId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Surveys',
-        key: 'id',
-      },
-    },
-    respondentId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-    },
-    answers: {
-      type: DataTypes.JSON,
-      allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'survey_responses',
-    timestamps: false,
-  }
-);
-
-SurveyResponse.belongsTo(Survey, { foreignKey: 'surveyId' });
-SurveyResponse.belongsTo(User, { foreignKey: 'respondentId' });
 
 export default SurveyResponse;

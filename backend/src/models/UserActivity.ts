@@ -1,16 +1,40 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
-@Entity("user_activities")
-export class UserActivity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Table({
+  tableName: 'user_activities',
+  timestamps: false,
+})
+export class UserActivity extends Model<UserActivity> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  @Column()
-  user_id: number;
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
 
-  @Column()
-  activity_type: string;
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  activityType!: string;
 
-  @Column()
-  timestamp: Date;
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    defaultValue: DataType.NOW,
+  })
+  timestamp!: Date;
+
+  @BelongsTo(() => User)
+  user!: User;
 }
+
+export default UserActivity;

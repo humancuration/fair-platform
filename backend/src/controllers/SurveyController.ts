@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from '../data-source';
 import Survey from '../models/Survey';
 import SurveyResponse from '../models/SurveyResponse';
 import { Socket } from 'socket.io';
@@ -12,12 +11,10 @@ class SurveyController {
 
   public async createSurvey(req: AuthRequest, res: Response) {
     try {
-      const surveyRepository = AppDataSource.getRepository(Survey);
-      const survey = surveyRepository.create({
+      const survey = await Survey.create({
         ...req.body,
-        creator: req.user!._id
+        creatorId: req.user!.id
       });
-      await surveyRepository.save(survey);
       res.status(201).json(survey);
     } catch (error) {
       res.status(400).json({ message: 'Error creating survey', error });
@@ -26,8 +23,7 @@ class SurveyController {
 
   public async getSurvey(req: Request, res: Response) {
     try {
-      const surveyRepository = AppDataSource.getRepository(Survey);
-      const survey = await surveyRepository.findOne({ where: { id: req.params.id } });
+      const survey = await Survey.findByPk(req.params.id);
       if (!survey) {
         return res.status(404).json({ message: 'Survey not found' });
       }
@@ -39,13 +35,11 @@ class SurveyController {
 
   public async submitSurveyResponse(req: AuthRequest, res: Response) {
     try {
-      const surveyResponseRepository = AppDataSource.getRepository(SurveyResponse);
-      const surveyResponse = surveyResponseRepository.create({
-        survey: req.params.id,
-        respondent: req.user!._id,
+      const surveyResponse = await SurveyResponse.create({
+        surveyId: req.params.id,
+        respondentId: req.user!.id,
         answers: req.body.answers
       });
-      await surveyResponseRepository.save(surveyResponse);
       res.status(201).json(surveyResponse);
     } catch (error) {
       res.status(400).json({ message: 'Error submitting survey response', error });
@@ -54,8 +48,7 @@ class SurveyController {
 
   public async getSurveyResults(req: Request, res: Response) {
     try {
-      const surveyResponseRepository = AppDataSource.getRepository(SurveyResponse);
-      const results = await surveyResponseRepository.find({ where: { survey: req.params.id } });
+      const results = await SurveyResponse.findAll({ where: { surveyId: req.params.id } });
       res.json(results);
     } catch (error) {
       res.status(400).json({ message: 'Error fetching survey results', error });
@@ -65,14 +58,13 @@ class SurveyController {
   public async addCollaborator(req: Request, res: Response) {
     try {
       const { surveyId, userId } = req.body;
-      const surveyRepository = AppDataSource.getRepository(Survey);
-      const survey = await surveyRepository.findOne({ where: { id: surveyId } });
+      const survey = await Survey.findByPk(surveyId);
       if (!survey) {
         return res.status(404).json({ message: 'Survey not found' });
       }
       
-      survey.collaborators.push(userId);
-      await surveyRepository.save(survey);
+      survey.collaborators = [...survey.collaborators, userId];
+      await survey.save();
       
       res.status(200).json({ message: 'Collaborator added successfully' });
     } catch (error) {
@@ -147,8 +139,7 @@ class SurveyController {
       const { surveyId } = req.params;
       const { contentType, contentId, contentTitle } = req.body;
 
-      const surveyRepository = AppDataSource.getRepository(Survey);
-      const survey = await surveyRepository.findOne({ where: { id: surveyId } });
+      const survey = await Survey.findByPk(surveyId);
       if (!survey) {
         return res.status(404).json({ message: 'Survey not found' });
       }
@@ -159,8 +150,8 @@ class SurveyController {
         title: contentTitle
       };
 
-      survey.linkedContent.push(linkedContent);
-      await surveyRepository.save(survey);
+      survey.linkedContent = [...survey.linkedContent, linkedContent];
+      await survey.save();
 
       res.status(200).json({ message: 'Content linked successfully', linkedContent });
     } catch (error) {
@@ -171,10 +162,8 @@ class SurveyController {
   public async getLinkedContent(req: Request, res: Response) {
     try {
       const { surveyId } = req.params;
-      const surveyRepository = AppDataSource.getRepository(Survey);
-      const survey = await surveyRepository.findOne({ 
-        where: { id: surveyId },
-        select: ['linkedContent']
+      const survey = await Survey.findByPk(surveyId, {
+        attributes: ['linkedContent']
       });
       if (!survey) {
         return res.status(404).json({ message: 'Survey not found' });
@@ -186,4 +175,4 @@ class SurveyController {
   }
 }
 
-export default new SurveyController();
+export default SurveyController;

@@ -1,70 +1,51 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import User from './User';
-import Repository from './Repository';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
-class Notification extends Model {
-  public id!: number;
-  public userId!: number;
-  public message!: string;
-  public type!: 'version-control' | 'other'; // Added type field
-  public read!: boolean;
-  public createdAt!: Date; // Renamed 'date' to 'createdAt' for consistency
-  public repositoryId?: number; // Added optional repositoryId
+@Table({
+  tableName: 'notifications',
+  timestamps: false,
+})
+export class Notification extends Model<Notification> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  // Associations
-  public readonly user?: User;
-  public readonly repository?: Repository; // Added repository association
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  message!: string;
+
+  @Column({
+    type: DataType.ENUM('version-control', 'other'),
+    allowNull: false,
+  })
+  type!: 'version-control' | 'other';
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  read!: boolean;
+
+  @Column({
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
+  })
+  createdAt!: Date;
+
+  @BelongsTo(() => User)
+  user!: User;
 }
-
-Notification.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-    },
-    message: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    type: {
-      type: DataTypes.ENUM('version-control', 'other'),
-      allowNull: false,
-    },
-    read: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-    repositoryId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'Repositories',
-        key: 'id',
-      },
-    },
-  },
-  {
-    sequelize,
-    tableName: 'notifications',
-    timestamps: false,
-  }
-);
-
-Notification.belongsTo(User, { foreignKey: 'userId' });
-Notification.belongsTo(Repository, { foreignKey: 'repositoryId' });
 
 export default Notification;

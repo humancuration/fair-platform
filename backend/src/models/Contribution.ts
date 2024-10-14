@@ -1,70 +1,60 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import Campaign from './Campaign';
-import User from './User';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Campaign } from './Campaign';
+import { User } from './User';
 
-class Contribution extends Model {
-  public id!: number;
-  public campaignId!: number;
-  public contributorId!: number;
-  public amount!: number;
-  public reward?: string;
-  public paymentIntentId!: string;
-  public createdAt!: Date;
+@Table({
+  tableName: 'contributions',
+  timestamps: false,
+})
+export class Contribution extends Model<Contribution> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  // Associations
-  public readonly campaign?: Campaign;
-  public readonly contributor?: User;
+  @ForeignKey(() => Campaign)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  campaignId!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  contributorId!: number;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  amount!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  reward?: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  paymentIntentId!: string;
+
+  @Column({
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
+  })
+  createdAt!: Date;
+
+  @BelongsTo(() => Campaign)
+  campaign!: Campaign;
+
+  @BelongsTo(() => User)
+  contributor!: User;
 }
-
-Contribution.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    campaignId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Campaigns',
-        key: 'id',
-      },
-    },
-    contributorId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
-    },
-    amount: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    reward: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    paymentIntentId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'contributions',
-    timestamps: false,
-  }
-);
-
-Contribution.belongsTo(Campaign, { foreignKey: 'campaignId' });
-Contribution.belongsTo(User, { foreignKey: 'contributorId' });
-
-export default Contribution;

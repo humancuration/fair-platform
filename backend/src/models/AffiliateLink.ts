@@ -1,80 +1,81 @@
 // models/AffiliateLink.ts
 
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from './index';
-import AffiliateProgram from './AffiliateProgram';
-import User from './User';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { AffiliateProgram } from './AffiliateProgram';
+import { User } from './User';
 
-class AffiliateLink extends Model {
-  public id!: number;
-  public affiliateProgramId!: number;
-  public creatorId!: number;
-  public originalLink!: string;
-  public customAlias!: string;
-  public trackingCode!: string;
-  public generatedLink!: string;
-  public clicks!: number;
-  public conversions!: number;
-  // Other attributes
+@Table({
+  tableName: 'affiliate_links',
+  timestamps: true,
+})
+export class AffiliateLink extends Model<AffiliateLink> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @ForeignKey(() => AffiliateProgram)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  affiliateProgramId!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  creatorId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  originalLink!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    unique: true,
+  })
+  customAlias?: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  trackingCode!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
+  generatedLink!: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  clicks!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  conversions!: number;
+
+  @BelongsTo(() => AffiliateProgram)
+  affiliateProgram!: AffiliateProgram;
+
+  @BelongsTo(() => User)
+  creator!: User;
 }
-
-AffiliateLink.init(
-  {
-    affiliateProgramId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: AffiliateProgram,
-        key: 'id',
-      },
-    },
-    creatorId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    originalLink: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    customAlias: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-    },
-    trackingCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    generatedLink: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    clicks: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    conversions: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    // Additional fields
-  },
-  {
-    sequelize,
-    modelName: 'AffiliateLink',
-    tableName: 'affiliate_links',
-  }
-);
-
-AffiliateLink.belongsTo(AffiliateProgram, { foreignKey: 'affiliateProgramId' });
-AffiliateLink.belongsTo(User, { foreignKey: 'creatorId' });
 
 export default AffiliateLink;

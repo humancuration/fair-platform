@@ -1,36 +1,34 @@
 // backend/src/models/Dividend.ts
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '@config/database';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
-class Dividend extends Model {
-  public id!: number;
-  public amount!: number;
-  public recipientId!: number;
-  // timestamps!
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+@Table({
+  tableName: 'dividends',
+  timestamps: true,
+})
+export class Dividend extends Model<Dividend> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.FLOAT,
+    allowNull: false,
+  })
+  amount!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  recipientId!: number;
+
+  @BelongsTo(() => User)
+  recipient!: User;
 }
-
-Dividend.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    amount: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-    },
-    recipientId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'dividends',
-  }
-);
 
 export default Dividend;

@@ -1,47 +1,40 @@
 import { Request, Response } from 'express';
-import Event from '@models/Event';
-import Group from '@models/Group';
-import User from '@models/User';
-import { io } from '../server';
+import { Event } from '@models/Event';
+import { Group } from '@models/Group';
+import { User } from '@models/User';
+import { io } from '@/server';
 
 export const createEvent = async (req: Request, res: Response) => {
   try {
     const { groupId, title, description, date, location } = req.body;
     const creatorId = req.user.id;
 
-    const group = await Group.findByPk(groupId);
+    const group = await Group.findByPk(groupId, { include: ['members'] });
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    if (!(group.members?.includes(creatorId))) {
+    if (!group.members?.some(member => member.id === creatorId)) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const event = new Event({
-      group: groupId,
+    const event = await Event.create({
+      groupId,
       title,
       description,
       date,
       location,
-      createdBy: creatorId,
-      attendees: [],
+      createdById: creatorId,
     });
 
-    await event.save();
+    await group.$add('events', event);
 
-    if (!group.events) {
-      group.events = []; // Initialize as an empty array if undefined
-    }
-    group.events = [...group.events, event._id]; // Create a new array with the new event ID
-    await group.save();
+    io.to(groupId.toString()).emit('eventCreated', event);
 
-    io.to(groupId).emit('eventCreated', event);
-
-    return res.status(201).json(event); // Ensure this return statement is reached
+    return res.status(201).json(event);
   } catch (error) {
     console.error('Error creating event:', error);
-    return res.status(500).json({ message: 'Server Error' }); // Ensure this return statement is reached
+    return res.status(500).json({ message: 'Server Error' });
   }
 };
 
@@ -49,9 +42,11 @@ export const getEventsByGroup = async (req: Request, res: Response) => {
   try {
     const { groupId } = req.params;
 
-    const group = await Group.findById(groupId).populate({
-      path: 'events',
-      populate: { path: 'createdBy', select: 'username' },
+    const group = await Group.findByPk(groupId, {
+      include: [{
+        model: Event,
+        include: [{ model: User, as: 'createdBy', attributes: ['username'] }]
+      }]
     });
 
     if (!group) {
@@ -69,10 +64,13 @@ export const getEventById = async (req: Request, res: Response) => {
   try {
     const { eventId } = req.params;
 
-    const event = await Event.findById(eventId)
-      .populate('group', 'name')
-      .populate('createdBy', 'username')
-      .populate('attendees', 'username');
+    const event = await Event.findByPk(eventId, {
+      include: [
+        { model: Group, attributes: ['name'] },
+        { model: User, as: 'createdBy', attributes: ['username'] },
+        { model: User, as: 'attendees', attributes: ['username'] }
+      ]
+    });
 
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
@@ -91,33 +89,29 @@ export const updateEvent = async (req: Request, res: Response) => {
     const { title, description, date, location } = req.body;
     const userId = req.user.id;
 
-    const event = await Event.findById(eventId);
+    const event = await Event.findByPk(eventId, { include: [Group] });
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const group = await Group.findById(event.group);
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const group = event.group;
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    const user = await User.findById(userId);
-    if (
-      event.createdBy.toString() !== userId &&
-      (user?.roles.get(group._id.toString()) !== 'Admin' &&
-        user?.roles.get(group._id.toString()) !== 'Delegate')
-    ) {
+    const userRole = await group.$get('members', { where: { id: userId } }).then(members => members[0]?.GroupMember.role);
+    if (event.createdById !== userId && !['Admin', 'Delegate'].includes(userRole)) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    if (title) event.title = title;
-    if (description) event.description = description;
-    if (date) event.date = date;
-    if (location) event.location = location;
+    await event.update({ title, description, date, location });
 
-    await event.save();
-
-    io.to(event.group.toString()).emit('eventUpdated', event);
+    io.to(group.id.toString()).emit('eventUpdated', event);
 
     res.status(200).json(event);
   } catch (error) {
@@ -131,31 +125,29 @@ export const deleteEvent = async (req: Request, res: Response) => {
     const { eventId } = req.params;
     const userId = req.user.id;
 
-    const event = await Event.findById(eventId);
+    const event = await Event.findByPk(eventId, { include: [Group] });
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const group = await Group.findById(event.group);
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const group = event.group;
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    const user = await User.findById(userId);
-    if (
-      event.createdBy.toString() !== userId &&
-      (user?.roles.get(group._id.toString()) !== 'Admin' &&
-        user?.roles.get(group._id.toString()) !== 'Delegate')
-    ) {
+    const userRole = await group.$get('members', { where: { id: userId } }).then(members => members[0]?.GroupMember.role);
+    if (event.createdById !== userId && !['Admin', 'Delegate'].includes(userRole)) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    await event.remove();
+    await event.destroy();
 
-    group.events.pull(eventId);
-    await group.save();
-
-    io.to(group._id.toString()).emit('eventDeleted', { eventId });
+    io.to(group.id.toString()).emit('eventDeleted', { eventId });
 
     res.status(200).json({ message: 'Event deleted successfully' });
   } catch (error) {
@@ -169,28 +161,29 @@ export const rsvpEvent = async (req: Request, res: Response) => {
     const { eventId } = req.params;
     const userId = req.user.id;
 
-    const event = await Event.findById(eventId);
+    const event = await Event.findByPk(eventId, { include: [Group] });
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const group = await Group.findById(event.group);
+    const group = event.group;
     if (!group) {
       return res.status(404).json({ message: 'Group not found' });
     }
 
-    if (!group.members.includes(userId)) {
+    const isMember = await group.$has('members', userId);
+    if (!isMember) {
       return res.status(403).json({ message: 'Only group members can RSVP to events' });
     }
 
-    if (event.attendees.includes(userId)) {
+    const isAttending = await event.$has('attendees', userId);
+    if (isAttending) {
       return res.status(400).json({ message: 'User has already RSVPed to this event' });
     }
 
-    event.attendees.push(userId);
-    await event.save();
+    await event.$add('attendees', userId);
 
-    io.to(event.group.toString()).emit('eventUpdated', event);
+    io.to(group.id.toString()).emit('eventUpdated', event);
 
     res.status(200).json({ message: 'RSVP successful' });
   } catch (error) {

@@ -1,66 +1,44 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '@config/database';
-import Group from './Group';
-import User from './User';
-import Petition from './petition.model';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
+import { Petition } from './petition.model';
 
-class Vote extends Model {
-  public id!: number;
-  public groupId!: number;
-  public userId!: number;
-  public petitionId?: number;
-  public voteType!: 'Upvote' | 'Downvote';
+@Table({
+  tableName: 'votes',
+  timestamps: true,
+})
+export class Vote extends Model<Vote> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @ForeignKey(() => Petition)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  petitionId!: number;
+
+  @Column({
+    type: DataType.ENUM('For', 'Against'),
+    allowNull: false,
+  })
+  voteType!: 'For' | 'Against';
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @BelongsTo(() => Petition)
+  petition!: Petition;
 }
-
-Vote.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    groupId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'groups',
-        key: 'id',
-      },
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    petitionId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'petitions',
-        key: 'id',
-      },
-    },
-    voteType: {
-      type: DataTypes.ENUM,
-      values: ['Upvote', 'Downvote'],
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'votes',
-  }
-);
-
-// Associations
-User.hasMany(Vote, { foreignKey: 'userId', as: 'votes' });
-Vote.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-Group.hasMany(Vote, { foreignKey: 'groupId', as: 'votes' });
-Vote.belongsTo(Group, { foreignKey: 'groupId', as: 'group' });
-Petition.hasMany(Vote, { foreignKey: 'petitionId', as: 'votes' });
-Vote.belongsTo(Petition, { foreignKey: 'petitionId', as: 'petition' });
 
 export default Vote;

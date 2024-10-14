@@ -1,42 +1,46 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from './User';
 
+@Table({
+  tableName: 'testimonials',
+  timestamps: true,
+})
 export class Testimonial extends Model<Testimonial> {
-  public id!: number;
-  public userId!: number;
-  public content!: string;
-  public fediversePostUrl?: string;
-  public date!: Date;
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-  public static initialize(sequelize: Sequelize) {
-    this.init(
-      {
-        userId: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          references: { model: 'Users', key: 'id' },
-        },
-        content: {
-          type: DataTypes.TEXT,
-          allowNull: false,
-        },
-        fediversePostUrl: {
-          type: DataTypes.STRING,
-          allowNull: true,
-        },
-        date: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: DataTypes.NOW,
-        },
-      },
-      {
-        sequelize,
-        modelName: 'Testimonial',
-      }
-    );
-  }
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  content!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  fediversePostUrl?: string;
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: false,
+    defaultValue: DataType.NOW,
+  })
+  date!: Date;
+
+  @BelongsTo(() => User)
+  user!: User;
 }
 
-export const initTestimonialModel = (sequelize: Sequelize) => {
-  Testimonial.initialize(sequelize);
-};
+export default Testimonial;

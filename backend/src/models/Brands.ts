@@ -1,44 +1,43 @@
-// models/Brand.ts
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import { User } from './User';
+import { AffiliateProgram } from './AffiliateProgram';
 
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from './index';
-import User from './User';
+@Table({
+  tableName: 'brands',
+  timestamps: true,
+})
+export class Brand extends Model<Brand> {
+  @Column({
+    type: DataType.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  })
+  id!: number;
 
-class Brand extends Model {
-  public id!: number;
-  public userId!: number;
-  public name!: string;
-  public description!: string;
-  // Other attributes
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @HasMany(() => AffiliateProgram)
+  affiliatePrograms!: AffiliateProgram[];
 }
-
-Brand.init(
-  {
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    // Additional fields
-  },
-  {
-    sequelize,
-    modelName: 'Brand',
-    tableName: 'brands',
-  }
-);
-
-Brand.belongsTo(User, { foreignKey: 'userId' });
 
 export default Brand;

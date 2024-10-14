@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Campaign } from '../models/Campaign';
+import { Campaign } from '@models/Campaign';
 import Reward from '@models/Reward';
 import Contribution from '@models/Contribution';
 
@@ -7,9 +7,19 @@ import Contribution from '@models/Contribution';
 export const createCampaign = async (req: Request, res: Response) => {
   try {
     const { title, description, goalAmount, creatorId } = req.body;
-    const campaign = await Campaign.create({ title, description, goalAmount, creatorId });
+    
+    const campaign = await Campaign.create({
+      title,
+      description,
+      goalAmount,
+      creatorId,
+      currentAmount: 0,
+      isActive: true
+    } as Campaign);
+
     res.status(201).json(campaign);
   } catch (error) {
+    console.error('Error creating campaign:', error);
     res.status(500).json({ error: 'Failed to create campaign.' });
   }
 };
