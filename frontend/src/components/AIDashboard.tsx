@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -8,8 +8,10 @@ import Spinner from './common/Spinner';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+type ApiType = 'byok' | 'hosted' | 'distributed';
+
 const AIDashboard: React.FC = () => {
-  const [apiType, setApiType] = useState<'byok' | 'hosted' | 'distributed'>('byok');
+  const [apiType, setApiType] = useState<ApiType>('byok');
   const [apiUrl, setApiUrl] = useState('https://api.example.com/data');
   const [apiKey, setApiKey] = useState('');
   const [hostedService, setHostedService] = useState('');
@@ -23,7 +25,7 @@ const AIDashboard: React.FC = () => {
     }
   }, [apiType, apiUrl, apiKey, toast]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       let response;
@@ -48,24 +50,26 @@ const AIDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiType, apiUrl, apiKey, hostedService, toast]);
 
-  const sentimentCounts = data.reduce((acc: any, item: any) => {
-    const sentiment = item.sentiment || 'Neutral';
-    acc[sentiment] = (acc[sentiment] || 0) + 1;
-    return acc;
-  }, {});
+  const chartData = React.useMemo(() => {
+    const sentimentCounts = data.reduce((acc: Record<string, number>, item: any) => {
+      const sentiment = item.sentiment || 'Neutral';
+      acc[sentiment] = (acc[sentiment] || 0) + 1;
+      return acc;
+    }, {});
 
-  const chartData = {
-    labels: Object.keys(sentimentCounts),
-    datasets: [
-      {
-        label: 'Sentiment',
-        data: Object.values(sentimentCounts),
-        backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
-      },
-    ],
-  };
+    return {
+      labels: Object.keys(sentimentCounts),
+      datasets: [
+        {
+          label: 'Sentiment',
+          data: Object.values(sentimentCounts),
+          backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)'],
+        },
+      ],
+    };
+  }, [data]);
 
   return (
     <div className="container mx-auto p-4">
@@ -73,7 +77,7 @@ const AIDashboard: React.FC = () => {
       <div className="mb-4">
         <select 
           value={apiType} 
-          onChange={(e) => setApiType(e.target.value as 'byok' | 'hosted' | 'distributed')}
+          onChange={(e) => setApiType(e.target.value as ApiType)}
           className="w-full p-2 border rounded mb-2"
         >
           <option value="byok">Bring Your Own Key</option>
@@ -123,4 +127,4 @@ const AIDashboard: React.FC = () => {
   );
 };
 
-export default AIDashboard;
+export default React.memo(AIDashboard);

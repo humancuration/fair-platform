@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import Button from './common/Button';
+import LoadingSpinner from './LoadingSpinner';
 
 const DataTransparencyDashboard: React.FC = () => {
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<Record<string, any> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await axios.get('/api/user/data');
@@ -21,39 +19,49 @@ const DataTransparencyDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleDataDeletion = async (dataType: string) => {
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  const handleDataDeletion = useCallback(async (dataType: string) => {
     try {
       await axios.delete(`/api/user/data/${dataType}`);
       toast.success(`${dataType} data deleted successfully`);
-      fetchUserData(); // Refresh data after deletion
+      fetchUserData();
     } catch (error) {
       console.error('Error deleting data:', error);
       toast.error(`Failed to delete ${dataType} data. Please try again.`);
     }
-  };
+  }, [fetchUserData]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LoadingSpinner />;
   if (!userData) return <div>No data available</div>;
 
   return (
     <div className="data-transparency-dashboard">
-      <h2>Your Data on Fair Platform</h2>
+      <h2 className="text-2xl font-bold mb-4">Your Data on Fair Platform</h2>
       {Object.entries(userData).map(([dataType, data]) => (
-        <div key={dataType} className="data-section">
-          <h3>{dataType}</h3>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-          <button onClick={() => handleDataDeletion(dataType)} className="delete-button">
+        <div key={dataType} className="data-section mb-4 p-4 border rounded">
+          <h3 className="text-xl font-semibold mb-2">{dataType}</h3>
+          <pre className="bg-gray-100 p-2 rounded overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
+          <Button 
+            onClick={() => handleDataDeletion(dataType)} 
+            className="mt-2 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200"
+          >
             Delete {dataType} Data
-          </button>
+          </Button>
         </div>
       ))}
-      <button onClick={() => window.open('/api/user/data/download', '_blank')} className="download-button">
+      <Button 
+        onClick={() => window.open('/api/user/data/download', '_blank')} 
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+      >
         Download All Data
-      </button>
+      </Button>
     </div>
   );
 };
 
-export default DataTransparencyDashboard;
+export default React.memo(DataTransparencyDashboard);

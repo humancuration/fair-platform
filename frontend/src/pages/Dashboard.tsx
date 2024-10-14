@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import ThemeSwitcher from '../components/ThemeSwitcher';
-import ThemeCustomizer from '../components/ThemeCustomizer';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+const ThemeSwitcher = lazy(() => import('../components/ThemeSwitcher'));
+const ThemeCustomizer = lazy(() => import('../components/ThemeCustomizer'));
 
 const Dashboard: React.FC = () => {
   const { currentTheme, customStyles } = useSelector((state: RootState) => state.theme);
@@ -13,37 +15,31 @@ const Dashboard: React.FC = () => {
     backgroundColor: currentTheme === 'dark' ? '#1a202c' : '#f7fafc',
   };
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) => 
+    `transition-colors duration-200 ${isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}`;
+
   return (
-    <div className="flex" style={dashboardStyle}>
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-200 dark:bg-gray-800 p-4">
+    <div className="flex h-screen" style={dashboardStyle}>
+      <aside className="w-64 bg-gray-200 dark:bg-gray-800 p-4 overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Dashboard</h2>
         <nav className="flex flex-col space-y-2">
-          <NavLink to="admin" className={({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}>
-            Admin
-          </NavLink>
-          <NavLink to="eco-consultant" className={({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}>
-            Eco Consultant
-          </NavLink>
-          <NavLink to="ai" className={({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}>
-            AI Dashboard
-          </NavLink>
-          <NavLink to="data-transparency" className={({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}>
-            Data Transparency
-          </NavLink>
-          <NavLink to="settings" className={({ isActive }) => isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300 hover:text-blue-500'}>
-            Settings
-          </NavLink>
+          {['admin', 'eco-consultant', 'ai', 'data-transparency', 'settings'].map((route) => (
+            <NavLink key={route} to={route} className={navLinkClass}>
+              {route.charAt(0).toUpperCase() + route.slice(1).replace('-', ' ')}
+            </NavLink>
+          ))}
         </nav>
-        <div className="mt-6">
-          <ThemeSwitcher />
-          <ThemeCustomizer />
-        </div>
+        <Suspense fallback={<LoadingSpinner />}>
+          <div className="mt-6">
+            <ThemeSwitcher />
+            <ThemeCustomizer />
+          </div>
+        </Suspense>
       </aside>
-
-      {/* Main content area */}
-      <main className="flex-1 p-6">
-        <Outlet />
+      <main className="flex-1 p-6 overflow-y-auto">
+        <Suspense fallback={<LoadingSpinner />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );
