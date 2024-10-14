@@ -1,4 +1,6 @@
 import React from 'react';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 
 interface Component {
   id: string;
@@ -23,19 +25,55 @@ interface ComponentLibraryProps {
 
 const ComponentLibrary: React.FC<ComponentLibraryProps> = ({ onSelectComponent }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <LibraryContainer>
       {components.map((component) => (
-        <div
+        <ComponentItem
           key={component.id}
-          className="cursor-pointer border rounded p-2 hover:border-blue-500 text-center"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => onSelectComponent(component.id)}
         >
-          <span className="text-2xl mb-2">{component.icon}</span>
-          <p>{component.name}</p>
-        </div>
+          <IconWrapper>{component.icon}</IconWrapper>
+          <ComponentName>{component.name}</ComponentName>
+        </ComponentItem>
       ))}
-    </div>
+    </LibraryContainer>
   );
 };
+
+const LibraryContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+`;
+
+const ComponentItem = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: ${({ theme }) => theme.colors.background};
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundHover};
+  }
+`;
+
+const IconWrapper = styled.span`
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+`;
+
+const ComponentName = styled.p`
+  font-size: 0.9rem;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.text};
+`;
 
 export default ComponentLibrary;
