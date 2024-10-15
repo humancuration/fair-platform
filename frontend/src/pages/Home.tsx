@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import RecommendationCarousel from '../components/RecommendationCarousel';
-import LoadingSpinner from '../components/LoadingSpinner';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../utils/api';
 import FeaturedCampaigns from '../components/FeaturedCampaigns';
 import CommunityHighlights from '../components/CommunityHighlights';

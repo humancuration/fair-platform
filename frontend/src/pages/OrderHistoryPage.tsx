@@ -5,8 +5,21 @@ import OrderItem from '../components/OrderItem';
 import api from '../utils/api';
 import { handleError } from '../utils/errorHandler';
 
+interface Order {
+  id: string;
+  date: string;
+  total: number;
+  status: string;
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
+}
+
 const OrderHistoryPage: React.FC = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

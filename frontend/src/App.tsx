@@ -13,12 +13,12 @@ import { MusicPlayerProvider } from '@contexts/MusicPlayerContext';
 import { ErrorProvider } from '@contexts/ErrorContext';
 import MusicPlayerControls from '@components/MusicPlayerControls';
 import ErrorDisplay from '@components/ErrorDisplay';
-import PlaylistCreationPage from './pages/PlaylistCreationPage';
-import PlaylistListPage from './pages/PlaylistListPage';
-import PlaylistDetailsPage from './pages/PlaylistDetailsPage';
-import CreateCampaignPage from './pages/CreateCampaignPage';
+import PlaylistCreationPage from './pages/playlist/PlaylistCreationPage';
+import PlaylistListPage from './pages/playlist/PlaylistListPage';
+import PlaylistDetailsPage from './pages/playlist/PlaylistDetailsPage';
+import CreateCampaignPage from './pages/crowdfund/CreateCampaignPage';
 import RepositoryBrowser from './components/versionControl/RepositoryBrowser';
-import AvatarCustomizationPage from './pages/AvatarCustomizationPage';
+import AvatarCustomizationPage from './components/avatar/AvatarCustomizationPage';
 import RewardsPage from './components/RewardsPage';
 
 // Lazy-loaded components
@@ -26,8 +26,8 @@ const Home = lazy(() => import('@pages/Home'));
 const Login = lazy(() => import('@pages/Login'));
 const Signup = lazy(() => import('@pages/Signup'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const EcoConsultantDashboard = lazy(() => import('./pages/EcoConsultantDashboard'));
+const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
+const EcoConsultantDashboard = lazy(() => import('./pages/dashboard/EcoConsultantDashboard'));
 const AIDashboard = lazy(() => import('./components/AIDashboard'));
 const DataTransparencyDashboard = lazy(() => import('./components/DataTransparencyDashboard'));
 const UserSettings = lazy(() => import('./components/UserSettings'));
@@ -42,10 +42,10 @@ const WishlistPage = lazy(() => import('@pages/WishlistPage'));
 const CommunityWishlistPage = lazy(() => import('@pages/CommunityWishlistPage'));
 const UserSettingsPage = lazy(() => import('@pages/UserSettingsPage'));
 const PrivateWishlistPage = lazy(() => import('@pages/PrivateWishlistPage'));
-const PublicWishlistPage = lazy(() => import('@pages/PublicWishlistPage'));
-const GroupCreationPage = lazy(() => import('./pages/GroupCreationPage'));
-const GroupListPage = lazy(() => import('./pages/GroupListPage'));
-const GroupDetailPage = lazy(() => import('./pages/GroupDetailPage'));
+const PublicWishlistPage = lazy(() => import('@/pages/wishlist/PublicWishlistPage'));
+const GroupCreationPage = lazy(() => import('./pages/groups/GroupCreationPage'));
+const GroupListPage = lazy(() => import('./pages/groups/GroupListPage'));
+const GroupDetailPage = lazy(() => import('./pages/groups/GroupDetailPage'));
 
 const App: React.FC = () => {
   return (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import CompanyListing from '../components/CompanyListing';
 import Pagination from '../components/Pagination';
-import LoadingSpinner from '../components/LoadingSpinner';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../utils/api';
 
 const Directory: React.FC = () => {

@@ -6,7 +6,7 @@ import Footer from '../components/layout/Footer';
 import TestimonialCard from '../components/TestimonialCard';
 import { toast } from 'react-toastify';
 import SupportForm from '@components/SupportForm';
-import GroupTestimonials from '../components/GroupTestimonials'; // Import Group Testimonials
+import GroupTestimonials from '../components/groups/GroupTestimonials'; // Import Group Testimonials
 
 const TestimonialsPage: React.FC = () => {
   const dispatch = useAppDispatch();

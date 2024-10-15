@@ -1,7 +1,7 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import SupportForm from '../components/SupportForm';
-import GroupSupportChannels from '../components/GroupSupportChannels'; // Import Group Support
+import GroupSupportChannels from '../components/groups/GroupSupportChannels'; // Import Group Support
 
 const SupportPage: React.FC = () => {
   return (

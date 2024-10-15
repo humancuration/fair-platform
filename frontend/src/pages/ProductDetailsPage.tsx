@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ProductCard from '../components/marketplace/ProductCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../api/api';
 import { handleError } from '../utils/errorHandler';
-import ShareWithGroupModal from '../components/ShareWithGroupModal';
+import ShareWithGroupModal from '../components/shared/ShareWithGroupModal';
 
 const ProductDetailsPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();

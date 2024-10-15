@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Button from './common/Button';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner from './common/LoadingSpinner';
 
 const DataTransparencyDashboard: React.FC = () => {
   const [userData, setUserData] = useState<Record<string, any> | null>(null);
