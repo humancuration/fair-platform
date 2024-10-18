@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AffiliateLinksPage from '../AffiliateLinksPage';
+import AffiliateLinksPage from '../dashboard/AffiliateLinksPage';
 import { Provider } from 'react-redux';
 import { store } from '../../store/store';
 import api from '@api/api';

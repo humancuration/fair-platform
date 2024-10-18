@@ -5,7 +5,7 @@ import { createSurvey } from '../actions/surveyActions';
 import QuestionEditor from './QuestionEditor';
 import ConditionLogicEditor from './ConditionLogicEditor';
 import SecuritySettings from './SecuritySettings';
-import LinkedContentManager from './LinkedContentManager';
+import LinkedContentManager from '../LinkedContentManager';
 
 const SurveyCreator: React.FC = () => {
   const { surveyId } = useParams<{ surveyId: string }>();

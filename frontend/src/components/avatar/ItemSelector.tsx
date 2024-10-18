@@ -1,7 +1,15 @@
 import React from 'react';
 
+interface Item {
+  id: string;
+  name: string;
+  type: 'base' | 'accessory' | 'outfit'; // Added 'outfit' type
+  image: string;
+  // ... any other fields ...
+}
+
 interface ItemSelectorProps {
-  inventory: any[];
+  inventory: Item[]; // Updated to use typed Item
   onItemSelect: (itemId: string, itemType: string) => void;
 }
 

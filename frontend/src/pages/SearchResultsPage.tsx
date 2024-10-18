@@ -4,7 +4,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SearchBar from '../components/SearchBar';
 import ProductCard from '../components/marketplace/ProductCard';
-import InfiniteScrollComponent from '../components/infiniteScrollComponent';
+import InfiniteScrollComponent from '../components/common/infiniteScrollComponent';
 import api from '../api/api';
 import { handleError } from '../utils/errorHandler';
 

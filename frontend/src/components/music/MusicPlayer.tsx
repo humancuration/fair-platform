@@ -3,8 +3,8 @@ import { Howl } from 'howler';
 import styled from 'styled-components';
 import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 import LyricsDisplay from './LyricsDisplay';
-import { useError } from '../contexts/ErrorContext';
-import { handleError } from '../utils/errorHandler';
+import { useError } from '../../contexts/ErrorContext';
+import { handleError } from '../../utils/errorHandler';
 
 interface MusicPlayerProps {
   trackId: string;

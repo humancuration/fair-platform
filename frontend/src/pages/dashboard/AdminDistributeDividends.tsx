@@ -1,9 +1,9 @@
 import React, { useContext, useState, useCallback } from 'react';
-import api from '../api/api';
-import { AuthContext } from '../contexts/AuthContext';
+import api from '../../api/api';
+import { AuthContext } from '../../contexts/AuthContext';
 import { AxiosResponse } from 'axios';
 import { useToast } from '../hooks/useToast';
-import Button from '../components/common/Button';
+import Button from '../../components/common/Button';
 
 const AdminDistributeDividends: React.FC = () => {
   const { token } = useContext(AuthContext);

@@ -8,6 +8,11 @@ export class Avatar extends Model {
   public baseImage!: string;
   public accessories!: string[];
   public colors!: Record<string, string>;
+  public outfit!: string;
+  public mood!: string;
+  public lastInteraction!: Date;
+  public xp!: number;
+  public level!: number;
 }
 
 Avatar.init(
@@ -36,6 +41,30 @@ Avatar.init(
     colors: {
       type: DataTypes.JSON,
       defaultValue: {},
+    },
+    outfit: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    mood: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'happy',
+    },
+    lastInteraction: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    xp: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    level: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 1,
     },
   },
   {

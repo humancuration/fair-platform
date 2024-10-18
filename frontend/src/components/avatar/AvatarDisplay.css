@@ -1,0 +1,11 @@
+.avatar-container {
+  perspective: 1000px;
+}
+
+.avatar-image {
+  transition: transform 0.3s;
+}
+
+.avatar-container:hover .avatar-image {
+  transform: rotateY(10deg) scale(1.05);
+}

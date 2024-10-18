@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import WYSIWYGEditor from '../components/minsite/WYSIWYGEditor';
-import MinsitePreview from '../components/MinsitePreview';
+import WYSIWYGEditor from '../../components/minsite/WYSIWYGEditor';
+import MinsitePreview from '../../components/minsite/MinsitePreview';
 import axios from 'axios';
 import { useSelector, useParams } from 'react-redux';
-import { RootState } from '../store/store';
+import { RootState } from '../../store/store';
 import DOMPurify from 'dompurify';
-import TemplateSelector from '../components/TemplateSelector';
-import CSSEditor from '../components/CSSEditor';
-import SEOMetadataEditor from '../components/SEOMetadataEditor';
-import ComponentLibrary from '../components/ComponentLibrary';
-import VersionHistory from '../components/VersionHistory';
+import TemplateSelector from '../../components/TemplateSelector';
+import CSSEditor from '../../components/CSSEditor';
+import SEOMetadataEditor from '../../components/SEOMetadataEditor';
+import ComponentLibrary from '../../components/ComponentLibrary';
+import VersionHistory from '../../components/VersionHistory';
 
 const MinsiteBuilder: React.FC = () => {
   const { id } = useParams<{ id?: string }>();

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Layout from '../components/Layout';
-import WishlistItem from '../components/WishlistItem';
+import Layout from '../../components/Layout';
+import WishlistItem from '../../components/WishlistItem';
 import AddWishlistItemModal from '../components/AddWishlistItemModal';
-import Button from '../components/common/Button';
-import api from '../utils/api';
+import Button from '../../components/common/Button';
+import api from '../../utils/api';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { RootState } from '../../store/store';
 import { toast } from 'react-toastify';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import styled from 'styled-components';
 import { FaPlus, FaLock, FaUnlock } from 'react-icons/fa';
 

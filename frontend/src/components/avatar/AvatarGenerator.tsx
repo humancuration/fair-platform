@@ -14,13 +14,15 @@ interface AvatarGeneratorProps {
   colors?: string[] | null;
   unlockedShapes?: string[];
   accessories?: string[];
+  outfit?: string; // Added outfit
 }
 
 const AvatarGenerator: React.FC<AvatarGeneratorProps> = ({ 
   seed, 
   colors = null, 
   unlockedShapes = ['rectangle'], 
-  accessories = [] 
+  accessories = [],
+  outfit = null, // Added outfit
 }) => {
   const size = 100;
   const blockSize = size / 5;
@@ -129,6 +131,9 @@ const AvatarGenerator: React.FC<AvatarGeneratorProps> = ({
           <rect x={55} y={40} width={15} height={5} fill="#000" />
           <rect x={45} y={42} width={10} height={1} fill="#000" />
         </>
+      )}
+      {outfit && (
+        <image href={`/images/outfits/${outfit}.svg`} x="0" y="0" width={size} height={size} />
       )}
     </svg>
   );
