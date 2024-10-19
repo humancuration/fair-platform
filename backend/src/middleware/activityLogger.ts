@@ -2,12 +2,18 @@ import { Request, Response, NextFunction } from 'express';
 import { AppDataSource } from '../data-source';
 import { UserActivity } from '../models/UserActivity';
 import { awardPoints } from '../services/rewardsService';
+import logger from '../utils/logger';
 
 export const activityLogger = (activityType: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const userId = (req as any).user?.id;
     if (userId) {
-      await logActivity(userId, activityType);
+      try {
+        await logActivity(userId, activityType);
+      } catch (error) {
+        logger.error(`Failed to log activity: ${error}`);
+        // Continue execution even if logging fails
+      }
     }
     next();
   };
@@ -20,8 +26,11 @@ const logActivity = async (userId: number, activityType: string) => {
     activity_type: activityType,
     timestamp: new Date()
   });
-  await activityRepository.save(activity);
+  
+  await Promise.all([
+    activityRepository.save(activity),
+    awardPoints(userId, activityType)
+  ]);
 
-  // Award points
-  await awardPoints(userId, activityType);
+  logger.info(`Activity logged for user ${userId}: ${activityType}`);
 };

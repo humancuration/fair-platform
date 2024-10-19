@@ -114,3 +114,46 @@ export const updateXpAndLevel = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error updating XP and level', error });
   }
 };
+
+export const updateAvatarEmotion = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { emotion, intensity } = req.body;
+    const avatar = await Avatar.findOne({ where: { userId } });
+    if (!avatar) {
+      return res.status(404).json({ message: 'Avatar not found' });
+    }
+    await avatar.update({ emotion, emotionIntensity: intensity });
+    res.json(avatar);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating avatar emotion', error });
+  }
+};
+
+export const getAvatarEmotion = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const avatar = await Avatar.findOne({ where: { userId } });
+    if (!avatar) {
+      return res.status(404).json({ message: 'Avatar not found' });
+    }
+    res.json({ emotion: avatar.emotion, intensity: avatar.emotionIntensity });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching avatar emotion', error });
+  }
+};
+
+export const updateAvatarBackground = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { backgroundId } = req.body;
+    const avatar = await Avatar.findOne({ where: { userId } });
+    if (!avatar) {
+      return res.status(404).json({ message: 'Avatar not found' });
+    }
+    await avatar.update({ background: backgroundId });
+    res.json(avatar);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating avatar background', error });
+  }
+};

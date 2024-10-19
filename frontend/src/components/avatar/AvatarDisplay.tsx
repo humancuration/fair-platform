@@ -8,6 +8,9 @@ interface AvatarDisplayProps {
     colors: Record<string, string>;
     outfit?: string;
     mood: string;
+    emotion: string;
+    emotionIntensity: number;
+    background?: string;
   };
 }
 
@@ -21,6 +24,13 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ avatar }) => {
 
   return (
     <div className="relative w-64 h-64 avatar-container" onClick={triggerAnimation}>
+      {avatar.background && (
+        <img 
+          src={`/images/backgrounds/${avatar.background}.png`} 
+          alt="Avatar Background" 
+          className="absolute inset-0 w-full h-full object-cover" 
+        />
+      )}
       <img 
         src={avatar.baseImage} 
         alt="Avatar Base" 
@@ -46,6 +56,9 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ avatar }) => {
       </div>
       <div className="absolute top-0 right-0 bg-white p-1 rounded">
         <img src={`/images/moods/${avatar.mood}.png`} alt={`Mood: ${avatar.mood}`} className="w-6 h-6" />
+      </div>
+      <div className="absolute bottom-0 right-0 bg-white p-1 rounded">
+        Emotion: {avatar.emotion} (Intensity: {avatar.emotionIntensity})
       </div>
     </div>
   );

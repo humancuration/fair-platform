@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import logger from '../utils/logger';
 
 interface AuthRequest extends Request {
   user?: {
@@ -8,33 +9,35 @@ interface AuthRequest extends Request {
   };
 }
 
+class AuthError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.replace('Bearer ', ');
+  const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
+    return next(new AuthError('No token provided', 401));
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string; permissions: string[] };
     req.user = decoded;
-
-    // Ensure user has access to version control
-    if (req.user && req.user.permissions.includes('version-control')) {
-      next();
-    } else {
-      res.status(403).send({ message: 'Access denied. Version control permission required.' });
-    }
+    next();
   } catch (err) {
-    res.status(401).json({ message: 'Token is not valid' });
+    logger.error(`JWT verification failed: ${err}`);
+    next(new AuthError('Invalid token', 401));
   }
-  return next();
 };
 
 export const authorizeVersionControl = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (req.user && req.user.permissions.includes('version-control')) {
     next();
   } else {
-    res.status(403).send({ message: 'Access denied. Version control permission required.' });
+    next(new AuthError('Access denied. Version control permission required.', 403));
   }
 };

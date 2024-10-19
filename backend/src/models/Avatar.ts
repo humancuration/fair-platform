@@ -10,9 +10,12 @@ export class Avatar extends Model {
   public colors!: Record<string, string>;
   public outfit!: string;
   public mood!: string;
+  public emotion!: string;
+  public emotionIntensity!: number;
   public lastInteraction!: Date;
   public xp!: number;
   public level!: number;
+  public background!: string;
 }
 
 Avatar.init(
@@ -51,6 +54,20 @@ Avatar.init(
       allowNull: false,
       defaultValue: 'happy',
     },
+    emotion: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'neutral',
+    },
+    emotionIntensity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 5,
+      validate: {
+        min: 1,
+        max: 10,
+      },
+    },
     lastInteraction: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -65,6 +82,10 @@ Avatar.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 1,
+    },
+    background: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

@@ -3,7 +3,9 @@ import api from '../../api/api';
 import AvatarDisplay from './AvatarDisplay';
 import AvatarStats from './AvatarStats';
 import ItemSelector from './ItemSelector';
-import MoodSelector from './MoodSelector'; // New component
+import MoodSelector from './MoodSelector';
+import EmotionSelector from './EmotionSelector';
+import BackgroundSelector from './BackgroundSelector';
 
 interface Avatar {
   baseImage: string;
@@ -13,6 +15,9 @@ interface Avatar {
   mood: string;
   xp: number;
   level: number;
+  emotion: string;
+  emotionIntensity: number;
+  background?: string;
 }
 
 interface AvatarCustomizerProps {
@@ -72,6 +77,18 @@ const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ userId }) => {
     }
   };
 
+  const handleEmotionChange = (emotion: string, intensity: number) => {
+    if (avatar) {
+      setAvatar({ ...avatar, emotion, emotionIntensity: intensity });
+    }
+  };
+
+  const handleBackgroundChange = (backgroundId: string) => {
+    if (avatar) {
+      setAvatar({ ...avatar, background: backgroundId });
+    }
+  };
+
   if (!avatar) {
     return <div>Loading...</div>;
   }
@@ -88,6 +105,17 @@ const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ userId }) => {
         </div>
       </div>
       <MoodSelector currentMood={avatar.mood} onMoodChange={handleMoodChange} />
+      <EmotionSelector
+        userId={userId}
+        currentEmotion={avatar.emotion}
+        currentIntensity={avatar.emotionIntensity}
+        onEmotionChange={handleEmotionChange}
+      />
+      <BackgroundSelector
+        userId={userId}
+        currentBackground={avatar.background}
+        onBackgroundChange={handleBackgroundChange}
+      />
     </div>
   );
 };

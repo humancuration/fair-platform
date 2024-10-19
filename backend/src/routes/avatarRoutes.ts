@@ -7,20 +7,27 @@ import {
   addItemToInventory, 
   getAchievements, 
   addAchievement,
-  updateXpAndLevel
+  updateXpAndLevel,
+  updateAvatarEmotion,
+  getAvatarEmotion,
+  updateAvatarBackground
 } from '../controllers/avatarController';
-import { authenticateJWT, AuthRequest } from '../middleware/auth';
+import { authenticateJWT } from '../middleware/auth';
 
 const router = express.Router();
 
-router.post('/avatar', authenticateJWT, (req: AuthRequest, res) => createAvatar(req, res));
-router.get('/avatar/:userId', authenticateJWT, (req: AuthRequest, res) => getAvatar(req, res));
-router.put('/avatar/:userId', authenticateJWT, (req: AuthRequest, res) => updateAvatar(req, res));
-router.get('/inventory/:userId', authenticateJWT, (req: AuthRequest, res) => getUserInventory(req, res));
-router.post('/inventory', authenticateJWT, (req: AuthRequest, res) => addItemToInventory(req, res));
-router.get('/achievements/:userId', authenticateJWT, (req: AuthRequest, res) => getAchievements(req, res));
-router.post('/achievements', authenticateJWT, (req: AuthRequest, res) => addAchievement(req, res));
-router.put('/avatar/:userId/xp', authenticateJWT, (req: AuthRequest, res) => updateXpAndLevel(req, res));
+// Update the route handlers to use the correct request type
+router.post('/avatar', authenticateJWT, createAvatar);
+router.get('/avatar/:userId', authenticateJWT, getAvatar);
+router.put('/avatar/:userId', authenticateJWT, updateAvatar);
+router.get('/inventory/:userId', authenticateJWT, getUserInventory);
+router.post('/inventory', authenticateJWT, addItemToInventory);
+router.get('/achievements/:userId', authenticateJWT, getAchievements);
+router.post('/achievements', authenticateJWT, addAchievement);
+router.put('/avatar/:userId/xp', authenticateJWT, updateXpAndLevel);
+router.put('/avatar/:userId/emotion', authenticateJWT, updateAvatarEmotion);
+router.get('/avatar/:userId/emotion', authenticateJWT, getAvatarEmotion);
+router.put('/avatar/:userId/background', authenticateJWT, updateAvatarBackground);
 
 // No changes needed unless adding specific outfit routes
 

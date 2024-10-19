@@ -6,7 +6,7 @@ import DailyQuests from './DailyQuests';
 import Wardrobe from './Wardrobe';
 import SocialInteractions from './SocialInteractions';
 import MiniGame from './MiniGame';
-import { useAuth } from '../../contexts/AuthContext';
+import { useUser } from '../../contexts/UserContext';
 
 interface User {
   id: string;
@@ -14,7 +14,7 @@ interface User {
 }
 
 const AvatarCustomizationPage: React.FC = () => {
-  const { user } = useAuth() as { user: User | null };
+  const { user } = useUser() as { user: User | null };
 
   if (!user) {
     return <div>Please log in to customize your avatar.</div>;

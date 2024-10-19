@@ -36,6 +36,8 @@ export const store = configureStore({
     userSettings: userSettingsReducer,
     notifications: notificationsReducer,
     wishlist: wishlistReducer,
+    marketplace: marketplaceReducer,
+    cart: cartReducer,
     publicWishlist: publicWishlistReducer,
     communityWishlist: communityWishlistReducer,
     testimonials: testimonialsReducer,
