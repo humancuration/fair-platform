@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { context, trace } from '@opentelemetry/api';
 import Transport from 'winston-transport';
 
-// Custom transport for sending logs to Logstash (which will forward to OpenSearch)
+// Custom transport for sending logs to Logstash
 class LogstashTransport extends Transport {
   constructor(opts?: Transport.TransportStreamOptions) {
     super(opts);
@@ -18,7 +18,7 @@ class LogstashTransport extends Transport {
     // Send log to Logstash (you might want to use a more robust method like a queue)
     const net = require('net');
     const client = new net.Socket();
-    client.connect(5000, 'logstash', () => {
+    client.connect(5000, 'localhost', () => {
       client.write(JSON.stringify(info) + '\n');
       client.destroy();
     });
@@ -55,8 +55,8 @@ export const expressLogger = expressWinston.logger({
   msg: 'HTTP {{req.method}} {{req.url}}',
   expressFormat: true,
   colorize: false,
-  ignoreRoute: (req, res) => false,
-  dynamicMeta: (req, res) => {
+  ignoreRoute: (req: any, res: any) => false,
+  dynamicMeta: (req: any, res: any) => {
     const span = trace.getSpan(context.active());
     return {
       requestId: req.id,
