@@ -1,30 +1,74 @@
-import { createLogger, format, transports } from 'winston';
+import winston from 'winston';
+import expressWinston from 'express-winston';
+import { v4 as uuidv4 } from 'uuid';
+import { context, trace } from '@opentelemetry/api';
+import Transport from 'winston-transport';
 
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(
-    format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss'
-    }),
-    format.errors({ stack: true }),
-    format.splat(),
-    format.json()
+// Custom transport for sending logs to Logstash (which will forward to OpenSearch)
+class LogstashTransport extends Transport {
+  constructor(opts?: Transport.TransportStreamOptions) {
+    super(opts);
+  }
+
+  log(info: any, callback: () => void) {
+    setImmediate(() => {
+      this.emit('logged', info);
+    });
+
+    // Send log to Logstash (you might want to use a more robust method like a queue)
+    const net = require('net');
+    const client = new net.Socket();
+    client.connect(5000, 'logstash', () => {
+      client.write(JSON.stringify(info) + '\n');
+      client.destroy();
+    });
+
+    callback();
+  }
+}
+
+// Create a Winston logger
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
   ),
-  defaultMeta: { service: 'fair-platform-backend' },
   transports: [
-    new transports.File({ filename: 'error.log', level: 'error' }),
-    new transports.File({ filename: 'combined.log' }),
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+    new LogstashTransport()
   ],
 });
 
-// If we're not in production, log to the console as well
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new transports.Console({
-    format: format.combine(
-      format.colorize(),
-      format.simple()
-    )
-  }));
-}
+// Middleware to add request ID to each request
+export const addRequestId = (req: any, res: any, next: any) => {
+  req.id = uuidv4();
+  next();
+};
+
+// Express middleware for logging requests and responses
+export const expressLogger = expressWinston.logger({
+  winstonInstance: logger,
+  meta: true,
+  msg: 'HTTP {{req.method}} {{req.url}}',
+  expressFormat: true,
+  colorize: false,
+  ignoreRoute: (req, res) => false,
+  dynamicMeta: (req, res) => {
+    const span = trace.getSpan(context.active());
+    return {
+      requestId: req.id,
+      traceId: span?.spanContext().traceId,
+      spanId: span?.spanContext().spanId,
+    };
+  },
+});
+
+// Express middleware for logging errors
+export const expressErrorLogger = expressWinston.errorLogger({
+  winstonInstance: logger,
+});
 
 export default logger;

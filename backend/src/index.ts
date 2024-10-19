@@ -9,8 +9,12 @@ import { setupRoutes } from './routes/setupRoutes';
 import { setupApolloServer } from './graphql/setupApolloServer';
 import { connectToDatabase } from '@config/database';
 import routes from './routes';
+import { initTracing } from './utils/tracing';
 
 dotenv.config();
+
+// Initialize tracing before importing other modules
+initTracing();
 
 const app = express();
 const httpServer = http.createServer(app);

@@ -8,8 +8,15 @@ import cors from 'cors';
 import session from 'express-session';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
+import { addRequestId, expressLogger, expressErrorLogger } from '../utils/logger';
 
 export const setupMiddleware = (app: Express) => {
+  // Add request ID to each request
+  app.use(addRequestId);
+
+  // Request logging
+  app.use(expressLogger);
+
   // Security middleware
   app.use(helmet());
 
@@ -54,6 +61,9 @@ export const setupMiddleware = (app: Express) => {
 
   // Validation middleware
   app.use(validate);
+
+  // Error logging (should be right before the error handler)
+  app.use(expressErrorLogger);
 
   // Error handling middleware (should be last)
   app.use(errorHandler);

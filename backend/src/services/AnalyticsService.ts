@@ -3,51 +3,66 @@ import crypto from 'crypto';
 import AnalyticsEvent from '../models/AnalyticsEvent';
 import logger from '../utils/logger';
 import { redisClient } from '../utils/redis';
+import { trace, context } from '@opentelemetry/api';
 
 class AnalyticsService {
   async trackEvent(userId: number | null, eventType: string, eventData: any) {
+    const span = trace.getTracer('analytics-service').startSpan('trackEvent');
+    
     try {
-      await AnalyticsEvent.create({
-        userId,
-        eventType,
-        eventData,
+      context.with(trace.setSpan(context.active(), span), async () => {
+        await AnalyticsEvent.create({
+          userId,
+          eventType,
+          eventData,
+        });
+        logger.info(`Event tracked: ${eventType} for user ${userId}`, { userId, eventType });
       });
-      logger.info(`Event tracked: ${eventType} for user ${userId}`);
     } catch (error) {
-      logger.error(`Error tracking event: ${error}`);
+      logger.error(`Error tracking event: ${error}`, { userId, eventType, error });
+      span.recordException(error as Error);
       throw new Error('Failed to track event');
+    } finally {
+      span.end();
     }
   }
 
   async getAggregateData(eventType: string, startDate: Date, endDate: Date) {
-    const cacheKey = `aggregateData:${eventType}:${startDate.toISOString()}:${endDate.toISOString()}`;
-    const cachedData = await redisClient.get(cacheKey);
-
-    if (cachedData) {
-      return JSON.parse(cachedData);
-    }
-
+    const span = trace.getTracer('analytics-service').startSpan('getAggregateData');
+    
     try {
-      const data = await AnalyticsEvent.findAll({
-        where: {
-          eventType,
-          timestamp: {
-            [Op.between]: [startDate, endDate],
-          },
-        },
-        attributes: [
-          [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-          [sequelize.fn('DATE', sequelize.col('timestamp')), 'date'],
-        ],
-        group: [sequelize.fn('DATE', sequelize.col('timestamp'))],
-        raw: true,
-      });
+      return await context.with(trace.setSpan(context.active(), span), async () => {
+        const cacheKey = `aggregateData:${eventType}:${startDate.toISOString()}:${endDate.toISOString()}`;
+        const cachedData = await redisClient.get(cacheKey);
 
-      await redisClient.setex(cacheKey, 3600, JSON.stringify(data)); // Cache for 1 hour
-      return data;
+        if (cachedData) {
+          return JSON.parse(cachedData);
+        }
+
+        const data = await AnalyticsEvent.findAll({
+          where: {
+            eventType,
+            timestamp: {
+              [Op.between]: [startDate, endDate],
+            },
+          },
+          attributes: [
+            [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+            [sequelize.fn('DATE', sequelize.col('timestamp')), 'date'],
+          ],
+          group: [sequelize.fn('DATE', sequelize.col('timestamp'))],
+          raw: true,
+        });
+
+        await redisClient.setex(cacheKey, 3600, JSON.stringify(data));
+        return data;
+      });
     } catch (error) {
       logger.error(`Error getting aggregate data: ${error}`);
+      span.recordException(error as Error);
       throw new Error('Failed to get aggregate data');
+    } finally {
+      span.end();
     }
   }
 
