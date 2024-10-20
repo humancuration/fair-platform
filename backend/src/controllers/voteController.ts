@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Vote } from '../models/vote.model';
-import { Group } from '../models/Group';
+import { Group } from '../modules/group/Group';
 import { Petition } from '../models/petition.model';
 
 export const castVote = async (req: Request, res: Response) => {

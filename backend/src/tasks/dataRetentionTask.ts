@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import User from '../models/User';
+import User from '../modules/user/User';
 import AnalyticsService from '../services/analyticsService';
 
 const dataRetentionTask = () => {

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/server'; // Updated import to @apollo/server
+import { gql } from 'graphql-tag';
 
 export const typeDefs = gql`
   type User {
@@ -31,6 +31,12 @@ export const typeDefs = gql`
     lfsEnabled: Boolean!
   }
 
+  input CreateUserInput {
+    username: String!
+    email: String!
+    password: String!
+  }
+
   type Query {
     user(id: ID!): User
     group(id: ID!): Group
@@ -38,6 +44,7 @@ export const typeDefs = gql`
   }
 
   type Mutation {
+    createUser(input: CreateUserInput!): User!
     createGroup(name: String!, description: String): Group!
     joinGroup(groupId: ID!): Group!
     initializeRepository(name: String!): Repository!

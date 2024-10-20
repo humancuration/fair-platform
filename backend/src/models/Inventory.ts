@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
-import { User } from './User';
+import { User } from '../modules/user/User';
 import { Item } from './Item';
 
 export class Inventory extends Model {

@@ -1,7 +1,7 @@
 // controllers/linkInBioController.ts
 
 import { Request, Response } from 'express';
-import User from '../models/User';
+import User from '../modules/user/User';
 import AffiliateLink from '../models/AffiliateLink';
 
 export const getLinkInBio = async (req: Request, res: Response) => {

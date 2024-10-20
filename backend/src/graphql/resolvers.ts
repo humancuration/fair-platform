@@ -1,31 +1,81 @@
 import { PubSub } from 'graphql-subscriptions';
+import { UserService } from '../modules/user/userService';
+import { GroupService } from '../modules/group/groupService';
+import { AuthenticationError, UserInputError } from 'apollo-server-express';
 import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../services/versionControlService';
 import { v4 as uuidv4 } from 'uuid';
 
 const pubsub = new PubSub();
+const userService = new UserService();
+const groupService = new GroupService();
 
 export const resolvers = {
   Query: {
-    user: async (_: unknown, { id }: { id: string }, { dataSources }: { dataSources: { userAPI: any } }) => { // Explicitly define type for _
-      return dataSources.userAPI.getUserById(id);
+    user: async (_: unknown, { id }: { id: string }) => {
+      try {
+        const user = await userService.getUserById(id);
+        if (!user) {
+          throw new UserInputError('User not found');
+        }
+        return user;
+      } catch (error) {
+        console.error('Error fetching user:', error);
+        throw new Error('Failed to fetch user');
+      }
     },
-    group: async (_: unknown, { id }: { id: string }, { dataSources }: { dataSources: { groupAPI: any } }) => {
-      return dataSources.groupAPI.getGroupById(id);
+    group: async (_: unknown, { id }: { id: string }) => {
+      try {
+        const group = await groupService.getGroupById(id);
+        if (!group) {
+          throw new UserInputError('Group not found');
+        }
+        return group;
+      } catch (error) {
+        console.error('Error fetching group:', error);
+        throw new Error('Failed to fetch group');
+      }
     },
-    allGroups: async (_: unknown, __: unknown, { dataSources }: { dataSources: { groupAPI: any } }) => { // Explicitly define type for _
-      return dataSources.groupAPI.getAllGroups();
+    allGroups: async () => {
+      try {
+        return await groupService.getAllGroups();
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+        throw new Error('Failed to fetch groups');
+      }
     },
   },
   Mutation: {
-    createGroup: async (_: unknown, { name, description }: { name: string; description: string }, { dataSources }: { dataSources: { groupAPI: any } }) => { // Explicitly define type for dataSources
-      const newGroup = await dataSources.groupAPI.createGroup({ name, description });
-      pubsub.publish('GROUP_CREATED', { groupCreated: newGroup });
-      return newGroup;
+    createUser: async (_: unknown, { input }: { input: any }) => {
+      try {
+        const user = await userService.createUser(input);
+        return user;
+      } catch (error) {
+        console.error('Error creating user:', error);
+        throw new Error('Failed to create user');
+      }
     },
-    joinGroup: async (_: unknown, { groupId }: { groupId: string }, { dataSources, currentUser }: { dataSources: { groupAPI: any }, currentUser: { id: string } }) => {
-      const updatedGroup = await dataSources.groupAPI.addMemberToGroup(groupId, currentUser.id);
-      pubsub.publish('NEW_GROUP_MEMBER', { newGroupMember: currentUser, groupId });
-      return updatedGroup;
+    createGroup: async (_: unknown, { name, description }: { name: string; description: string }) => {
+      try {
+        const newGroup = await groupService.createGroup({ name, description });
+        pubsub.publish('GROUP_CREATED', { groupCreated: newGroup });
+        return newGroup;
+      } catch (error) {
+        console.error('Error creating group:', error);
+        throw new Error('Failed to create group');
+      }
+    },
+    joinGroup: async (_: unknown, { groupId }: { groupId: string }, { currentUser }: { currentUser: { id: string } }) => {
+      if (!currentUser) {
+        throw new AuthenticationError('You must be logged in to join a group');
+      }
+      try {
+        const updatedGroup = await groupService.addMemberToGroup(groupId, currentUser.id);
+        pubsub.publish('NEW_GROUP_MEMBER', { newGroupMember: currentUser, groupId });
+        return updatedGroup;
+      } catch (error) {
+        console.error('Error joining group:', error);
+        throw new Error('Failed to join group');
+      }
     },
     initializeRepository: async (_: unknown, { name }: { name: string }) => { // Explicitly define type for _ as unknown
       await initializeRepo(name);

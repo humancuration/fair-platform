@@ -12,7 +12,7 @@ import {
   getAvatarEmotion,
   updateAvatarBackground
 } from '../controllers/avatarController';
-import { authenticateJWT } from '../middleware/auth';
+import { authenticateJWT } from '../../middleware/auth';
 
 const router = express.Router();
 

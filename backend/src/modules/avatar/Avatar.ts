@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
-import { User } from './User';
+import { User } from '../modules/user/User';
 
 export class Avatar extends Model {
   public id!: string;

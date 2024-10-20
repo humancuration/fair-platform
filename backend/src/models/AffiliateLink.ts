@@ -2,7 +2,7 @@
 
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { AffiliateProgram } from './AffiliateProgram';
-import { User } from './User';
+import { User } from '../modules/user/User';
 
 @Table({
   tableName: 'affiliate_links',

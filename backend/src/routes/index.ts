@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import userRoutes from './userRoutes';
+import userRoutes from '../modules/user/userRoutes';
 import companyRoutes from './companyRoutes';
 import aiRoutes from './aiRoutes';
 import brandRoutes from './brandRoutes';

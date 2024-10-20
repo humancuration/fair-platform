@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 
 // Import all models
-import { User } from './User';
+import { User } from '../modules/user/User';
 import { Campaign } from './Campaign';
 import { AffiliateLink } from './AffiliateLink';
 import { AnalyticsEvent } from './AnalyticsEvent';
@@ -19,7 +19,7 @@ import { Event } from './Event';
 import { Forum } from './Forum';
 import { Grant } from './Grant';
 import { GroupMember } from './GroupMember';
-import { GroupType } from './GroupType';
+import { GroupType } from '../modules/group/GroupType';
 import { LinkedContent } from './LinkedContent';
 import { LinkPage } from './LinkPage';
 import { Minsite } from './Minsite';

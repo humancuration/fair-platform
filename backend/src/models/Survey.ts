@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, BelongsToMany } from 'sequelize-typescript';
-import { User } from './User';
+import { User } from '../modules/user/User';
 import { LinkedContent } from './LinkedContent';
 
 @Table({

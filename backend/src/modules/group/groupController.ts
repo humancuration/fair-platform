@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { Group } from '../models/Group';
-import { User } from '../models/User';
-import { GroupType } from '../models/GroupType';
+import { Group } from '../modules/group/Group';
+import { User } from '../modules/user/User';
+import { GroupType } from '../modules/group/GroupType';
 import { io } from '../server';
 import { createDiscourseUser } from '../services/discourseService';
 import { createMoodleUser } from '../services/moodleService';

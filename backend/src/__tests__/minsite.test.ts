@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../app'; // Ensure your Express app is exported from app.ts
 import { sequelize } from '../models';
-import User from '../models/User';
+import User from '../modules/user/User';
 import jwt from 'jsonwebtoken';
 import Minsite from '../models/Minsite';
 

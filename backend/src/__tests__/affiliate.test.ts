@@ -3,7 +3,7 @@
 import request from 'supertest';
 import app from '../app';
 import { sequelize } from '../models';
-import User from '../models/User';
+import User from '../modules/user/User';
 import AffiliateProgram from '../models/AffiliateProgram';
 import AffiliateLink from '../models/AffiliateLink';
 import jwt from 'jsonwebtoken';

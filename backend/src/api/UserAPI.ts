@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 const API_URL = process.env.API_URL || 'http://localhost:5000/api';
 
-class UserAPI {
-  private api;
+export class UserAPI {
+  private api: AxiosInstance;
 
   constructor() {
     this.api = axios.create({
@@ -34,6 +34,7 @@ class UserAPI {
     return response.data;
   }
 
+  // Keep the authentication methods
   async login(credentials: { email: string; password: string }) {
     const response = await this.api.post('/auth/login', credentials);
     return response.data;
