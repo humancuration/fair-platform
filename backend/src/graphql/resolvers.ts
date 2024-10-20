@@ -2,8 +2,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { UserService } from '../modules/user/userService';
 import { GroupService } from '../modules/group/groupService';
 import { GraphQLError } from 'graphql';
-import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../modules/versionControl/versionControlService';
-import { v4 as uuidv4 } from 'uuid';
+import versionControlResolvers from '../modules/versionControl/versionControlResolvers';
 
 const pubsub = new PubSub();
 const userService = new UserService();
@@ -47,6 +46,7 @@ export const resolvers = {
         throw new Error('Failed to fetch groups');
       }
     },
+    ...versionControlResolvers.Query,
   },
   Mutation: {
     createUser: async (_: unknown, { input }: { input: any }) => {
@@ -83,32 +83,7 @@ export const resolvers = {
         throw new GraphQLError('Failed to join group');
       }
     },
-    initializeRepository: async (_: unknown, { name }: { name: string }) => { // Explicitly define type for _ as unknown
-      await initializeRepo(name);
-      return { 
-        id: uuidv4(), 
-        name, 
-        createdAt: new Date().toISOString(),
-        lfsEnabled: true
-      };
-    },
-    cloneRepository: async (_: unknown, { url, name }: { url: string; name: string }) => { // Explicitly define type for _ as unknown
-      await cloneRepo(url, name);
-      return {
-        id: uuidv4(),
-        name,
-        createdAt: new Date().toISOString(),
-        lfsEnabled: true
-      };
-    },
-    commitChanges: async (_: unknown, { repoName, filepath, message }: { repoName: string; filepath: string; message: string }) => { // Explicitly define the type for _ as unknown
-      await addAndCommit(repoName, filepath, message);
-      return true;
-    },
-    pushChanges: async (_: any, { repoName }: { repoName: string }) => { // Explicitly define the type for _ as any
-      await pushChanges(repoName);
-      return true;
-    },
+    ...versionControlResolvers.Mutation,
   },
   Subscription: {
     groupCreated: {

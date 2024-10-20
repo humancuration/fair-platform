@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { COMMIT_CHANGES } from '../../graphql/repositoryOperations';
+import { COMMIT_CHANGES } from './repositoryOperations';
 
 const FileUploader: React.FC<{ repoName: string }> = ({ repoName }) => {
   const [file, setFile] = useState<File | null>(null);

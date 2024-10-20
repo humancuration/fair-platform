@@ -31,6 +31,24 @@ export const typeDefs = gql`
     lfsEnabled: Boolean!
   }
 
+  type CommitAuthor {
+    name: String!
+    email: String!
+    timestamp: String!
+  }
+
+  type Commit {
+    oid: String!
+    message: String!
+    author: CommitAuthor!
+  }
+
+  type StatusResult {
+    files: [String!]!
+    staged: [String!]!
+    unstaged: [String!]!
+  }
+
   input CreateUserInput {
     username: String!
     email: String!
@@ -41,6 +59,9 @@ export const typeDefs = gql`
     user(id: ID!): User
     group(id: ID!): Group
     allGroups: [Group!]!
+    repositories: [Repository!]!
+    getStatus(dir: String!): StatusResult!
+    getLog(dir: String!, depth: Int): [Commit!]!
   }
 
   type Mutation {
@@ -51,6 +72,8 @@ export const typeDefs = gql`
     cloneRepository(url: String!, name: String!): Repository!
     commitChanges(repoName: String!, filepath: String!, message: String!): Boolean!
     pushChanges(repoName: String!): Boolean!
+    createBranch(dir: String!, branchName: String!): Boolean!
+    switchBranch(dir: String!, branchName: String!): Boolean!
   }
 
   type Subscription {
