@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { saveMinsite, getMinsite, updateMinsite, publishMinsite } from '../controllers/minsiteController';
+import { saveMinsite, getMinsite, updateMinsite, publishMinsite } from '../modulesb/minsite/minsiteController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();

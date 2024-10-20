@@ -1,7 +1,7 @@
 import { PubSub } from 'graphql-subscriptions';
-import { UserService } from '../modules/user/userService';
-import { GroupService } from '../modules/group/groupService';
-import { AuthenticationError, UserInputError } from 'apollo-server-express';
+import { UserService } from '../modulesb/user/userService';
+import { GroupService } from '../modulesb/group/groupService';
+import { GraphQLError } from 'graphql';
 import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../services/versionControlService';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -15,24 +15,28 @@ export const resolvers = {
       try {
         const user = await userService.getUserById(id);
         if (!user) {
-          throw new UserInputError('User not found');
+          throw new GraphQLError('User not found', {
+            extensions: { code: 'USER_NOT_FOUND' },
+          });
         }
         return user;
       } catch (error) {
         console.error('Error fetching user:', error);
-        throw new Error('Failed to fetch user');
+        throw new GraphQLError('Failed to fetch user');
       }
     },
     group: async (_: unknown, { id }: { id: string }) => {
       try {
         const group = await groupService.getGroupById(id);
         if (!group) {
-          throw new UserInputError('Group not found');
+          throw new GraphQLError('Group not found', {
+            extensions: { code: 'GROUP_NOT_FOUND' },
+          });
         }
         return group;
       } catch (error) {
         console.error('Error fetching group:', error);
-        throw new Error('Failed to fetch group');
+        throw new GraphQLError('Failed to fetch group');
       }
     },
     allGroups: async () => {
@@ -66,7 +70,9 @@ export const resolvers = {
     },
     joinGroup: async (_: unknown, { groupId }: { groupId: string }, { currentUser }: { currentUser: { id: string } }) => {
       if (!currentUser) {
-        throw new AuthenticationError('You must be logged in to join a group');
+        throw new GraphQLError('You must be logged in to join a group', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
       try {
         const updatedGroup = await groupService.addMemberToGroup(groupId, currentUser.id);
@@ -74,7 +80,7 @@ export const resolvers = {
         return updatedGroup;
       } catch (error) {
         console.error('Error joining group:', error);
-        throw new Error('Failed to join group');
+        throw new GraphQLError('Failed to join group');
       }
     },
     initializeRepository: async (_: unknown, { name }: { name: string }) => { // Explicitly define type for _ as unknown

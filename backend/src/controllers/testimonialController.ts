@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Testimonial } from '../models/Testimonial';
-import { User } from '../modules/user/User';
+import { User } from '../modulesb/user/User';
 
 export const getTestimonials = async (req: Request, res: Response) => {
   try {

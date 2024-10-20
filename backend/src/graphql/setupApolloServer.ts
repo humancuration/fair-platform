@@ -5,8 +5,8 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import http from 'http';
 import { typeDefs } from './schema';
 import { resolvers } from './resolvers';
-import { UserService } from '../modules/user/userService';
-import { GroupService } from '../modules/group/groupService';
+import { UserService } from '../modulesb/user/userService';
+import { GroupService } from '../modulesb/group/groupService';
 
 // Define your custom context type
 interface Context {

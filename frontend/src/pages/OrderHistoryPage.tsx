@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import OrderItem from '../components/OrderItem';
-import api from '../utils/api';
+import api from '../api/api';
 import { handleError } from '../utils/errorHandler';
 
 interface Order {

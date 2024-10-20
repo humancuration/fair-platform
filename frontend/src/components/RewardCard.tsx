@@ -1,5 +1,5 @@
 import React from 'react';
-import api from '@api/api';
+import api from '@/utils/api';
 import { Reward } from '../models/Reward';
 
 interface RewardCardProps {

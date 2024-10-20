@@ -1,10 +1,10 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { RootState } from '../modulesf/store/store';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import SettingsForm from '../components/forms/SettingsForm';
-import { updateUserSettings } from '../store/slices/userSettingsSlice';
+import { updateUserSettings } from '../modulesf/store/slices/userSettingsSlice';
 import { toast } from 'react-toastify';
 
 const UserSettingsPage: React.FC = () => {

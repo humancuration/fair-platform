@@ -1,13 +1,13 @@
 import { Express } from 'express';
-import userRoutes from '../modules/user/userRoutes';
+import userRoutes from '../modulesb/user/userRoutes';
 import companyRoutes from './companyRoutes';
-import aiRoutes from './aiRoutes';
+import aiRoutes from '../modulesb/ai/aiRoutes';
 import brandRoutes from './brandRoutes';
-import affiliateProgramRoutes from './affiliateProgramRoutes';
-import affiliateLinkRoutes from './affiliateLinkRoutes';
-import affiliateRoutes from './affiliateRoutes';
+import affiliateProgramRoutes from '../modulesb/affiliate/affiliateProgramRoutes';
+import affiliateLinkRoutes from '../modulesb/affiliate/affiliateLinkRoutes';
+import affiliateRoutes from '../modulesb/affiliate/affiliateRoutes';
 import clickTrackingRoutes from './clickTrackingRoutes';
-import analyticsRoutes from './analyticsRoutes';
+import analyticsRoutes from '../modulesb/analytics/analyticsRoutes';
 import linkInBioRoutes from './LinkInBioRoutes';
 import recommendationRoutes from './recommendationRoutes';
 import payoutRoutes from './payoutRoutes';
@@ -23,7 +23,7 @@ import n8nRoutes from './n8nRoutes';
 import mauticRoutes from './mauticRoutes';
 import gitRoutes from './gitRoutes';
 import authRoutes from './authRoutes';
-import aiEthicsRoutes from './aiEthicsRoutes';
+import aiEthicsRoutes from '../modulesb/ai/aiEthicsRoutes';
 
 export const setupRoutes = (app: Express) => {
   app.use('/api/users', userRoutes);

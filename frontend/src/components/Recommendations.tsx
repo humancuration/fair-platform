@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import api from '@api/api';
+import api from '@/utils/api';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { RootState } from '../modulesf/store/store';
 
 const Recommendations: React.FC = () => {
   const [recommendations, setRecommendations] = useState([]);

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import api from '../utils/api';
+import api from '../api/api';
 import { handleError } from '../utils/errorHandler';
 import { toast } from 'react-toastify';
 import TextInput from '../components/TextInput';
 import Button from '../components/common/Button';
 import { useDispatch } from 'react-redux';
-import { setToken } from '../store/slices/userSlice';
+import { setToken } from '../modulesf/store/slices/userSlice';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');

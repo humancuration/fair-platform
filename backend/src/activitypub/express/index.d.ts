@@ -1,4 +1,4 @@
-import { User } from '../../modules/user/User';
+import { User } from '../../modulesb/user/User';
 
 declare global {
   namespace Express {

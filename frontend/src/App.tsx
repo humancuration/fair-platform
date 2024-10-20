@@ -3,7 +3,7 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { store } from './store';
+import { store } from './modulesf/store';
 import ErrorBoundary from '@components/ErrorBoundary';
 import ProtectedRoute from '@components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
@@ -13,12 +13,12 @@ import { MusicPlayerProvider } from '@contexts/MusicPlayerContext';
 import { ErrorProvider } from '@contexts/ErrorContext';
 import MusicPlayerControls from '@components/MusicPlayerControls';
 import ErrorDisplay from '@components/ErrorDisplay';
-import PlaylistCreationPage from './pages/playlist/PlaylistCreationPage';
-import PlaylistListPage from './pages/playlist/PlaylistListPage';
-import PlaylistDetailsPage from './pages/playlist/PlaylistDetailsPage';
-import CreateCampaignPage from './pages/crowdfund/CreateCampaignPage';
-import RepositoryBrowser from './components/versionControl/RepositoryBrowser';
-import AvatarCustomizationPage from './components/avatar/AvatarCustomizationPage';
+import PlaylistCreationPage from './modulesf/playlist/PlaylistCreationPage';
+import PlaylistListPage from './modulesf/playlist/PlaylistListPage';
+import PlaylistDetailsPage from './modulesf/playlist/PlaylistDetailsPage';
+import CreateCampaignPage from './modulesf/campaign/CreateCampaignPage';
+import RepositoryBrowser from './modulesf/versionControl/RepositoryBrowser';
+import AvatarCustomizationPage from './modulesf/avatar/AvatarCustomizationPage';
 import RewardsPage from './components/RewardsPage';
 
 // Lazy-loaded components
@@ -28,7 +28,7 @@ const Signup = lazy(() => import('@pages/Signup'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
 const EcoConsultantDashboard = lazy(() => import('./pages/dashboard/EcoConsultantDashboard'));
-const AIDashboard = lazy(() => import('./components/AIDashboard'));
+const AIDashboard = lazy(() => import('./modulesf/ai/AIDashboard'));
 const DataTransparencyDashboard = lazy(() => import('./components/DataTransparencyDashboard'));
 const UserSettings = lazy(() => import('./components/UserSettings'));
 const MinsiteBuilder = lazy(() => import('@pages/MinsiteBuilder'));
@@ -42,10 +42,10 @@ const WishlistPage = lazy(() => import('@pages/WishlistPage'));
 const CommunityWishlistPage = lazy(() => import('@pages/CommunityWishlistPage'));
 const UserSettingsPage = lazy(() => import('@pages/UserSettingsPage'));
 const PrivateWishlistPage = lazy(() => import('@pages/PrivateWishlistPage'));
-const PublicWishlistPage = lazy(() => import('@/pages/wishlist/PublicWishlistPage'));
-const GroupCreationPage = lazy(() => import('./pages/groups/GroupCreationPage'));
-const GroupListPage = lazy(() => import('./pages/groups/GroupListPage'));
-const GroupDetailPage = lazy(() => import('./pages/groups/GroupDetailPage'));
+const PublicWishlistPage = lazy(() => import('@/modulesf/wishlist/PublicWishlistPage'));
+const GroupCreationPage = lazy(() => import('./modulesf/groups/GroupCreationPage'));
+const GroupListPage = lazy(() => import('./modulesf/groups/GroupListPage'));
+const GroupDetailPage = lazy(() => import('./modulesf/groups/GroupDetailPage'));
 
 const App: React.FC = () => {
   return (

@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { check, validationResult } from 'express-validator';
-import User from '../modules/user/User';
+import User from '../modulesb/user/User';
 import { AppError } from '../middleware/errorHandler';
 
 const router = Router();

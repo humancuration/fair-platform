@@ -1,10 +1,10 @@
 // frontend/src/pages/SettingsPage.tsx
 
 import React, { useEffect, useState } from 'react';
-import api from '@api/api';
+import api from '@/utils/api';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleDarkMode } from '../store/slices/themeSlice'; // Create a theme slice
-import { RootState } from '../store/store';
+import { toggleDarkMode } from '../modulesf/store/slices/themeSlice'; // Create a theme slice
+import { RootState } from '../modulesf/store/store';
 import { toast } from 'react-toastify';
 import Select from '../components/Select';
 import TextInput from '../components/forms/TextInput';

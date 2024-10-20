@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store/RootState';
-import { CartItem } from '../store/slices/cartSlice';
+import { RootState } from '../modulesf/store/RootState';
+import { CartItem } from '../modulesf/store/slices/cartSlice';
 
 const CheckoutOrderSummary: React.FC = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);

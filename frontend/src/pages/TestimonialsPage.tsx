@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { fetchTestimonials } from '../store/slices/testimonialsSlice';
+import { useAppDispatch, useAppSelector } from '@/modulesf/store/hooks';
+import { fetchTestimonials } from '../modulesf/store/slices/testimonialsSlice';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import TestimonialCard from '../components/TestimonialCard';

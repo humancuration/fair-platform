@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from '@api/api';
+import api from '@/utils/api';
 
 const MoodleCourses: React.FC = () => {
   const [courses, setCourses] = useState([]);

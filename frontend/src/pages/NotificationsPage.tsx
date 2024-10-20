@@ -1,7 +1,7 @@
 // frontend/src/pages/NotificationsPage.tsx
 
 import React, { useEffect, useState, useContext, useCallback } from 'react';
-import api from '@api/api';
+import api from '@/utils/api';
 import { AuthContext } from '../contexts/AuthContext';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_NOTIFICATIONS, MARK_NOTIFICATION_AS_READ } from '../graphql/notificationOperations';

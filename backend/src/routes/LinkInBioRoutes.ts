@@ -1,7 +1,7 @@
 // routes/linkInBioRoutes.ts
 
 import { Router } from 'express';
-import { getLinkInBio } from '../controllers/linkInBioController';
+import { getLinkInBio } from '../modulesb/minsite/linkInBioController';
 
 const router = Router();
 

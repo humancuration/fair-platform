@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { RootState } from '../modulesf/store/store';
 import Button from './common/Button';
 import { toast } from 'react-toastify';
 

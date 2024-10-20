@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store/store';
-import { updateUserProfile } from '../store/slices/userSlice';
+import { RootState } from '../modulesf/store/store';
+import { updateUserProfile } from '../modulesf/store/slices/userSlice';
 import Modal from '../components/common/Modal';
 import Button from '../components/common/Button';
 import TextInput from '../components/forms/TextInput';

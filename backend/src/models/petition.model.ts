@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { Group } from '../modules/group/Group';
-import { User } from '../modules/user/User';
+import { Group } from '../modulesb/group/Group';
+import { User } from '../modulesb/user/User';
 
 @Table({
   tableName: 'petitions',

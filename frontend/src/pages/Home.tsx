@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import RecommendationCarousel from '../components/RecommendationCarousel';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import api from '../utils/api';
-import FeaturedCampaigns from '../components/campaign/FeaturedCampaigns';
+import api from '../api/api';
+import FeaturedCampaigns from '../modulesf/campaign/FeaturedCampaigns';
 import CommunityHighlights from '../components/CommunityHighlights';
-import EcoTips from '../components/eco/EcoTips';
+import EcoTips from '../modulesf/eco/EcoTips';
 
 const Home: React.FC = () => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);

@@ -4,8 +4,8 @@ import AdminSidebar from '../../components/layout/AdminSidebar';
 import AdminPanel from '../../components/AdminPanel';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
-import api from '../../utils/api';
+import { RootState } from '../../modulesf/store';
+import api from '../../api/api';
 import { toast } from 'react-toastify';
 
 interface AdminStats {

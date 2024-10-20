@@ -3,15 +3,15 @@ import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 
 // Import all models
-import { User } from '../modules/user/User';
+import { User } from '../modulesb/user/User';
 import { Campaign } from './Campaign';
 import { AffiliateLink } from './AffiliateLink';
-import { AnalyticsEvent } from './AnalyticsEvent';
+import { AnalyticsEvent } from '../modulesb/analytics/AnalyticsEvent';
 import { AffiliateProgram } from './AffiliateProgram';
 import { Brand } from './Brands';
 import { ClickTracking } from './ClickTracking';
-import { CommunityWishlist } from './CommunityWishlist';
-import { CommunityWishlistItem } from './CommunityWishlistItem';
+import { CommunityWishlist } from '../modulesb/wishlist/CommunityWishlist';
+import { CommunityWishlistItem } from '../modulesb/wishlist/CommunityWishlistItem';
 import { Company } from './Company';
 import { Contribution } from './Contribution';
 import { Dividend } from './Dividend';
@@ -19,7 +19,7 @@ import { Event } from './Event';
 import { Forum } from './Forum';
 import { Grant } from './Grant';
 import { GroupMember } from './GroupMember';
-import { GroupType } from '../modules/group/GroupType';
+import { GroupType } from '../modulesb/group/GroupType';
 import { LinkedContent } from './LinkedContent';
 import { LinkPage } from './LinkPage';
 import { Minsite } from './Minsite';

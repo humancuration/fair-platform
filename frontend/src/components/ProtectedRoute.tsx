@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { RootState } from '../modulesf/store/store';
 
 interface ProtectedRouteProps {
   children: JSX.Element;

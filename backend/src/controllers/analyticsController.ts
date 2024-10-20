@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import AnalyticsService from '@services/analyticsService';
+import AnalyticsService from '@/modulesb/analytics/analyticsService';
 
 class AnalyticsController {
   async trackEvent(req: Request, res: Response) {

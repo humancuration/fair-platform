@@ -2,7 +2,7 @@ import request from 'supertest';
 import express from 'express';
 import authRoutes from '../routes/auth';
 import { connectToDatabase } from '../config/database';
-import User from '../modules/user/User';
+import User from '../modulesb/user/User';
 
 const app = express();
 app.use(express.json());

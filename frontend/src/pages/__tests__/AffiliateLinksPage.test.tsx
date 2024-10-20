@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AffiliateLinksPage from '../dashboard/AffiliateLinksPage';
+import AffiliateLinksPage from '../../modulesf/affiliate/AffiliateLinksPage';
 import { Provider } from 'react-redux';
-import { store } from '../../store/store';
-import api from '@api/api';
+import { store } from '../../modulesf/store/store';
+import api from '@/utils/api';
 import axios from 'axios';
 
 jest.mock('axios');

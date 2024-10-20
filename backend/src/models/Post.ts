@@ -1,6 +1,6 @@
 // backend/src/models/Post.ts
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../modules/user/User';
+import { User } from '../modulesb/user/User';
 import { Forum } from './Forum';
 
 @Table({

@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const EcoAnalytics = lazy(() => import('../../components/eco/EcoAnalytics'));
+const EcoAnalytics = lazy(() => import('../../modulesf/eco/EcoAnalytics'));
 const GroupEcoAnalytics = lazy(() => import('../components/GroupEcoAnalytics'));
 
 const EcoConsultantDashboard: React.FC = () => {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import CompanyListing from '../components/CompanyListing';
 import Pagination from '../components/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import api from '../utils/api';
+import api from '../api/api';
 
 const Directory: React.FC = () => {
   const [companies, setCompanies] = useState([]);
