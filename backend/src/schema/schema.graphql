@@ -1,0 +1,16 @@
+type Repository {
+  id: ID!
+  name: String!
+  url: String!
+}
+
+type Query {
+  repositories: [Repository!]!
+}
+
+type Mutation {
+  initializeRepository(name: String!): Repository!
+  cloneRepository(url: String!, name: String!): Repository!
+  pushChanges(repoName: String!): Boolean!
+  commitChanges(repoName: String!, filepath: String!, message: String!): Boolean!
+}

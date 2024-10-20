@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_REPOSITORIES, INITIALIZE_REPOSITORY, CLONE_REPOSITORY, PUSH_CHANGES } from '../../graphql/repositoryOperations';
+import FileUploader from './FileUploader';
+import VersionHistory from './VersionHistory';
 
 const RepositoryBrowser: React.FC = () => {
   const [repositories, setRepositories] = useState<any[]>([]);
@@ -82,6 +84,8 @@ const RepositoryBrowser: React.FC = () => {
           Clone
         </button>
       </div>
+      <FileUploader repoName={selectedRepo} />
+      <VersionHistory versions={versions} onRevert={handleRevert} />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import logger from '../utils/logger';
+import logger from '../../utils/logger';
 
 const GITEA_URL = process.env.GITEA_URL;
 const GITEA_TOKEN = process.env.GITEA_TOKEN;

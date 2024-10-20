@@ -9,7 +9,7 @@ import TemplateSelector from '../../components/TemplateSelector';
 import CSSEditor from '../../components/CSSEditor';
 import SEOMetadataEditor from '../../components/SEOMetadataEditor';
 import ComponentLibrary from '../../components/ComponentLibrary';
-import VersionHistory from '../../components/VersionHistory';
+import VersionHistory from '../versionControl/VersionHistory';
 
 const MinsiteBuilder: React.FC = () => {
   const { id } = useParams<{ id?: string }>();

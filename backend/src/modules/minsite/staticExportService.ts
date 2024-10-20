@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import ReactDOMServer from 'react-dom/server';
 import AffiliateLinksPage from '../../frontend/src/pages/AffiliateLinksPage';
-import logger from '../utils/logger';
+import logger from '../../utils/logger';
 
 interface StaticFiles {
   html: string;

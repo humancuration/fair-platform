@@ -12,7 +12,7 @@ import linkInBioRoutes from './linkInBioRoutes';
 import recommendationRoutes from './recommendationRoutes';
 import payoutRoutes from './payoutRoutes';
 import minsiteRoutes from './minsiteRoutes'; // Import the minsite routes
-import uploadRoutes from './uploadRoutes'; // Import upload routes
+import uploadRoutes from '../modules/versionControl/uploadRoutes'; // Import upload routes
 import testimonialRoutes from './testimonialRoutes';
 import wishlistRoutes from './wishlistRoutes';
 import communityWishlistRoutes from './communityWishlistRoutes';
@@ -22,7 +22,7 @@ import groupRoutes from './groupRoutes';
 import eventRoutes from './eventRoutes';
 import n8nRoutes from './n8nRoutes';
 import mauticRoutes from './mauticRoutes';
-import gitRoutes from './gitRoutes';
+import gitRoutes from '../modules/versionControl/gitRoutes';
 import authRoutes from './authRoutes';
 import aiEthicsRoutes from '../modules/ai/aiEthicsRoutes';
 

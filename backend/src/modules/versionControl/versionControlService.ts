@@ -3,7 +3,7 @@ import http from 'isomorphic-git/http/node';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import logger from '../utils/logger';
+import logger from '../../utils/logger';
 
 const repoDir = path.resolve(__dirname, '../../../repositories');
 

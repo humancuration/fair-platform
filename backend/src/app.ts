@@ -19,7 +19,7 @@ import surveyRoutes from './modules/survey/surveyRoutes';
 import searchRoutes from './routes/searchRoutes';
 import analyticsRoutes from './modules/analytics/analyticsRoutes';
 import userRoutes from './modules/user/userRoutes';
-import versionControlRoutes from './routes/versionControlRoutes';
+import versionControlRoutes from './modules/versionControl/versionControlRoutes';
 import wishlistRoutes from './modules/wishlist/wishlistRoutes';
 import testimonialRoutes from './routes/testimonialRoutes';
 import avatarRoutes from './modules/avatar/avatarRoutes';

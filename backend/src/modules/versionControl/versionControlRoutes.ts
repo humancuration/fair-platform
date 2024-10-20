@@ -1,6 +1,10 @@
 import express from 'express';
-import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../services/versionControlService';
-import { authenticate } from '../middleware/auth';
+import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from './versionControlService';
+import { authenticate } from '../../middleware/auth';
+import { createRepository, getIssues, triggerBuild } from './gitController';
+import { getGiteaRepos } from './giteaController';
+import { getUserRepos } from './githubController';
+import uploadRoutes from './uploadRoutes';
 
 const router = express.Router();
 
@@ -59,5 +63,10 @@ router.post('/push', authenticate, async (req, res) => {
     }
   }
 });
+
+router.get('/gitea/repos', authenticate, getGiteaRepos);
+router.get('/github/repos', authenticate, getUserRepos);
+
+router.use('/upload', uploadRoutes);
 
 export default router;

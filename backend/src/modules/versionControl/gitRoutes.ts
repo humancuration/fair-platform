@@ -1,6 +1,6 @@
 import express from 'express';
-import { createRepository, getIssues, triggerBuild } from '../controllers/gitController';
-import auth from '../middleware/auth';
+import { createRepository, getIssues, triggerBuild } from './gitController';
+import auth from '../../middleware/auth';
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { UserService } from '../modules/user/userService';
 import { GroupService } from '../modules/group/groupService';
 import { GraphQLError } from 'graphql';
-import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../services/versionControlService';
+import { initializeRepo, cloneRepo, addAndCommit, pushChanges } from '../modules/versionControl/versionControlService';
 import { v4 as uuidv4 } from 'uuid';
 
 const pubsub = new PubSub();

@@ -5,8 +5,7 @@ export const GET_REPOSITORIES = gql`
     repositories {
       id
       name
-      createdAt
-      lfsEnabled
+      url
     }
   }
 `;
@@ -16,8 +15,7 @@ export const INITIALIZE_REPOSITORY = gql`
     initializeRepository(name: $name) {
       id
       name
-      createdAt
-      lfsEnabled
+      url
     }
   }
 `;
@@ -27,8 +25,7 @@ export const CLONE_REPOSITORY = gql`
     cloneRepository(url: $url, name: $name) {
       id
       name
-      createdAt
-      lfsEnabled
+      url
     }
   }
 `;
@@ -41,8 +38,6 @@ export const PUSH_CHANGES = gql`
 
 export const COMMIT_CHANGES = gql`
   mutation CommitChanges($repoName: String!, $filepath: String!, $message: String!) {
-    commitChanges(repoName: $repoName, filepath: $filepath, message: $message) {
-      // ... fields returned by the mutation
-    }
+    commitChanges(repoName: $repoName, filepath: $filepath, message: $message)
   }
 `;
