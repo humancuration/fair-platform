@@ -1,9 +1,9 @@
 import React, { useState, useCallback, Suspense } from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_CAMPAIGNS } from '../graphql/queries';
+import { GET_CAMPAIGNS } from '../../graphql/queries';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorBoundary from '../../components/ErrorBoundary';
-import { useToast } from '../hooks/useToast';
+import { useToast } from '../../hooks/useToast';
 
 const CampaignList = React.lazy(() => import('./CampaignList'));
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import AffiliateLinkCard from '../../modulesf/affiliate/AffiliateLinkCard';
+import AffiliateLinkCard from '../../modulesf/dashboard/affiliate/AffiliateLinkCard';
 
 const mockLink = {
   id: 1,

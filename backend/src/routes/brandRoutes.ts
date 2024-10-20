@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import Brand from '../models/Brands';
+import Brand from '../modules/dashboard/affiliate/Brands';
 
 const router = Router();
 

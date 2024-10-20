@@ -5,7 +5,7 @@ import { setupApolloServer } from './graphql/setupApolloServer';
 import { setupSocketIO } from './socket/setupSocketIO';
 import { setupSwagger } from './config/setupSwagger';
 import { errorHandler } from './middleware/errorHandler';
-import dataRetentionTask from './tasks/dataRetentionTask';
+import dataRetentionTask from './modules/analytics/dataRetentionTask';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { sequelize } from './config/database';
@@ -15,15 +15,15 @@ import { userAPI } from './api/UserAPI';
 import { startDiscordBot } from './integrations/discord/discordBot';
 
 // Import routes
-import surveyRoutes from './routes/surveyRoutes';
+import surveyRoutes from './modules/survey/surveyRoutes';
 import searchRoutes from './routes/searchRoutes';
-import analyticsRoutes from './modulesb/analytics/analyticsRoutes';
-import userRoutes from './modulesb/user/userRoutes';
+import analyticsRoutes from './modules/analytics/analyticsRoutes';
+import userRoutes from './modules/user/userRoutes';
 import versionControlRoutes from './routes/versionControlRoutes';
-import wishlistRoutes from './routes/wishlistRoutes';
+import wishlistRoutes from './modules/wishlist/wishlistRoutes';
 import testimonialRoutes from './routes/testimonialRoutes';
-import avatarRoutes from './modulesb/avatar/avatarRoutes';
-import rewardRoutes from './routes/rewardRoutes';
+import avatarRoutes from './modules/avatar/avatarRoutes';
+import rewardRoutes from './modules/campaign/rewardRoutes';
 
 dotenv.config();
 

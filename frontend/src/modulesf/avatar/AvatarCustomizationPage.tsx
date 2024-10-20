@@ -6,7 +6,7 @@ import DailyQuests from './DailyQuests';
 import Wardrobe from './Wardrobe';
 import SocialInteractions from './SocialInteractions';
 import MiniGame from './MiniGame';
-import { useUser } from '../../contexts/UserContext';
+import { useUser } from '../user/UserContext';
 
 interface User {
   id: string;

@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../modulesb/user/User';
+import { User } from '../modules/user/User';
 
 @Table({
   tableName: 'notifications',

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../modulesb/user/User';
+import { User } from '../modules/user/User';
 import { JWT_SECRET, REFRESH_SECRET, REFRESH_EXPIRATION } from '../config/constants';
 import { createMoodleUser } from '../services/moodleService';
 import logger from '../utils/logger';

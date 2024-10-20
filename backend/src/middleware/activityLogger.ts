@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppDataSource } from '../data-source';
 import { UserActivity } from '../models/UserActivity';
-import { awardPoints } from '../services/rewardsService';
+import { awardPoints } from '../modules/campaign/rewardsService';
 import logger from '../utils/logger';
 
 export const activityLogger = (activityType: string) => {
