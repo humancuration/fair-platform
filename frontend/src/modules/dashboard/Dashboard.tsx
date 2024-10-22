@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const ThemeSwitcher = lazy(() => import('../../components/ThemeSwitcher'));
 const ThemeCustomizer = lazy(() => import('../../components/ThemeCustomizer'));
+const MarketplaceAnalyticsDashboard = lazy(() => import('./MarketplaceAnalyticsDashboard'));
 
 const DASHBOARD_ROUTES = [
   { path: 'admin', label: 'Admin' },
@@ -16,6 +17,7 @@ const DASHBOARD_ROUTES = [
   { path: 'data-transparency', label: 'Data Transparency' },
   { path: 'settings', label: 'Settings' },
   { path: 'analytics', label: 'Analytics' },
+  { path: 'marketplace-analytics', label: 'Marketplace Analytics' },
   { path: 'dividends', label: 'Dividends' },
 ];
 
