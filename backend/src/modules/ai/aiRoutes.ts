@@ -1,18 +1,21 @@
 import { Router } from 'express';
-import axios from 'axios';
+import { getRecommendations } from '../../controllers/aiController';
+import { authenticateJWT } from '../../middleware/auth';
+import { query } from 'express-validator';
+import { validateRequest } from '../../middleware/validateRequest';
 
 const router = Router();
 
-router.get('/recommendations', async (req, res) => {
-  const userId = req.query.user_id;
-  try {
-    const response = await axios.get(`http://ai_service:5001/recommend`, {
-      params: { user_id: userId },
-    });
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching recommendations' });
-  }
-});
+const getRecommendationsSchema = [
+  query('user_id').isInt().notEmpty(),
+];
+
+router.get(
+  '/recommendations',
+  authenticateJWT,
+  getRecommendationsSchema,
+  validateRequest,
+  getRecommendations
+);
 
 export default router;

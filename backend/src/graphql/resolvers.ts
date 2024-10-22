@@ -3,6 +3,9 @@ import { UserService } from '../modules/user/userService';
 import { GroupService } from '../modules/group/groupService';
 import { GraphQLError } from 'graphql';
 import versionControlResolvers from '../modules/versionControl/versionControlResolvers';
+import { IContext } from '../types/context';
+import { UserInput, GroupInput } from '../types/inputs';
+import  logger from '../utils/logger';
 
 const pubsub = new PubSub();
 const userService = new UserService();
@@ -10,8 +13,15 @@ const groupService = new GroupService();
 
 export const resolvers = {
   Query: {
-    user: async (_: unknown, { id }: { id: string }) => {
+    user: async (_: unknown, { id }: { id: string }, context: IContext) => {
       try {
+        // Check authentication
+        if (!context.currentUser) {
+          throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' },
+          });
+        }
+
         const user = await userService.getUserById(id);
         if (!user) {
           throw new GraphQLError('User not found', {
@@ -20,12 +30,21 @@ export const resolvers = {
         }
         return user;
       } catch (error) {
-        console.error('Error fetching user:', error);
-        throw new GraphQLError('Failed to fetch user');
+        logger.error('Error fetching user:', error);
+        throw new GraphQLError('Failed to fetch user', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
       }
     },
-    group: async (_: unknown, { id }: { id: string }) => {
+    group: async (_: unknown, { id }: { id: string }, context: IContext) => {
       try {
+        // Check authentication
+        if (!context.currentUser) {
+          throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' },
+          });
+        }
+
         const group = await groupService.getGroupById(id);
         if (!group) {
           throw new GraphQLError('Group not found', {
@@ -34,53 +53,84 @@ export const resolvers = {
         }
         return group;
       } catch (error) {
-        console.error('Error fetching group:', error);
-        throw new GraphQLError('Failed to fetch group');
+        logger.error('Error fetching group:', error);
+        throw new GraphQLError('Failed to fetch group', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
       }
     },
-    allGroups: async () => {
+    allGroups: async (_: unknown, __: unknown, context: IContext) => {
       try {
+        // Check authentication
+        if (!context.currentUser) {
+          throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' },
+          });
+        }
+
         return await groupService.getAllGroups();
       } catch (error) {
-        console.error('Error fetching groups:', error);
-        throw new Error('Failed to fetch groups');
+        logger.error('Error fetching groups:', error);
+        throw new GraphQLError('Failed to fetch groups', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
       }
     },
     ...versionControlResolvers.Query,
   },
   Mutation: {
-    createUser: async (_: unknown, { input }: { input: any }) => {
+    createUser: async (_: unknown, { input }: { input: UserInput }, context: IContext) => {
       try {
+        // Check authentication and authorization
+        if (!context.currentUser || !context.currentUser.isAdmin) {
+          throw new GraphQLError('Not authorized to create users', {
+            extensions: { code: 'FORBIDDEN' },
+          });
+        }
+
         const user = await userService.createUser(input);
         return user;
       } catch (error) {
-        console.error('Error creating user:', error);
-        throw new Error('Failed to create user');
+        logger.error('Error creating user:', error);
+        throw new GraphQLError('Failed to create user', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
       }
     },
-    createGroup: async (_: unknown, { name, description }: { name: string; description: string }) => {
+    createGroup: async (_: unknown, { input }: { input: GroupInput }, context: IContext) => {
       try {
-        const newGroup = await groupService.createGroup({ name, description });
+        // Check authentication
+        if (!context.currentUser) {
+          throw new GraphQLError('Not authenticated', {
+            extensions: { code: 'UNAUTHENTICATED' },
+          });
+        }
+
+        const newGroup = await groupService.createGroup(input);
         pubsub.publish('GROUP_CREATED', { groupCreated: newGroup });
         return newGroup;
       } catch (error) {
-        console.error('Error creating group:', error);
-        throw new Error('Failed to create group');
+        logger.error('Error creating group:', error);
+        throw new GraphQLError('Failed to create group', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
       }
     },
-    joinGroup: async (_: unknown, { groupId }: { groupId: string }, { currentUser }: { currentUser: { id: string } }) => {
-      if (!currentUser) {
+    joinGroup: async (_: unknown, { groupId }: { groupId: string }, context: IContext) => {
+      if (!context.currentUser) {
         throw new GraphQLError('You must be logged in to join a group', {
           extensions: { code: 'UNAUTHENTICATED' },
         });
       }
       try {
-        const updatedGroup = await groupService.addMemberToGroup(groupId, currentUser.id);
-        pubsub.publish('NEW_GROUP_MEMBER', { newGroupMember: currentUser, groupId });
+        const updatedGroup = await groupService.addMemberToGroup(groupId, context.currentUser.id);
+        pubsub.publish('NEW_GROUP_MEMBER', { newGroupMember: context.currentUser, groupId });
         return updatedGroup;
       } catch (error) {
-        console.error('Error joining group:', error);
-        throw new GraphQLError('Failed to join group');
+        logger.error('Error joining group:', error);
+        throw new GraphQLError('Failed to join group', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
       }
     },
     ...versionControlResolvers.Mutation,

@@ -1,6 +1,6 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
-import { User } from '../modules/user/User';
+import { Model, DataTypes, Association } from 'sequelize';
+import { sequelize } from '../../config/database';
+import { User } from '../user/User';
 
 export class Avatar extends Model {
   public id!: string;
@@ -16,6 +16,24 @@ export class Avatar extends Model {
   public xp!: number;
   public level!: number;
   public background!: string;
+  // New fields
+  public energy!: number;
+  public happiness!: number;
+  public customizations!: Record<string, any>;
+  public achievements!: string[];
+  public stats!: {
+    strength: number;
+    agility: number;
+    intelligence: number;
+    charisma: number;
+  };
+  public lastDailyReward!: Date;
+  public streakCount!: number;
+
+  // Associations
+  public static associations: {
+    user: Association<Avatar, User>;
+  };
 }
 
 Avatar.init(
@@ -28,10 +46,6 @@ Avatar.init(
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
     },
     baseImage: {
       type: DataTypes.STRING,
@@ -87,9 +101,59 @@ Avatar.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    energy: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 100,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
+    happiness: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 100,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
+    customizations: {
+      type: DataTypes.JSON,
+      defaultValue: {},
+    },
+    achievements: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
+    stats: {
+      type: DataTypes.JSON,
+      defaultValue: {
+        strength: 1,
+        agility: 1,
+        intelligence: 1,
+        charisma: 1,
+      },
+    },
+    lastDailyReward: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    streakCount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
   },
   {
     sequelize,
     modelName: 'Avatar',
+    tableName: 'avatars',
+    timestamps: true,
   }
 );
+
+// Define associations
+Avatar.belongsTo(User, { foreignKey: 'userId', as: 'user' });

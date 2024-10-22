@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { Wishlist } from '@models/Wishlist';
-import { User } from '@models/User';
-import { CommunityWishlistItem } from '@/modules/wishlist/CommunityWishlistItem';
+import { Wishlist } from './Wishlist';
+import { User } from '../user/User';
+import { WishlistItem } from './WishlistItem';
+import { CommunityWishlist } from './CommunityWishlist';
 
 export const upsertWishlist = async (req: Request, res: Response) => {
   const userId = (req.user as any).id;
@@ -10,14 +11,25 @@ export const upsertWishlist = async (req: Request, res: Response) => {
   try {
     const [wishlist, created] = await Wishlist.findOrCreate({
       where: { userId, name },
-      defaults: { description, isPublic, items },
+      defaults: { description, isPublic },
     });
 
     if (!created) {
-      await wishlist.update({ description, isPublic, items });
+      await wishlist.update({ description, isPublic });
     }
 
-    res.status(200).json(wishlist);
+    if (items && items.length > 0) {
+      await WishlistItem.bulkCreate(
+        items.map((item: any) => ({ ...item, wishlistId: wishlist.id })),
+        { updateOnDuplicate: ['name', 'description', 'price', 'url'] }
+      );
+    }
+
+    const updatedWishlist = await Wishlist.findByPk(wishlist.id, {
+      include: [WishlistItem],
+    });
+
+    res.status(200).json(updatedWishlist);
   } catch (error) {
     console.error('Error upserting wishlist:', error);
     res.status(500).json({ message: 'Server error' });
@@ -29,7 +41,10 @@ export const getWishlist = async (req: Request, res: Response) => {
   const { name } = req.params;
 
   try {
-    const wishlist = await Wishlist.findOne({ where: { userId, name } });
+    const wishlist = await Wishlist.findOne({
+      where: { userId, name },
+      include: [WishlistItem],
+    });
     if (!wishlist) {
       return res.status(404).json({ message: 'Wishlist not found' });
     }
@@ -49,7 +64,10 @@ export const getPublicWishlistByUsername = async (req: Request, res: Response) =
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const wishlist = await Wishlist.findOne({ where: { userId: user.id, isPublic: true } });
+    const wishlist = await Wishlist.findOne({
+      where: { userId: user.id, isPublic: true },
+      include: [WishlistItem],
+    });
     if (!wishlist) {
       return res.status(404).json({ message: 'Public Wishlist not found' });
     }
@@ -64,15 +82,16 @@ export const getPublicWishlistByUsername = async (req: Request, res: Response) =
 // Community Wishlist functions
 export const addCommunityWishlistItem = async (req: Request, res: Response) => {
   const userId = (req.user as any).id;
-  const { name, description, image, price } = req.body;
+  const { name, description, image, price, communityName } = req.body;
 
   try {
-    const communityItem = await CommunityWishlistItem.create({
+    const communityItem = await CommunityWishlist.create({
       userId,
       name,
       description,
       image,
       price,
+      communityName,
     });
 
     res.status(201).json(communityItem);
@@ -84,7 +103,7 @@ export const addCommunityWishlistItem = async (req: Request, res: Response) => {
 
 export const getCommunityWishlist = async (req: Request, res: Response) => {
   try {
-    const communityWishlist = await CommunityWishlistItem.findAll({
+    const communityWishlist = await CommunityWishlist.findAll({
       include: [{ model: User, attributes: ['username', 'avatar'] }],
     });
     res.status(200).json(communityWishlist);
@@ -100,7 +119,7 @@ export const contributeToCommunityWishlist = async (req: Request, res: Response)
   const contributionAmount: number = req.body.amount;
 
   try {
-    const communityItem = await CommunityWishlistItem.findByPk(itemId);
+    const communityItem = await CommunityWishlist.findByPk(itemId);
     if (!communityItem) {
       return res.status(404).json({ message: 'Community Wishlist Item not found' });
     }

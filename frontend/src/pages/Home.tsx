@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import RecommendationCarousel from '../components/RecommendationCarousel';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../api/api';
-import FeaturedCampaigns from '../modulesf/campaign/FeaturedCampaigns';
+import FeaturedCampaigns from '../modules/campaign/FeaturedCampaigns';
 import CommunityHighlights from '../components/CommunityHighlights';
-import EcoTips from '../modulesf/eco/EcoTips';
+import EcoTips from '../modules/eco/EcoTips';
 
 const Home: React.FC = () => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);

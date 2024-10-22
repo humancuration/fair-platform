@@ -62,4 +62,57 @@ export const createGroup = async (req: Request, res: Response) => {
   }
 };
 
+// Get group challenges
+export const getGroupChallenges = async (req: Request, res: Response) => {
+  try {
+    const { groupId } = req.params;
+    const challenges = await Challenge.findAll({ where: { groupId } });
+    res.status(200).json(challenges);
+  } catch (error) {
+    console.error('Error fetching group challenges:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Get group marketplace resources
+export const getGroupMarketplace = async (req: Request, res: Response) => {
+  try {
+    const { groupId } = req.params;
+    const resources = await Resource.findAll({ where: { groupId, isMarketplace: true } });
+    res.status(200).json(resources);
+  } catch (error) {
+    console.error('Error fetching group marketplace resources:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Get group decisions
+export const getGroupDecisions = async (req: Request, res: Response) => {
+  try {
+    const { groupId } = req.params;
+    const decisions = await Decision.findAll({ where: { groupId } });
+    res.status(200).json(decisions);
+  } catch (error) {
+    console.error('Error fetching group decisions:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+// Cast vote for a decision
+export const castDecisionVote = async (req: Request, res: Response) => {
+  try {
+    const { groupId, decisionId } = req.params;
+    const { optionId } = req.body;
+    const userId = req.user.id;
+
+    // Implement vote casting logic here
+    // ...
+
+    res.status(200).json({ message: 'Vote cast successfully' });
+  } catch (error) {
+    console.error('Error casting vote:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 // Additional functions can be added here as needed

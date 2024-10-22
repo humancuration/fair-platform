@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import TextInput from '../components/TextInput';
 import Button from '../components/common/Button';
 import { useDispatch } from 'react-redux';
-import { setToken } from '../modulesf/store/slices/userSlice';
+import { setToken } from '../store/slices/userSlice';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');

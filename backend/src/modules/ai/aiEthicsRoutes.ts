@@ -1,10 +1,37 @@
-import express from 'express';
-import { createAIEthicsCourseHandler, addReflectionActivityHandler } from '@/modules/ai/aiEthicsController';
-import { authenticateJWT } from '@/middleware/auth';
+import { Router } from 'express';
+import { createAIEthicsCourseHandler, addReflectionActivityHandler } from './aiEthicsController';
+import { authenticateJWT } from '../../middleware/auth';
+import { body } from 'express-validator';
+import { validateRequest } from '../../middleware/validateRequest';
 
-const router = express.Router();
+const router = Router();
 
-router.post('/courses', authenticateJWT, createAIEthicsCourseHandler);
-router.post('/activities', authenticateJWT, addReflectionActivityHandler);
+const createCourseSchema = [
+  body('title').isString().notEmpty(),
+  body('description').isString().notEmpty(),
+  // Add more validation as needed
+];
+
+const addActivitySchema = [
+  body('courseId').isInt(),
+  body('sectionId').isInt(),
+  body('reflectionPrompt').isString().notEmpty(),
+];
+
+router.post(
+  '/courses',
+  authenticateJWT,
+  createCourseSchema,
+  validateRequest,
+  createAIEthicsCourseHandler
+);
+
+router.post(
+  '/activities',
+  authenticateJWT,
+  addActivitySchema,
+  validateRequest,
+  addReflectionActivityHandler
+);
 
 export default router;

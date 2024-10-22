@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { User } from '../user/User';
 
 @Table({
   tableName: 'community_wishlists',
@@ -11,6 +12,13 @@ export class CommunityWishlist extends Model<CommunityWishlist> {
     primaryKey: true,
   })
   id!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
 
   @Column({
     type: DataType.STRING,
@@ -53,4 +61,7 @@ export class CommunityWishlist extends Model<CommunityWishlist> {
     defaultValue: DataType.NOW,
   })
   date!: Date;
+
+  @BelongsTo(() => User)
+  user!: User;
 }

@@ -1,4 +1,6 @@
 import React, { ErrorInfo } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import ErrorFallback from './ErrorFallback';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -36,4 +38,12 @@ class ErrorBoundary extends React.Component<{}, ErrorBoundaryState> {
   }
 }
 
-export default ErrorBoundary;
+const MyErrorBoundary: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      {children}
+    </ErrorBoundary>
+  );
+};
+
+export default MyErrorBoundary;

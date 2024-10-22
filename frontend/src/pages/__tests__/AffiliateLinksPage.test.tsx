@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import AffiliateLinksPage from '../../modulesf/dashboard/affiliate/AffiliateLinksPage';
+import AffiliateLinksPage from '../../modules/dashboard/affiliate/AffiliateLinksPage';
 import { Provider } from 'react-redux';
-import { store } from '../../modulesf/store/store';
+import { store } from '../../store/store';
 import api from '@/utils/api';
 import axios from 'axios';
 

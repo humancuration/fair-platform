@@ -1,7 +1,7 @@
 import React from 'react';
 import Navbar from '../Navbar';
 import { Link } from 'react-router-dom';
-import { useUser } from '../../modulesf/user/UserContext';
+import { useUser } from '../../modules/user/UserContext';
 
 const Header: React.FC = () => {
   const { user } = useUser();

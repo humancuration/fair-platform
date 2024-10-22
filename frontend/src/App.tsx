@@ -3,114 +3,136 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { store } from './modulesf/store';
-import ErrorBoundary from './components/ErrorBoundary';
+import { store } from './store';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ErrorBoundary } from 'react-error-boundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ModalProvider } from './providers/ModalProvider';
 import { MusicPlayerProvider } from './contexts/MusicPlayerContext';
 import { ErrorProvider } from './contexts/ErrorContext';
-import { UserProvider } from './modulesf/user/UserContext';
-import MusicPlayerControls from './modulesf/music/MusicPlayerControls';
-import ErrorDisplay from './components/ErrorDisplay';
+import { UserProvider } from './modules/user/UserContext';
+import MusicPlayerControls from './modules/music/MusicPlayerControls';
+import ErrorFallback from './components/ErrorFallback';
+import LoadingSpinner from './components/common/LoadingSpinner';
+import theme from '../theme';
 
 // Eager-loaded components
-import CreateCampaignPage from './modulesf/campaign/CreateCampaignPage';
-import RepositoryBrowser from './modulesf/versionControl/RepositoryBrowser';
-import AvatarCustomizationPage from './modulesf/avatar/AvatarCustomizationPage';
+import CreateCampaignPage from './modules/campaign/CreateCampaignPage';
+import RepositoryBrowser from './modules/versionControl/RepositoryBrowser';
+import AvatarCustomizationPage from './modules/avatar/AvatarCustomizationPage';
 import RewardsPage from './components/RewardsPage';
 
 // Lazy-loaded components
-const Home = lazy(() => import('@pages/Home'));
-const Login = lazy(() => import('@pages/Login'));
-const Signup = lazy(() => import('@pages/Signup'));
-const Dashboard = lazy(() => import('./modulesf/dashboard/Dashboard'));
-const AdminDashboard = lazy(() => import('./modulesf/dashboard/AdminDashboard'));
-const EcoConsultantDashboard = lazy(() => import('./modulesf/dashboard/EcoConsultantDashboard'));
-const AIDashboard = lazy(() => import('./modulesf/ai/AIDashboard'));
-const DataTransparencyDashboard = lazy(() => import('./modulesf/dashboard/DataTransparencyDashboard'));
-const UserSettings = lazy(() => import('./modulesf/user/UserSettings'));
-const MinsiteBuilder = lazy(() => import('./modulesf/minsite/MinsiteBuilder'));
-const Directory = lazy(() => import('@pages/Directory'));
-const Marketplace = lazy(() => import('./modulesf/marketplace/Marketplace'));
-const Analytics = lazy(() => import('./modulesf/dashboard/Analytics'));
-const Forums = lazy(() => import('./modulesf/forum/Forums'));
-const ForumPosts = lazy(() => import('./modulesf/forum/ForumPosts'));
-const UserProfile = lazy(() => import('@/modulesf/user/UserProfilePage'));
-const WishlistPage = lazy(() => import('./modulesf/wishlist/WishlistPage'));
-const CommunityWishlistPage = lazy(() => import('./modulesf/wishlist/CommunityWishlistPage'));
-const UserSettingsPage = lazy(() => import('./modulesf/user/UserSettingsPage'));
-const PrivateWishlistPage = lazy(() => import('./modulesf/wishlist/PrivateWishlistPage'));
-const PublicWishlistPage = lazy(() => import('@/modulesf/wishlist/PublicWishlistPage'));
-const GroupCreationPage = lazy(() => import('./modulesf/groups/GroupCreationPage'));
-const GroupListPage = lazy(() => import('./modulesf/groups/GroupListPage'));
-const GroupDetailPage = lazy(() => import('./modulesf/groups/GroupDetailPage'));
-const PlaylistCreationPage = lazy(() => import('./modulesf/playlist/PlaylistCreationPage'));
-const PlaylistListPage = lazy(() => import('./modulesf/playlist/PlaylistListPage'));
-const PlaylistDetailsPage = lazy(() => import('./modulesf/playlist/PlaylistDetailsPage'));
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const Dashboard = lazy(() => import('./modules/dashboard/Dashboard'));
+const AdminDashboard = lazy(() => import('./modules/dashboard/AdminDashboard'));
+const EcoConsultantDashboard = lazy(() => import('./modules/dashboard/EcoConsultantDashboard'));
+const AIDashboard = lazy(() => import('./modules/dashboard/AIDashboard'));
+const DataTransparencyDashboard = lazy(() => import('./modules/dashboard/DataTransparencyDashboard'));
+const UserSettings = lazy(() => import('./modules/user/UserSettings'));
+const MinsiteBuilder = lazy(() => import('./modules/minsite/MinsiteBuilder'));
+const Directory = lazy(() => import('./pages/Directory'));
+const Marketplace = lazy(() => import('./modules/marketplace/Marketplace'));
+const Analytics = lazy(() => import('./modules/dashboard/Analytics'));
+const Forums = lazy(() => import('./modules/forum/Forums'));
+const ForumPosts = lazy(() => import('./modules/forum/ForumPosts'));
+const UserProfile = lazy(() => import('./modules/user/UserProfilePage'));
+const WishlistPage = lazy(() => import('./modules/wishlist/WishlistPage'));
+const CommunityWishlistPage = lazy(() => import('./modules/wishlist/CommunityWishlistPage'));
+const UserSettingsPage = lazy(() => import('./modules/user/UserSettingsPage'));
+const PrivateWishlistPage = lazy(() => import('./modules/wishlist/PrivateWishlistPage'));
+const PublicWishlistPage = lazy(() => import('./modules/wishlist/PublicWishlistPage'));
+const GroupCreationPage = lazy(() => import('./modules/group/GroupCreationPage'));
+const GroupListPage = lazy(() => import('./modules/group/GroupListPage'));
+const GroupDetailPage = lazy(() => import('./modules/group/GroupDetailPage'));
+const PlaylistCreationPage = lazy(() => import('./modules/playlist/PlaylistCreationPage'));
+const PlaylistListPage = lazy(() => import('./modules/playlist/PlaylistListPage'));
+const PlaylistDetailsPage = lazy(() => import('./modules/playlist/PlaylistDetailsPage'));
+const Social = lazy(() => import('./modules/forum/social'));
+
+const queryClient = new QueryClient();
+
+const routes = [
+  { path: '/', element: <Home /> },
+  { path: '/login', element: <Login /> },
+  { path: '/signup', element: <Signup /> },
+  { path: '/u/:username', element: <UserProfile /> },
+  { path: '/wishlist/public/:username', element: <PublicWishlistPage /> },
+  { 
+    path: '/dashboard', 
+    element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+    children: [
+      { path: 'admin', element: <AdminDashboard /> },
+      { path: 'eco-consultant', element: <EcoConsultantDashboard /> },
+      { path: 'ai', element: <AIDashboard /> },
+      { path: 'data-transparency', element: <DataTransparencyDashboard /> },
+      { path: 'settings', element: <UserSettings /> },
+    ]
+  },
+  { path: '/minsite/:id?', element: <ProtectedRoute><MinsiteBuilder /></ProtectedRoute> },
+  { path: '/campaigns/create', element: <ProtectedRoute><CreateCampaignPage /></ProtectedRoute> },
+  { path: '/directory', element: <ProtectedRoute><Directory /></ProtectedRoute> },
+  { path: '/marketplace', element: <ProtectedRoute><Marketplace /></ProtectedRoute> },
+  { path: '/analytics', element: <ProtectedRoute><Analytics /></ProtectedRoute> },
+  { path: '/forums', element: <ProtectedRoute><Forums /></ProtectedRoute> },
+  { path: '/forums/:forumId', element: <ProtectedRoute><ForumPosts /></ProtectedRoute> },
+  { path: '/wishlist', element: <ProtectedRoute><WishlistPage /></ProtectedRoute> },
+  { path: '/wishlist/private', element: <ProtectedRoute><PrivateWishlistPage /></ProtectedRoute> },
+  { path: '/wishlist/community', element: <ProtectedRoute><CommunityWishlistPage /></ProtectedRoute> },
+  { path: '/groups', element: <ProtectedRoute><GroupListPage /></ProtectedRoute> },
+  { path: '/groups/create', element: <ProtectedRoute><GroupCreationPage /></ProtectedRoute> },
+  { path: '/groups/:id', element: <ProtectedRoute><GroupDetailPage /></ProtectedRoute> },
+  { path: '/playlists', element: <ProtectedRoute><PlaylistListPage /></ProtectedRoute> },
+  { path: '/playlists/create', element: <ProtectedRoute><PlaylistCreationPage /></ProtectedRoute> },
+  { path: '/playlists/:playlistId', element: <ProtectedRoute><PlaylistDetailsPage /></ProtectedRoute> },
+  { path: '/settings', element: <ProtectedRoute><UserSettingsPage /></ProtectedRoute> },
+  { path: '/versionControl', element: <ProtectedRoute><RepositoryBrowser /></ProtectedRoute> },
+  { path: '/avatar-customization', element: <ProtectedRoute><AvatarCustomizationPage /></ProtectedRoute> },
+  { path: '/rewards', element: <ProtectedRoute><RewardsPage /></ProtectedRoute> },
+  { path: '/profile', element: <ProtectedRoute><UserProfile /></ProtectedRoute> },
+  { path: '/social', element: <ProtectedRoute><Social /></ProtectedRoute> },
+  { path: '*', element: <Navigate to="/" replace /> },
+];
 
 const App: React.FC = () => {
   return (
     <Provider store={store}>
-      <ModalProvider>
-        <ErrorBoundary>
-          <ErrorProvider>
-            <UserProvider>
-              <Router>
-                <MusicPlayerProvider>
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <Routes>
-                      {/* Public Routes */}
-                      <Route path="/" element={<Home />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/signup" element={<Signup />} />
-                      <Route path="/u/:username" element={<UserProfile />} />
-                      <Route path="/wishlist/public/:username" element={<PublicWishlistPage />} />
-
-                      {/* Protected Routes */}
-                      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
-                        <Route path="admin" element={<AdminDashboard />} />
-                        <Route path="eco-consultant" element={<EcoConsultantDashboard />} />
-                        <Route path="ai" element={<AIDashboard />} />
-                        <Route path="data-transparency" element={<DataTransparencyDashboard />} />
-                        <Route path="settings" element={<UserSettings />} />
-                      </Route>
-                      <Route path="/minsite/:id?" element={<ProtectedRoute><MinsiteBuilder /></ProtectedRoute>} />
-                      <Route path="/campaigns/create" element={<ProtectedRoute><CreateCampaignPage /></ProtectedRoute>} />
-                      <Route path="/directory" element={<ProtectedRoute><Directory /></ProtectedRoute>} />
-                      <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-                      <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                      <Route path="/forums" element={<ProtectedRoute><Forums /></ProtectedRoute>} />
-                      <Route path="/forums/:forumId" element={<ProtectedRoute><ForumPosts /></ProtectedRoute>} />
-                      <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
-                      <Route path="/wishlist/private" element={<ProtectedRoute><PrivateWishlistPage /></ProtectedRoute>} />
-                      <Route path="/wishlist/community" element={<ProtectedRoute><CommunityWishlistPage /></ProtectedRoute>} />
-                      <Route path="/groups" element={<ProtectedRoute><GroupListPage /></ProtectedRoute>} />
-                      <Route path="/groups/create" element={<ProtectedRoute><GroupCreationPage /></ProtectedRoute>} />
-                      <Route path="/groups/:id" element={<ProtectedRoute><GroupDetailPage /></ProtectedRoute>} />
-                      <Route path="/playlists" element={<ProtectedRoute><PlaylistListPage /></ProtectedRoute>} />
-                      <Route path="/playlists/create" element={<ProtectedRoute><PlaylistCreationPage /></ProtectedRoute>} />
-                      <Route path="/playlists/:playlistId" element={<ProtectedRoute><PlaylistDetailsPage /></ProtectedRoute>} />
-                      <Route path="/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
-                      <Route path="/versionControl" element={<ProtectedRoute><RepositoryBrowser /></ProtectedRoute>} />  
-                      <Route path="/avatar-customization" element={<ProtectedRoute><AvatarCustomizationPage /></ProtectedRoute>} />
-                      <Route path="/rewards" element={<ProtectedRoute><RewardsPage /></ProtectedRoute>} />
-                      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-
-                      {/* Fallback route */}
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </Suspense>
-                  <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
-                  <MusicPlayerControls />
-                  <ErrorDisplay />
-                </MusicPlayerProvider>
-              </Router>
-            </UserProvider>
-          </ErrorProvider>
-        </ErrorBoundary>
-      </ModalProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <ModalProvider>
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <ErrorProvider>
+                <UserProvider>
+                  <Router>
+                    <MusicPlayerProvider>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <Routes>
+                          {routes.map((route, index) => (
+                            <Route key={index} path={route.path} element={route.element}>
+                              {route.children && route.children.map((childRoute, childIndex) => (
+                                <Route key={childIndex} path={childRoute.path} element={childRoute.element} />
+                              ))}
+                            </Route>
+                          ))}
+                        </Routes>
+                      </Suspense>
+                      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+                      <MusicPlayerControls />
+                    </MusicPlayerProvider>
+                  </Router>
+                </UserProvider>
+              </ErrorProvider>
+            </ErrorBoundary>
+          </ModalProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </Provider>
   );
 };

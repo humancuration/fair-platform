@@ -6,6 +6,7 @@ interface InfiniteScrollComponentProps<T> {
   hasMore: boolean;
   renderItem: (item: T) => ReactNode;
   initialData: T[];
+  loadingComponent?: ReactNode;
 }
 
 function InfiniteScrollComponent<T>({
@@ -13,13 +14,14 @@ function InfiniteScrollComponent<T>({
   hasMore,
   renderItem,
   initialData,
+  loadingComponent = <h4>Loading...</h4>,
 }: InfiniteScrollComponentProps<T>): JSX.Element {
   return (
     <InfiniteScroll
       dataLength={initialData.length}
       next={fetchMoreData}
       hasMore={hasMore}
-      loader={<h4>Loading...</h4>}
+      loader={loadingComponent}
     >
       {initialData.map((item: T, index: number) => (
         <React.Fragment key={index}>

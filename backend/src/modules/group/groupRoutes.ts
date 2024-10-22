@@ -11,7 +11,11 @@ import {
   addMember,
   removeMember,
   assignDelegate,
-  revokeDelegate
+  revokeDelegate,
+  getGroupChallenges,
+  getGroupMarketplace,
+  getGroupDecisions,
+  castDecisionVotem
 } from '../controllers/groupController';
 import { authenticate } from '../middleware/authenticate';
 import auth from '../middleware/auth';
@@ -49,5 +53,11 @@ router.use('/:groupId/events', eventRoutes);
 router.use('/:groupId/projects', projectRoutes);
 router.use('/:groupId/petitions', petitionRoutes);
 router.use('/:groupId/resources', resourceRoutes);
+
+// New routes
+router.get('/:groupId/challenges', authenticate, getGroupChallenges);
+router.get('/:groupId/marketplace', authenticate, getGroupMarketplace);
+router.get('/:groupId/decisions', authenticate, getGroupDecisions);
+router.post('/:groupId/decisions/:decisionId/vote', authenticate, castDecisionVote);
 
 export default router;

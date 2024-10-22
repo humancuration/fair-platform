@@ -4,8 +4,11 @@ import { AnalyticsEvent } from './AnalyticsEvent';
 import logger from '../../utils/logger';
 import { redisClient } from '../utils/redis';
 import { trace, context } from '@opentelemetry/api';
+import { WebSocket } from 'ws';
 
 class AnalyticsService {
+  private websockets: Map<string, WebSocket> = new Map();
+
   async trackEvent(userId: string | null, eventType: string, eventData: any) {
     const span = trace.getTracer('analytics-service').startSpan('trackEvent');
     
@@ -87,6 +90,36 @@ class AnalyticsService {
       logger.error(`Error deleting old data: ${error}`);
       throw new Error('Failed to delete old data');
     }
+  }
+
+  async trackEventRealTime(userId: string | null, eventType: string, eventData: any) {
+    const span = trace.getTracer('analytics-service').startSpan('trackEventRealTime');
+    
+    return context.with(trace.setSpan(context.active(), span), async () => {
+      try {
+        const event = await this.trackEvent(userId, eventType, eventData);
+        
+        // Broadcast to real-time listeners
+        this.broadcastEvent(event);
+        
+        return event;
+      } catch (error) {
+        logger.error(`Error tracking real-time event: ${error}`);
+        span.recordException(error as Error);
+        throw error;
+      } finally {
+        span.end();
+      }
+    });
+  }
+
+  private broadcastEvent(event: any) {
+    const message = JSON.stringify(event);
+    this.websockets.forEach(ws => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    });
   }
 }
 

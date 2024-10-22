@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AccordionItem from './AccordionItem'; // Import the AccordionItem component
 import './Accordion.css'; // Import styles if needed
-
-interface AccordionProps {
-  title: string;
-  children: React.ReactNode;
-}
 
 interface AccordionItemData {
   id: string;
@@ -22,7 +17,7 @@ interface AccordionGroupProps {
 const AccordionGroup: React.FC<AccordionGroupProps> = ({ items, allowMultiple = false }) => {
   const [openItems, setOpenItems] = useState<string[]>([]);
 
-  const toggleItem = (id: string) => {
+  const toggleItem = useCallback((id: string) => {
     setOpenItems((prevOpenItems) => {
       if (allowMultiple) {
         return prevOpenItems.includes(id)
@@ -32,18 +27,20 @@ const AccordionGroup: React.FC<AccordionGroupProps> = ({ items, allowMultiple = 
         return prevOpenItems.includes(id) ? [] : [id];
       }
     });
-  };
+  }, [allowMultiple]);
 
   return (
     <ul className="accordion">
-      {items.map((item) => (
-        <AccordionItem
-          key={item.id}
-          data={item}
-          isOpen={openItems.includes(item.id)}
-          onToggle={() => toggleItem(item.id)}
-        />
-      ))}
+      <AnimatePresence>
+        {items.map((item) => (
+          <AccordionItem
+            key={item.id}
+            data={item}
+            isOpen={openItems.includes(item.id)}
+            onToggle={() => toggleItem(item.id)}
+          />
+        ))}
+      </AnimatePresence>
     </ul>
   );
 };

@@ -1,27 +1,37 @@
-import React from 'react';
+import React, { ButtonHTMLAttributes, forwardRef } from 'react';
 import styled from 'styled-components';
+import { Theme } from '../../styles/theme'; // Assuming you have a theme file
 
-interface ButtonProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: 'primary' | 'secondary';
-  className?: string;
-  type?: 'button' | 'submit' | 'reset';
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'tertiary';
+  size?: 'small' | 'medium' | 'large';
 }
 
 const StyledButton = styled.button<ButtonProps>`
   background-color: ${({ theme, variant }) =>
-    variant === 'primary' ? theme.primary : theme.secondary};
-  color: ${({ theme }) => theme.text};
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 5px;
+    variant === 'primary' ? theme.colors.primary :
+    variant === 'secondary' ? theme.colors.secondary :
+    'transparent'};
+  color: ${({ theme, variant }) =>
+    variant === 'tertiary' ? theme.colors.primary : theme.colors.text};
+  padding: ${({ size }) =>
+    size === 'small' ? '0.25rem 0.5rem' :
+    size === 'large' ? '0.75rem 1.5rem' :
+    '0.5rem 1rem'};
+  font-size: ${({ theme, size }) =>
+    size === 'small' ? theme.fontSizes.small :
+    size === 'large' ? theme.fontSizes.large :
+    theme.fontSizes.medium};
+  border: ${({ variant, theme }) => variant === 'tertiary' ? `1px solid ${theme.colors.primary}` : 'none'};
+  border-radius: ${({ theme }) => theme.borderRadius};
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
 
   &:hover {
     background-color: ${({ theme, variant }) =>
-      variant === 'primary' ? theme.secondary : theme.primary};
+      variant === 'primary' ? theme.colors.primaryHover :
+      variant === 'secondary' ? theme.colors.secondaryHover :
+      theme.colors.tertiaryHover};
   }
 
   &:disabled {
@@ -30,17 +40,24 @@ const StyledButton = styled.button<ButtonProps>`
   }
 `;
 
-const Button: React.FC<ButtonProps> = ({
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
   children,
-  onClick,
   variant = 'primary',
-  className,
-}) => {
+  size = 'medium',
+  ...rest
+}, ref) => {
   return (
-    <StyledButton onClick={onClick} variant={variant} className={className}>
+    <StyledButton 
+      ref={ref}
+      variant={variant}
+      size={size}
+      {...rest}
+    >
       {children}
     </StyledButton>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 export default Button;

@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from '../common/Button';
 
 const LoginWithGitHub: React.FC = () => {
   const handleGitHubLogin = () => {
@@ -6,7 +7,7 @@ const LoginWithGitHub: React.FC = () => {
   };
 
   return (
-    <button
+    <Button
       onClick={handleGitHubLogin}
       className="bg-gray-800 text-white px-4 py-2 rounded flex items-center"
     >
@@ -29,7 +30,7 @@ const LoginWithGitHub: React.FC = () => {
         />
       </svg>
       Login with GitHub
-    </button>
+    </Button>
   );
 };
 

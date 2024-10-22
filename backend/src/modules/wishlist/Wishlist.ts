@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
-import { User } from '../modulesb/user/User';
+import { User } from '../user/User';
 import { WishlistItem } from './WishlistItem';
 
 @Table({

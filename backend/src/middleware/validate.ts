@@ -1,17 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { validationResult, ValidationError } from 'express-validator';
+import { validationResult } from 'express-validator';
+import { ValidationError } from '../utils/errors';
 
 export const validate = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const formattedErrors = errors.array().map((error: ValidationError) => ({
-      field: error.param,
-      message: error.msg,
-    }));
-    return res.status(400).json({ 
-      message: 'Validation failed',
-      errors: formattedErrors 
-    });
+    const errorMessages = errors.array().map(error => error.msg);
+    throw new ValidationError(errorMessages.join(', '));
   }
   next();
 };

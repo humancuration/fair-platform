@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import CommunityWishlist from '@/modules/wishlist/CommunityWishlist';
-import User from '@models/User';
+import { CommunityWishlist } from './CommunityWishlist';
+import { User } from '../user/User';
+import { Op } from 'sequelize';
 
-export const getCommunityWishlist = async (_req: Request, res: Response) => {
+export const getCommunityWishlist = async (req: Request, res: Response) => {
   try {
     const communityWishlist = await CommunityWishlist.findAll({
       order: [
@@ -42,19 +43,44 @@ export const highlightItem = async (req: Request, res: Response) => {
 };
 
 export const addToCommunityWishlist = async (req: Request, res: Response) => {
-  const { productId, name, image, price } = req.body;
+  const { productId, name, image, price, communityName } = req.body;
+  const userId = (req.user as any).id;
 
   try {
     const newItem = await CommunityWishlist.create({
+      userId,
       productId,
       name,
       image,
       price,
+      communityName,
     });
 
     res.status(201).json(newItem);
   } catch (error) {
     console.error('Error adding item to community wishlist:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+export const searchCommunityWishlist = async (req: Request, res: Response) => {
+  const { query } = req.query;
+
+  try {
+    const results = await CommunityWishlist.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { communityName: { [Op.iLike]: `%${query}%` } }
+        ]
+      },
+      include: [{ model: User, attributes: ['username', 'avatar'] }],
+      limit: 20
+    });
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error searching community wishlist:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };

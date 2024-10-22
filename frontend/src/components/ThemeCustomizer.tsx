@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../modulesf/store';
-import { setTheme, setCustomStyle } from '../modulesf/store/themeSlice';
+import { RootState } from '../store/store';
+import { setTheme, setCustomStyle } from '../modules/store/themeSlice';
 
 const ThemeCustomizer: React.FC = () => {
   const dispatch = useDispatch();

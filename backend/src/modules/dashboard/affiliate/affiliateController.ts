@@ -5,9 +5,10 @@ import { AffiliateLink } from '../models/AffiliateLink';
 import { AffiliateProgram } from '../models/AffiliateProgram';
 import { generateTrackingCode, generateAffiliateLink } from '../../utils/generateAffiliateLink';
 import logger from '../../utils/logger';
-import { NotFoundError, ValidationError } from '../utils/errors';
+import { NotFoundError, ValidationError } from '../../utils/errors';
 import { AffiliateLinkRepository } from '../repositories/AffiliateLinkRepository';
 import { sequelize } from '../../config/database';
+import { validateCreateAffiliateLink } from '../validators/affiliateLinkValidators';
 
 const affiliateLinkRepo = new AffiliateLinkRepository();
 
@@ -22,6 +23,8 @@ export const createAffiliateLink = async (req: Request, res: Response, next: Nex
   const transaction = await sequelize.transaction();
 
   try {
+    await validateCreateAffiliateLink(req);
+
     const trackingCode = generateTrackingCode();
     const baseURL = process.env.BASE_URL || 'https://yourplatform.com';
     const generatedLink = generateAffiliateLink(baseURL, trackingCode);
@@ -42,7 +45,7 @@ export const createAffiliateLink = async (req: Request, res: Response, next: Nex
   } catch (error) {
     await transaction.rollback();
     logger.error('Error creating affiliate link:', error);
-    next(new Error('Failed to create affiliate link'));
+    next(error);
   }
 };
 

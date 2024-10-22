@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import WYSIWYGEditor from '../../modulesf/minsite/WYSIWYGEditor';
+import WYSIWYGEditor from '../../modules/minsite/WYSIWYGEditor';
 
 describe('WYSIWYGEditor', () => {
   test('renders editor and updates content on change', () => {
