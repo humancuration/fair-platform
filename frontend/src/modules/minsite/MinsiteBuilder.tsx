@@ -13,11 +13,21 @@ import VersionHistory from '../versionControl/VersionHistory';
 import { useMutation, useQuery } from 'react-query';
 import { motion } from 'framer-motion';
 import { TextField, Button, CircularProgress } from '@mui/material';
+import { CartPreview } from '../marketplace/CartPreview';
+import { useSelector } from 'react-redux';
 
 interface ComponentProps {
   type: string;
   content: string;
   style?: React.CSSProperties;
+}
+
+// Add to existing interface
+interface MinsiteSettings {
+  // ... existing settings ...
+  enableCommerce: boolean;
+  commissionRate: number;
+  allowAffiliates: boolean;
 }
 
 const MinsiteBuilder: React.FC = () => {
@@ -37,6 +47,13 @@ const MinsiteBuilder: React.FC = () => {
   const [versions, setVersions] = useState<any[]>([]);
   const [isPublished, setIsPublished] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState('');
+  const [settings, setSettings] = useState<MinsiteSettings>({
+    enableCommerce: false,
+    commissionRate: 5,
+    allowAffiliates: false
+  });
+
+  const cart = useSelector((state: RootState) => state.cart);
 
   const { data: minsiteData, isLoading: isFetchingMinsite } = useQuery(
     ['minsite', id],
@@ -125,6 +142,60 @@ const MinsiteBuilder: React.FC = () => {
     publishMutation.mutate();
   };
 
+  // Add commerce settings section
+  const renderCommerceSettings = () => (
+    <div className="mb-6 p-4 border rounded">
+      <h3 className="text-lg font-semibold mb-4">Commerce Settings</h3>
+      
+      <div className="space-y-4">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={settings.enableCommerce}
+            onChange={(e) => setSettings({
+              ...settings,
+              enableCommerce: e.target.checked
+            })}
+            className="mr-2"
+          />
+          Enable Commerce Features
+        </label>
+
+        {settings.enableCommerce && (
+          <>
+            <div>
+              <label className="block mb-2">Commission Rate (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={settings.commissionRate}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  commissionRate: Number(e.target.value)
+                })}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={settings.allowAffiliates}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  allowAffiliates: e.target.checked
+                })}
+                className="mr-2"
+              />
+              Allow Affiliate Marketing
+            </label>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   if (isFetchingMinsite) return <CircularProgress />;
 
   return (
@@ -198,6 +269,8 @@ const MinsiteBuilder: React.FC = () => {
           </a>
         )}
       </div>
+      {renderCommerceSettings()}
+      {settings.enableCommerce && <CartPreview cart={cart} onRemoveItem={() => {}} />}
     </motion.div>
   );
 };

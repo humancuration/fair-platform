@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 import { useCallback } from 'react';
+import ProductSelector from './components/ProductSelector';
 
 interface WYSIWYGEditorProps {
   content: string;
@@ -10,7 +11,14 @@ interface WYSIWYGEditorProps {
   onInsertComponent: (index: number) => void;
 }
 
-const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent, onInsertComponent }) => {
+const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ 
+  content, 
+  setContent, 
+  onInsertComponent 
+}) => {
+  const [showProductSelector, setShowProductSelector] = useState(false);
+  const [insertIndex, setInsertIndex] = useState<number | null>(null);
+
   const modules = {
     toolbar: {
       container: [
@@ -20,6 +28,7 @@ const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent, onIn
         ['link', 'image', 'video'],
         ['clean'],
         ['insertComponent'],
+        ['insertProduct'],
       ],
       handlers: {
         image: imageHandler,
@@ -28,6 +37,13 @@ const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent, onIn
           const range = this.quill.getSelection();
           if (range) {
             onInsertComponent(range.index);
+          }
+        },
+        insertProduct: function() {
+          const range = this.quill.getSelection();
+          if (range) {
+            setInsertIndex(range.index);
+            setShowProductSelector(true);
           }
         },
       },
@@ -108,16 +124,39 @@ const WYSIWYGEditor: React.FC<WYSIWYGEditorProps> = ({ content, setContent, onIn
     onInsertComponent(index);
   }, [onInsertComponent]);
 
+  const handleProductSelect = (products: Product[]) => {
+    if (insertIndex !== null) {
+      const productEmbed = products.map(product => ({
+        type: 'productEmbed',
+        product
+      }));
+      
+      // Insert custom blot for products
+      const quill = (this as any).quill;
+      quill.insertEmbed(insertIndex, 'productEmbed', productEmbed);
+    }
+    setShowProductSelector(false);
+    setInsertIndex(null);
+  };
+
   return (
-    <div className="editor-container">
+    <div className="relative">
       <ReactQuill
         theme="snow"
         value={content}
         onChange={setContent}
         modules={modules}
         formats={formats}
-        placeholder="Start creating your minisite content..."
       />
+
+      {showProductSelector && (
+        <div className="absolute top-0 left-0 w-full h-full bg-white z-50">
+          <ProductSelector
+            onSelect={handleProductSelect}
+            maxProducts={4}
+          />
+        </div>
+      )}
     </div>
   );
 };
