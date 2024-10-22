@@ -8,7 +8,7 @@
     "@fullcalendar/react": "^5.11.3",
     "@fullcalendar/timegrid": "^5.11.3",
     "@mui/material": "^6.1.4",
-    "@react-three/drei": "^9.114.3",
+    "@react-three/drei": "^9.114.6",
     "@react-three/fiber": "^8.17.10",
     "@reduxjs/toolkit": "^2.2.1",
     "@stripe/react-stripe-js": "^1.7.0",
