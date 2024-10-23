@@ -23,6 +23,8 @@ import { Testimonial } from '../models/Testimonial';
 import { AffiliateLink } from '../models/AffiliateLink';
 import { AffiliateProgram } from '../models/AffiliateProgram';
 import { GroupMember } from '../models/GroupMember';
+import { SurveyResponse } from '../models/SurveyResponse';
+import { surveyAnalyticsService } from '../modules/survey/surveyAnalyticsService';
 
 const pubsub = new PubSub();
 const userService = new UserService();
@@ -193,6 +195,21 @@ const resolvers: IResolvers = {
         include: [AffiliateProgram],
       });
     },
+
+    // Survey queries
+    surveyResults: async (_, { surveyId }) => {
+      return await SurveyResponse.findAll({
+        where: { surveyId }
+      });
+    },
+
+    combinedAnalysis: async (_, { surveyIds }) => {
+      return await surveyAnalyticsService.combineSurveyResults(surveyIds);
+    },
+
+    crossSurveyCorrelations: async (_, { surveyIds, questionIds }) => {
+      return await surveyAnalyticsService.computeCorrelations(surveyIds, questionIds);
+    }
   },
 
   Mutation: {

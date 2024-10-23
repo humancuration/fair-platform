@@ -1,12 +1,14 @@
 import React from 'react';
 import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import { AnimatedContainer } from '../common/AnimatedContainer';
+import { motion } from 'framer-motion';
 
 interface FormWrapperProps {
   initialValues: { [key: string]: any };
-  validationSchema: Yup.ObjectSchema<any>;
+  validationSchema: any;
   onSubmit: (values: any, actions: any) => void;
   children: React.ReactNode;
+  title?: string;
 }
 
 const FormWrapper: React.FC<FormWrapperProps> = ({
@@ -14,26 +16,45 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
   validationSchema,
   onSubmit,
   children,
+  title
 }) => {
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={onSubmit}
+    <AnimatedContainer
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="max-w-lg mx-auto p-6 rounded shadow"
     >
-      {({ isSubmitting }) => (
-        <Form className="max-w-lg mx-auto bg-white dark:bg-gray-800 p-6 rounded shadow">
-          {children}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit'}
-          </button>
-        </Form>
+      {title && (
+        <motion.h2 
+          className="text-2xl font-bold mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {title}
+        </motion.h2>
       )}
-    </Formik>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={onSubmit}
+      >
+        {({ isSubmitting }) => (
+          <Form className="space-y-4">
+            {children}
+            <motion.button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </motion.button>
+          </Form>
+        )}
+      </Formik>
+    </AnimatedContainer>
   );
 };
 

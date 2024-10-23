@@ -80,4 +80,47 @@ export const typeDefs = gql`
     groupCreated: Group!
     newGroupMember(groupId: ID!): User!
   }
+
+  // Add these types to the existing schema
+  type SurveyResult {
+    id: ID!
+    surveyId: ID!
+    respondentId: ID
+    answers: JSON!
+    createdAt: String!
+    metadata: JSON
+  }
+
+  type SurveyAnalysis {
+    questionId: String!
+    questionType: String!
+    responses: [ResponseAnalysis!]!
+    aggregates: AnalyticsAggregate
+  }
+
+  type ResponseAnalysis {
+    answer: JSON!
+    count: Int!
+    percentage: Float!
+  }
+
+  type AnalyticsAggregate {
+    mean: Float
+    median: Float
+    mode: [String!]
+    standardDeviation: Float
+    correlations: [Correlation!]
+  }
+
+  type Correlation {
+    questionId: String!
+    coefficient: Float!
+    strength: String!
+  }
+
+  extend type Query {
+    surveyResults(surveyId: ID!): [SurveyResult!]!
+    combinedAnalysis(surveyIds: [ID!]!): [SurveyAnalysis!]!
+    crossSurveyCorrelations(surveyIds: [ID!]!, questionIds: [String!]!): [Correlation!]!
+  }
 `;
