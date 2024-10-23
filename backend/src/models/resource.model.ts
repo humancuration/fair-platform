@@ -5,6 +5,17 @@ import { User } from '../modules/user/User';
 @Table({
   tableName: 'resources',
   timestamps: true,
+  indexes: [
+    {
+      fields: ['type'],
+    },
+    {
+      fields: ['groupId'],
+    },
+    {
+      fields: ['userId'],
+    },
+  ],
 })
 export class Resource extends Model<Resource> {
   @Column({
@@ -29,10 +40,19 @@ export class Resource extends Model<Resource> {
   userId!: number;
 
   @Column({
-    type: DataType.ENUM('Skill', 'Resource', 'Time', 'Tool'),
+    type: DataType.ENUM('Skill', 'Resource', 'Time', 'Tool', 'Other'),
     allowNull: false,
   })
-  type!: 'Skill' | 'Resource' | 'Time' | 'Tool';
+  type!: 'Skill' | 'Resource' | 'Time' | 'Tool' | 'Other';
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  })
+  name!: string;
 
   @Column({
     type: DataType.TEXT,
@@ -46,6 +66,18 @@ export class Resource extends Model<Resource> {
   })
   available!: boolean;
 
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  availableUntil?: Date;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+  })
+  metadata?: Record<string, any>;
+
   @BelongsTo(() => Group)
   group!: Group;
 
@@ -54,3 +86,4 @@ export class Resource extends Model<Resource> {
 }
 
 export default Resource;
+

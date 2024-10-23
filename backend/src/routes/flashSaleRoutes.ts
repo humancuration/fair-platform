@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { FlashSale, FlashSaleProduct } from './FlashSale';
+import { FlashSale, FlashSaleProduct } from '../modules/marketplace/FlashSale';
 import { authenticateToken } from '../middleware/auth';
-import { Product } from './Product';
+import { Product } from '../modules/marketplace/Product';
 
 const router = Router();
 

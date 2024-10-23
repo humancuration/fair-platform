@@ -1,56 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
-import SearchBar from '../components/SearchBar';
-import ProductCard from '../modules/marketplace/ProductCard';
-import InfiniteScrollComponent from '../components/common/infiniteScrollComponent';
-import api from '../api/api';
-import { handleError } from '../utils/errorHandler';
+import { json, type LoaderFunction } from '@remix-run/node';
+import { useLoaderData, useSearchParams, Form } from '@remix-run/react';
+import { useInView } from 'react-intersection-observer';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@apollo/client';
+import { SEARCH_PRODUCTS } from '../graphql/queries';
+import ProductCard from '../components/ProductCard';
+import SearchFilters from '../components/SearchFilters';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import type { SearchResult } from '../types';
 
-const SearchResultsPage: React.FC = () => {
-  const [results, setResults] = useState<any[]>([]);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const location = useLocation();
-  const query = new URLSearchParams(location.search).get('q') || '';
+interface LoaderData {
+  initialResults: SearchResult[];
+  totalCount: number;
+}
 
-  const fetchMoreData = async () => {
-    try {
-      const response = await api.get(`/search?q=${query}&page=${page}`);
-      const newResults = response.data.items;
-      setResults(prevResults => [...prevResults, ...newResults]);
-      setHasMore(response.data.hasMore);
-      setPage(prevPage => prevPage + 1);
-      return newResults;
-    } catch (error) {
-      handleError(error);
-      return [];
-    }
-  };
+export const loader: LoaderFunction = async ({ request }) => {
+  const url = new URL(request.url);
+  const query = url.searchParams.get('q') || '';
+  const page = parseInt(url.searchParams.get('page') || '1');
+  
+  const { results, totalCount } = await performInitialSearch(query, page);
+  
+  return json<LoaderData>({ 
+    initialResults: results,
+    totalCount 
+  });
+};
+
+const SearchResultsPage = () => {
+  const { initialResults, totalCount } = useLoaderData<LoaderData>();
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get('q') || '';
+  
+  const { ref, inView } = useInView();
+  
+  const { data, loading, fetchMore } = useQuery(SEARCH_PRODUCTS, {
+    variables: { 
+      query,
+      page: 1,
+      filters: getFiltersFromParams(searchParams)
+    },
+    notifyOnNetworkStatusChange: true
+  });
+
+  const results = data?.searchResults || initialResults;
 
   useEffect(() => {
-    setResults([]);
-    setPage(1);
-    setHasMore(true);
-    fetchMoreData();
-  }, [query]);
+    if (inView && !loading && results.length < totalCount) {
+      fetchMore({
+        variables: {
+          page: Math.ceil(results.length / 20) + 1
+        }
+      });
+    }
+  }, [inView, loading, results.length, totalCount]);
 
   return (
-    <div>
-      <Header />
-      <main className="container mx-auto p-4">
-        <SearchBar initialQuery={query} />
-        <h2 className="text-xl font-semibold mb-4">Search Results for "{query}"</h2>
-        <InfiniteScrollComponent
-          fetchMoreData={fetchMoreData}
-          hasMore={hasMore}
-          renderItem={(item) => <ProductCard key={item.id} product={item} />}
-          initialData={results}
-          
-        />
-      </main>
-      <Footer />
+    <div className="container mx-auto p-4">
+      <Form method="get" className="mb-6">
+        <SearchFilters />
+      </Form>
+
+      <h2 className="text-xl font-semibold mb-4">
+        {totalCount} Results for "{query}"
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <AnimatePresence>
+          {results.map((result, index) => (
+            <motion.div
+              key={result.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: index * 0.05 }}
+            >
+              <ProductCard product={result} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {loading && <LoadingSpinner />}
+      
+      <div ref={ref} className="h-20" />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { Bundle, BundleProduct } from './Bundle';
+import { Bundle, BundleProduct } from '../modules/marketplace/Bundle';
 import { authenticateToken } from '../middleware/auth';
-import { Product } from './Product';
+import { Product } from '../modules/marketplace/Product';
 
 const router = Router();
 

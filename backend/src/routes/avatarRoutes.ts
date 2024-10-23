@@ -15,9 +15,9 @@ import {
   handleDailyReward,
   trainAvatarStat,
   restAvatar
-} from './avatarController';
-import { authenticateJWT } from '../../middleware/auth';
-import { validateRequest } from '../../middleware/validateRequest';
+} from '../modules/avatar/avatarController';
+import { authenticateJWT } from '../middleware/auth';
+import { validateRequest } from '../middleware/validateRequest';
 import { body, param } from 'express-validator';
 
 const router = Router();

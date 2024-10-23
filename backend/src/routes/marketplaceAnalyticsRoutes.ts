@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../middleware/auth';
+import { authenticateToken } from '../middleware/auth';
 import {
   getMarketplaceAnalytics,
   trackRealtimeViewer,
   trackPageView
-} from './marketplaceAnalyticsController';
+} from '../modules/dashboard/marketplaceAnalyticsController';
 
 const router = Router();
 

@@ -6,12 +6,29 @@ import versionControlResolvers from '../modules/versionControl/versionControlRes
 import { IContext } from '../types/context';
 import { UserInput, GroupInput } from '../types/inputs';
 import  logger from '../utils/logger';
+import { IResolvers } from '@graphql-tools/utils';
+import { User } from '../modules/user/User';
+import { Group } from '../modules/group/Group';
+import { Event } from '../models/Event';
+import { Petition } from '../models/petition.model';
+import { Vote } from '../models/vote.model';
+import { Resource } from '../models/resource.model';
+import { Project } from '../models/project.model';
+import { Grant } from '../models/Grant';
+import { Achievement } from '../models/Achievement';
+import { UserAchievement } from '../models/UserAchievement';
+import { Item } from '../models/Item';
+import { Inventory } from '../models/Inventory';
+import { Testimonial } from '../models/Testimonial';
+import { AffiliateLink } from '../models/AffiliateLink';
+import { AffiliateProgram } from '../models/AffiliateProgram';
+import { GroupMember } from '../models/GroupMember';
 
 const pubsub = new PubSub();
 const userService = new UserService();
 const groupService = new GroupService();
 
-export const resolvers = {
+const resolvers: IResolvers = {
   Query: {
     user: async (_: unknown, { id }: { id: string }, context: IContext) => {
       try {
@@ -77,7 +94,107 @@ export const resolvers = {
       }
     },
     ...versionControlResolvers.Query,
+    // User queries
+    users: async () => User.findAll(),
+
+    // Group queries
+    groups: async () => Group.findAll(),
+    groupMembers: async (_, { groupId }) => {
+      return GroupMember.findAll({
+        where: { groupId },
+        include: [User],
+      });
+    },
+
+    // Event queries
+    events: async (_, { groupId }) => {
+      return Event.findAll({
+        where: groupId ? { groupId } : undefined,
+        include: [Group, 'attendees'],
+      });
+    },
+
+    // Petition queries
+    petitions: async (_, { groupId, status }) => {
+      return Petition.findAll({
+        where: {
+          ...(groupId && { groupId }),
+          ...(status && { status }),
+        },
+        include: [Group, 'votes'],
+      });
+    },
+
+    // Resource queries
+    resources: async (_, { groupId, type }) => {
+      return Resource.findAll({
+        where: {
+          ...(groupId && { groupId }),
+          ...(type && { type }),
+        },
+        include: [Group, User],
+      });
+    },
+
+    // Project queries
+    projects: async (_, { groupId, status }) => {
+      return Project.findAll({
+        where: {
+          ...(groupId && { groupId }),
+          ...(status && { status }),
+        },
+        include: [Group, 'creator'],
+      });
+    },
+
+    // Grant queries
+    grants: async (_, { status }) => {
+      return Grant.findAll({
+        where: status ? { status } : undefined,
+        include: ['applicant', Group],
+      });
+    },
+
+    // Achievement queries
+    achievements: async () => Achievement.findAll(),
+    userAchievements: async (_, { userId }) => {
+      return UserAchievement.findAll({
+        where: { userId },
+        include: [Achievement],
+      });
+    },
+
+    // Item and Inventory queries
+    items: async (_, { type }) => {
+      return Item.findAll({
+        where: type ? { type } : undefined,
+      });
+    },
+    inventory: async (_, { userId }) => {
+      return Inventory.findAll({
+        where: { userId },
+        include: [Item],
+      });
+    },
+
+    // Testimonial queries
+    testimonials: async (_, { status }) => {
+      return Testimonial.findAll({
+        where: status ? { status } : undefined,
+        include: [User],
+      });
+    },
+
+    // Affiliate queries
+    affiliatePrograms: async () => AffiliateProgram.findAll(),
+    affiliateLinks: async (_, { userId }) => {
+      return AffiliateLink.findAll({
+        where: { userId },
+        include: [AffiliateProgram],
+      });
+    },
   },
+
   Mutation: {
     createUser: async (_: unknown, { input }: { input: UserInput }, context: IContext) => {
       try {
@@ -144,3 +261,5 @@ export const resolvers = {
     },
   },
 };
+
+export default resolvers;

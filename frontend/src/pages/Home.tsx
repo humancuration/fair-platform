@@ -6,35 +6,44 @@ import api from '../api/api';
 import FeaturedCampaigns from '../modules/campaign/FeaturedCampaigns';
 import CommunityHighlights from '../components/CommunityHighlights';
 import EcoTips from '../modules/eco/EcoTips';
+import { json, LoaderFunction } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+import { motion } from 'framer-motion';
+import { useQuery } from '@apollo/client';
+import { GET_RECOMMENDATIONS } from '../graphql/queries';
+import type { Product, Campaign } from '../types';
+
+interface LoaderData {
+  initialRecommendations: Product[];
+}
+
+export const loader: LoaderFunction = async () => {
+  // Server-side data fetching with Remix
+  const initialRecommendations = await getInitialRecommendations();
+  return json<LoaderData>({ initialRecommendations });
+};
 
 const Home: React.FC = () => {
-  const [recommendedProducts, setRecommendedProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { initialRecommendations } = useLoaderData<LoaderData>();
+  
+  // Client-side data fetching with Apollo
+  const { data: recommendationsData } = useQuery(GET_RECOMMENDATIONS, {
+    variables: { limit: 10 },
+  });
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        const response = await api.get('/recommendations');
-        setRecommendedProducts(response.data.products);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching recommendations:', err);
-        setLoading(false);
-      }
-    };
-
-    fetchRecommendations();
-  }, []);
-
-  if (loading) return <LoadingSpinner />;
+  const recommendations = recommendationsData?.recommendations || initialRecommendations;
 
   return (
-    <div className="container mx-auto p-4">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container mx-auto p-4"
+    >
       <h1 className="text-3xl font-bold mb-6">Welcome to Fair Market</h1>
       
       <section className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">Recommended Products</h2>
-        <RecommendationCarousel products={recommendedProducts} />
+        <RecommendationCarousel products={recommendations} />
       </section>
 
       <section className="mb-8">
@@ -66,7 +75,7 @@ const Home: React.FC = () => {
           Community Wishlist
         </Link>
       </section>
-    </div>
+    </motion.div>
   );
 };
 

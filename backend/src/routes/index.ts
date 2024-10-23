@@ -7,7 +7,7 @@ import affiliateProgramRoutes from '../modules/affiliate/affiliateProgramRoutes'
 import affiliateLinkRoutes from '../modules/affiliate/affiliateLinkRoutes';
 import affiliateRoutes from '../modules/affiliate/affiliateRoutes';
 import clickTrackingRoutes from '../modules/dashboard/affiliate/clickTrackingRoutes';
-import analyticsRoutes from '../modules/analytics/analyticsRoutes';
+import analyticsRoutes from './analyticsRoutes';
 import linkInBioRoutes from './linkInBioRoutes';
 import recommendationRoutes from './recommendationRoutes';
 import payoutRoutes from './payoutRoutes';

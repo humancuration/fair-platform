@@ -1,40 +1,68 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
+import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
+import { Inventory } from './Inventory';
 
-export class Item extends Model {
-  public id!: string;
-  public name!: string;
-  public type!: string;
-  public rarity!: number;
-  public image!: string;
+@Table({
+  tableName: 'items',
+  timestamps: true,
+  indexes: [
+    {
+      fields: ['type'],
+    },
+    {
+      fields: ['rarity'],
+    },
+  ],
+})
+export class Item extends Model<Item> {
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+    primaryKey: true,
+  })
+  id!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  })
+  name!: string;
+
+  @Column({
+    type: DataType.ENUM('accessory', 'color', 'base'),
+    allowNull: false,
+  })
+  type!: 'accessory' | 'color' | 'base';
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    validate: {
+      min: 1,
+      max: 100,
+    },
+  })
+  rarity!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
+  })
+  image!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description?: string;
+
+  @HasMany(() => Inventory)
+  inventories!: Inventory[];
 }
 
-Item.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    type: {
-      type: DataTypes.ENUM('accessory', 'color', 'base'),
-      allowNull: false,
-    },
-    rarity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    image: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Item',
-  }
-);
+export default Item;

@@ -5,6 +5,15 @@ import { Petition } from './petition.model';
 @Table({
   tableName: 'votes',
   timestamps: true,
+  indexes: [
+    {
+      fields: ['userId', 'petitionId'],
+      unique: true,
+    },
+    {
+      fields: ['voteType'],
+    },
+  ],
 })
 export class Vote extends Model<Vote> {
   @Column({
@@ -29,10 +38,26 @@ export class Vote extends Model<Vote> {
   petitionId!: number;
 
   @Column({
-    type: DataType.ENUM('For', 'Against'),
+    type: DataType.ENUM('For', 'Against', 'Abstain'),
     allowNull: false,
   })
-  voteType!: 'For' | 'Against';
+  voteType!: 'For' | 'Against' | 'Abstain';
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  comment?: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 1,
+    validate: {
+      min: 1,
+      max: 100,
+    },
+  })
+  weight!: number;
 
   @BelongsTo(() => User)
   user!: User;

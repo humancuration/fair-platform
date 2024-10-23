@@ -10,67 +10,66 @@ import { FaUser, FaEnvelope, FaLock, FaShareAlt } from 'react-icons/fa';
 import AvatarUpload from '../components/AvatarUpload';
 import ActivityFeed from '../components/ActivityFeed';
 import ShareWishlistModal from '../components/ShareWishlistModal';
+import { json, LoaderFunction } from '@remix-run/node';
+import { useLoaderData, useFetcher } from '@remix-run/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@apollo/client';
+import { GET_USER_ACTIVITY } from '../graphql/queries';
+import type { User, Activity } from '../types';
+
+interface LoaderData {
+  user: User;
+  initialActivities: Activity[];
+}
+
+export const loader: LoaderFunction = async ({ request }) => {
+  // Server-side auth check and data fetching
+  const user = await requireUser(request);
+  const initialActivities = await getUserActivities(user.id);
+  
+  return json<LoaderData>({ user, initialActivities });
+};
 
 const Profile: React.FC = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user);
-  const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [isShareModalOpen, setShareModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    bio: user?.bio || '',
+  const { user, initialActivities } = useLoaderData<LoaderData>();
+  const fetcher = useFetcher();
+  
+  const { data: activityData } = useQuery(GET_USER_ACTIVITY, {
+    variables: { userId: user.id },
+    fetchPolicy: 'cache-and-network',
   });
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        bio: user.bio || '',
-      });
-    }
-  }, [user]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await dispatch(updateUserProfile(formData)).unwrap();
-      setEditModalOpen(false);
-      toast.success('Profile updated successfully!');
-    } catch (error) {
-      toast.error('Failed to update profile. Please try again.');
-    }
-  };
-
-  const handleShareWishlist = () => {
-    setShareModalOpen(true);
-  };
+  const activities = activityData?.activities || initialActivities;
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="bg-white shadow-md rounded-lg p-6">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container mx-auto p-4"
+    >
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
         <div className="flex items-center mb-6">
           <AvatarUpload
-            currentAvatar={user?.avatar}
-            onAvatarUpdate={(newAvatar) => {
-              // Handle avatar update logic
+            currentAvatar={user.avatar}
+            onAvatarUpdate={async (file) => {
+              const formData = new FormData();
+              formData.append('avatar', file);
+              fetcher.submit(formData, {
+                method: 'post',
+                action: '/api/avatar',
+                encType: 'multipart/form-data'
+              });
             }}
           />
           <div className="ml-4">
-            <h1 className="text-3xl font-bold">{user?.name}</h1>
-            <p className="text-gray-600">{user?.email}</p>
+            <h1 className="text-3xl font-bold">{user.name}</h1>
+            <p className="text-gray-600">{user.email}</p>
           </div>
         </div>
 
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Bio</h2>
-          <p className="text-gray-700">{user?.bio || 'No bio available.'}</p>
+          <p className="text-gray-700">{user.bio || 'No bio available.'}</p>
         </div>
 
         <div className="flex space-x-4 mb-6">
@@ -82,7 +81,7 @@ const Profile: React.FC = () => {
           </Button>
         </div>
 
-        <ActivityFeed userId={user?.id} />
+        <ActivityFeed userId={user.id} />
       </div>
 
       <Modal isOpen={isEditModalOpen} onClose={() => setEditModalOpen(false)}>
@@ -122,9 +121,24 @@ const Profile: React.FC = () => {
       <ShareWishlistModal
         isOpen={isShareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        userId={user?.id}
+        userId={user.id}
       />
-    </div>
+
+      <AnimatePresence>
+        {activities.map((activity, index) => (
+          <motion.div
+            key={activity.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="mb-4"
+          >
+            <ActivityCard activity={activity} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

@@ -141,15 +141,15 @@ const AIKnowledgeExchange: React.FC = () => {
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h3 className="text-xl font-semibold mb-4">Knowledge Network</h3>
           <NetworkGraph
-            nodes={fragments?.map(f => ({
+            nodes={fragments?.map((f: KnowledgeFragment) => ({
               id: f.id,
               label: f.type,
               size: f.validations.length + 1,
               color: getNodeColor(f.type),
               trustScore: calculateTrustScore(f)
             }))}
-            edges={fragments?.flatMap(f => 
-              f.semanticLinks.map(link => ({
+            edges={fragments?.flatMap((f: KnowledgeFragment) => 
+              f.semanticLinks.map((link: KnowledgeFragment['semanticLinks'][0]) => ({
                 from: f.id,
                 to: link.target,
                 label: link.relationship,
@@ -157,8 +157,8 @@ const AIKnowledgeExchange: React.FC = () => {
                 bidirectional: link.bidirectional
               }))
             )}
-            onNodeClick={(nodeId) => {
-              const fragment = fragments?.find(f => f.id === nodeId);
+            onNodeClick={(nodeId: string) => {
+              const fragment = fragments?.find((f: KnowledgeFragment) => f.id === nodeId);
               if (fragment) setSelectedFragment(fragment);
             }}
           />
@@ -275,7 +275,7 @@ const AIKnowledgeExchange: React.FC = () => {
                     <h4 className="font-medium mb-2">Add Contribution</h4>
                     <CodeEditor
                       value=""
-                      onChange={(value) => {
+                      onChange={(value: string) => {
                         contributeKnowledgeMutation.mutate({
                           fragmentId: selectedFragment.id,
                           content: value,

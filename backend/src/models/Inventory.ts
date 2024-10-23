@@ -1,46 +1,52 @@
-import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, Index } from 'sequelize-typescript';
 import { User } from '../modules/user/User';
 import { Item } from './Item';
 
-export class Inventory extends Model {
-  public id!: string;
-  public userId!: string;
-  public itemId!: string;
-  public quantity!: number;
-}
+@Table({
+  tableName: 'inventories',
+  timestamps: true,
+  indexes: [
+    {
+      fields: ['userId', 'itemId'],
+      unique: true,
+    },
+  ],
+})
+export class Inventory extends Model<Inventory> {
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+    primaryKey: true,
+  })
+  id!: string;
 
-Inventory.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    index: true, // Use this instead of @Index
+  })
+  userId!: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    index: true, // Use this instead of @Index
+  })
+  itemId!: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+    validate: {
+      min: 0,
     },
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    itemId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: Item,
-        key: 'id',
-      },
-    },
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Inventory',
-  }
-);
+  })
+  quantity!: number;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @BelongsTo(() => Item)
+  item!: Item;
+}

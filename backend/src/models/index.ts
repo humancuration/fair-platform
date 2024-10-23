@@ -3,6 +3,23 @@ import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 
 // Import all models
+import { Achievement } from './Achievement';
+import { Event } from './Event';
+import { EventAttendee } from './EventAttendee';
+import { Grant } from './Grant';
+import { Inventory } from './Inventory';
+import { Item } from './Item';
+import { LinkedContent } from './LinkedContent';
+import { LinkPage } from './LinkPage';
+import { Notification } from './Notification';
+import { Petition } from './petition.model';
+import { Project } from './project.model';
+import { Resource } from './resource.model';
+import { Testimonial } from './Testimonial';
+import { UserAchievement } from './UserAchievement';
+import { Vote } from './vote.model';
+
+// Import existing models from other modules
 import { User } from '../modules/user/User';
 import { Campaign } from '../modules/campaign/Campaign';
 import { AffiliateLink } from './AffiliateLink';
@@ -15,31 +32,21 @@ import { CommunityWishlistItem } from '../modules/wishlist/CommunityWishlistItem
 import { Company } from '../modules/marketplace/Company';
 import { Contribution } from '../modules/campaign/Contribution';
 import { Dividend } from '../modules/dashboard/affiliate/Dividend';
-import { Event } from './Event';
 import { Forum } from '../modules/forum/Forum';
-import { Grant } from './Grant';
+import { Group } from '../modules/group/Group';
 import { GroupMember } from './GroupMember';
 import { GroupType } from '../modules/group/GroupType';
-import { LinkedContent } from './LinkedContent';
-import { LinkPage } from './LinkPage';
 import { Minsite } from './Minsite';
-import { Notification } from './Notification';
 import { Payout } from '../modules/dashboard/affiliate/Payout';
-import { Petition } from './petition.model';
 import { Post } from '../modules/forum/Post';
 import { Product } from '../modules/marketplace/Product';
-import { Project } from './project.model';
-import { Resource } from './resource.model';
 import { Reward } from '../modules/campaign/Reward';
 import { Survey } from './Survey';
 import { SurveyResponse } from './SurveyResponse';
-import { Testimonial } from './Testimonial';
 import { UserActivity } from './UserActivity';
 import { UserReward } from './UserReward';
-import { Vote } from './vote.model';
 import { Wishlist } from './Wishlist';
 import { WishlistItem } from '../modules/wishlist/WishlistItem';
-// Import other models...
 
 dotenv.config();
 
@@ -50,24 +57,96 @@ const sequelize = new Sequelize({
   host: process.env.DB_HOST,
   dialect: 'postgres',
   models: [
-    User, Campaign, AffiliateLink, AnalyticsEvent, AffiliateProgram, Brand, 
-    ClickTracking, CommunityWishlist, CommunityWishlistItem, Company, 
-    Contribution, Dividend, Event, Forum, Grant, GroupMember, GroupType, 
-    LinkedContent, LinkPage, Minsite, Notification, Payout, Petition, Post, 
-    Product, Project, Resource, Reward, Survey, SurveyResponse, Testimonial, 
-    UserActivity, UserReward, Vote, Wishlist, WishlistItem
+    Achievement,
+    Event,
+    EventAttendee,
+    Grant,
+    Inventory,
+    Item,
+    LinkedContent,
+    LinkPage,
+    Notification,
+    Petition,
+    Project,
+    Resource,
+    Testimonial,
+    UserAchievement,
+    Vote,
+    // Existing models
+    User,
+    Campaign,
+    AffiliateLink,
+    AnalyticsEvent,
+    AffiliateProgram,
+    Brand,
+    ClickTracking,
+    CommunityWishlist,
+    CommunityWishlistItem,
+    Company,
+    Contribution,
+    Dividend,
+    Forum,
+    Group,
+    GroupMember,
+    GroupType,
+    Minsite,
+    Payout,
+    Post,
+    Product,
+    Reward,
+    Survey,
+    SurveyResponse,
+    UserActivity,
+    UserReward,
+    Wishlist,
+    WishlistItem,
   ],
 });
 
-export { sequelize };
-
-// Export all models
 export {
-  User, Campaign, AffiliateLink, AnalyticsEvent, AffiliateProgram, Brand, 
-  ClickTracking, CommunityWishlist, CommunityWishlistItem, Company, 
-  Contribution, Dividend, Event, Forum, Grant, GroupMember, GroupType, 
-  LinkedContent, LinkPage, Minsite, Notification, Payout, Petition, Post, 
-  Product, Project, Resource, Reward, Survey, SurveyResponse, Testimonial, 
-  UserActivity, UserReward, Vote, Wishlist, WishlistItem
+  sequelize,
+  // Export all models
+  Achievement,
+  Event,
+  EventAttendee,
+  Grant,
+  Inventory,
+  Item,
+  LinkedContent,
+  LinkPage,
+  Notification,
+  Petition,
+  Project,
+  Resource,
+  Testimonial,
+  UserAchievement,
+  Vote,
+  // Export existing models
+  User,
+  Campaign,
+  AffiliateLink,
+  AnalyticsEvent,
+  AffiliateProgram,
+  Brand,
+  ClickTracking,
+  CommunityWishlist,
+  CommunityWishlistItem,
+  Company,
+  Contribution,
+  Dividend,
+  Forum,
+  Group,
+  GroupMember,
+  GroupType,
+  Minsite,
+  Payout,
+  Post,
+  Product,
+  Reward,
+  Survey,
+  SurveyResponse,
+  UserActivity,
+  UserReward,
+  Wishlist,
+  WishlistItem,
 };
-// Export other models...

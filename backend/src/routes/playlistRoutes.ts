@@ -1,5 +1,5 @@
 import express from 'express';
-import * as playlistController from './playlistController';
+import * as playlistController from '../modules/playlist/playlistController';
 import { authenticateJWT } from '../../middleware/authMiddleware';
 
 const router = express.Router();

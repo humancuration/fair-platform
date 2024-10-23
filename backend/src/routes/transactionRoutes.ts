@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { Transaction } from './Transaction';
+import { Transaction } from '../modules/marketplace/Transaction';
 import { authenticateToken } from '../middleware/auth';
 import { calculateCommissions } from '../utils/commissionCalculator';
-import { Product } from './Product';
+import { Product } from '../modules/marketplace/Product';
 import { Op } from 'sequelize';
 
 const router = Router();

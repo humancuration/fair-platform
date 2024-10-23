@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCommunityWishlist, highlightItem, addToCommunityWishlist, searchCommunityWishlist } from './communityWishlistController';
+import { getCommunityWishlist, highlightItem, addToCommunityWishlist, searchCommunityWishlist } from '../modules/wishlist/communityWishlistController';
 import { authMiddleware } from '../../middleware/authMiddleware';
 
 const router = express.Router();

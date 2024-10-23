@@ -5,7 +5,7 @@ import {
   getPublicWishlistByUsername,
   addCommunityWishlistItem,
   getCommunityWishlist,
-} from './wishlistController';
+} from '../modules/wishlist/wishlistController';
 import { authMiddleware } from '../../middleware/authMiddleware';
 
 const router = express.Router();

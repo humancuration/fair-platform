@@ -1,10 +1,22 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, Index } from 'sequelize-typescript';
 import { Group } from '../modules/group/Group';
 import { User } from '../modules/user/User';
+import { Vote } from './vote.model';
 
 @Table({
   tableName: 'petitions',
   timestamps: true,
+  indexes: [
+    {
+      fields: ['status'],
+    },
+    {
+      fields: ['groupId'],
+    },
+    {
+      fields: ['createdBy'],
+    },
+  ],
 })
 export class Petition extends Model<Petition> {
   @Column({
@@ -24,6 +36,9 @@ export class Petition extends Model<Petition> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
   })
   title!: string;
 
@@ -41,17 +56,33 @@ export class Petition extends Model<Petition> {
   createdBy!: number;
 
   @Column({
-    type: DataType.ENUM('Open', 'Closed'),
+    type: DataType.ENUM('Open', 'Closed', 'Approved', 'Rejected'),
     allowNull: false,
     defaultValue: 'Open',
   })
-  status!: 'Open' | 'Closed';
+  status!: 'Open' | 'Closed' | 'Approved' | 'Rejected';
+
+  @Column({
+    type: DataType.DATE,
+    allowNull: true,
+  })
+  closingDate?: Date;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  requiredVotes!: number;
 
   @BelongsTo(() => Group)
   group!: Group;
 
   @BelongsTo(() => User)
   creator!: User;
+
+  @HasMany(() => Vote)
+  votes!: Vote[];
 }
 
 export default Petition;

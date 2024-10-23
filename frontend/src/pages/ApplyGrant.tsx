@@ -1,62 +1,64 @@
 // src/pages/ApplyGrant.tsx
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Form, useTransition } from '@remix-run/react';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { motion } from 'framer-motion';
+import type { ActionFunction } from '@remix-run/node';
+
+interface GrantApplication {
+  applicantName: string;
+  projectDescription: string;
+  amountRequested: number;
+  category: string;
+  timeline: string;
+}
+
+const validationSchema = Yup.object({
+  applicantName: Yup.string().required('Name is required'),
+  projectDescription: Yup.string()
+    .min(100, 'Description must be at least 100 characters')
+    .required('Description is required'),
+  amountRequested: Yup.number()
+    .min(100, 'Minimum amount is $100')
+    .max(10000, 'Maximum amount is $10,000')
+    .required('Amount is required'),
+  category: Yup.string().required('Category is required'),
+  timeline: Yup.string().required('Timeline is required'),
+});
+
+export const action: ActionFunction = async ({ request }) => {
+  const formData = await request.formData();
+  // Handle form submission server-side
+};
 
 const ApplyGrant: React.FC = () => {
-  const [applicantName, setApplicantName] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
-  const [amountRequested, setAmountRequested] = useState<number>(0);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post('/api/grants', {
-        applicantName,
-        projectDescription,
-        amountRequested,
-      });
-      alert('Grant application submitted successfully!');
-      setApplicantName('');
-      setProjectDescription('');
-      setAmountRequested(0);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit grant application');
-    }
-  };
+  const transition = useTransition();
+  const isSubmitting = transition.state === 'submitting';
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl mb-4">Apply for a Micro-Grant</h1>
-      <form onSubmit={handleSubmit} className="w-1/2 mx-auto">
-        <input
-          type="text"
-          placeholder="Your Name"
-          value={applicantName}
-          onChange={(e) => setApplicantName(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        />
-        <textarea
-          placeholder="Project Description"
-          value={projectDescription}
-          onChange={(e) => setProjectDescription(e.target.value)}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        ></textarea>
-        <input
-          type="number"
-          placeholder="Amount Requested"
-          value={amountRequested}
-          onChange={(e) => setAmountRequested(parseFloat(e.target.value))}
-          className="w-full p-2 mb-4 border rounded"
-          required
-        />
-        <button type="submit" className="w-full bg-purple-500 text-white p-2 rounded">
-          Submit Application
-        </button>
-      </form>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="container mx-auto p-4"
+    >
+      <Formik
+        initialValues={{
+          applicantName: '',
+          projectDescription: '',
+          amountRequested: 0,
+          category: '',
+          timeline: '',
+        }}
+        validationSchema={validationSchema}
+        onSubmit={async (values) => {
+          // Handle form submission
+        }}
+      >
+        {/* Form implementation */}
+      </Formik>
+    </motion.div>
   );
 };
 

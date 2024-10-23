@@ -1,9 +1,20 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, Index } from 'sequelize-typescript';
 import { User } from '../modules/user/User';
 
 @Table({
   tableName: 'notifications',
-  timestamps: false,
+  timestamps: true,
+  indexes: [
+    {
+      fields: ['userId'],
+    },
+    {
+      fields: ['type'],
+    },
+    {
+      fields: ['read'],
+    },
+  ],
 })
 export class Notification extends Model<Notification> {
   @Column({
@@ -23,14 +34,24 @@ export class Notification extends Model<Notification> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    validate: {
+      notEmpty: true,
+    },
   })
   message!: string;
 
   @Column({
-    type: DataType.ENUM('version-control', 'other'),
+    type: DataType.ENUM(
+      'version-control',
+      'event',
+      'mention',
+      'group',
+      'achievement',
+      'other'
+    ),
     allowNull: false,
   })
-  type!: 'version-control' | 'other';
+  type!: 'version-control' | 'event' | 'mention' | 'group' | 'achievement' | 'other';
 
   @Column({
     type: DataType.BOOLEAN,
@@ -39,10 +60,16 @@ export class Notification extends Model<Notification> {
   read!: boolean;
 
   @Column({
-    type: DataType.DATE,
-    defaultValue: DataType.NOW,
+    type: DataType.JSON,
+    allowNull: true,
   })
-  createdAt!: Date;
+  metadata?: Record<string, any>;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  link?: string;
 
   @BelongsTo(() => User)
   user!: User;

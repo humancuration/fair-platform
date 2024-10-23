@@ -17,12 +17,12 @@ import { startDiscordBot } from './integrations/discord/discordBot';
 // Import routes
 import surveyRoutes from './modules/survey/surveyRoutes';
 import searchRoutes from './routes/searchRoutes';
-import analyticsRoutes from './modules/analytics/analyticsRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 import userRoutes from './modules/user/userRoutes';
-import versionControlRoutes from './modules/versionControl/versionControlRoutes';
-import wishlistRoutes from './modules/wishlist/wishlistRoutes';
+import versionControlRoutes from './routes/versionControlRoutes';
+import wishlistRoutes from './routes/wishlistRoutes';
 import testimonialRoutes from './routes/testimonialRoutes';
-import avatarRoutes from './modules/avatar/avatarRoutes';
+import avatarRoutes from './routes/avatarRoutes';
 import rewardRoutes from './modules/campaign/rewardRoutes';
 
 dotenv.config();
