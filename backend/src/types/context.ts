@@ -1,4 +1,4 @@
-import { User } from '../models/User';
+import { User } from '../../../backup/models/User';
 
 export interface IContext {
   currentUser?: User;

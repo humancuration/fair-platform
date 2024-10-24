@@ -1,6 +1,6 @@
 // backend/src/routes/grants.ts
 import { Router, Request, Response } from 'express';
-import Grant from '../models/Grant';
+import Grant from '../../../backup/models/Grant';
 import auth from '../middleware/auth';
 
 const router = Router();

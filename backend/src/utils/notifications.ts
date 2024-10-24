@@ -1,5 +1,5 @@
 import User from '../modules/user/User';
-import Notification from '../models/Notification';
+import Notification from '../../../backup/models/Notification';
 
 export const sendNotification = async (userId: string, message: string) => {
   try {

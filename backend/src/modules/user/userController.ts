@@ -2,9 +2,17 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { validationResult } from 'express-validator';
-import User, { UserDocument } from '../modules/user/User';
+import { PrismaClient } from '@prisma/client';
 import AnalyticsService from '../services/analyticsService';
 import { AuthRequest } from '../middleware/auth';
+import winston from 'winston';
+
+const prisma = new PrismaClient();
+const logger = winston.createLogger({
+  transports: [
+    new winston.transports.Console(),
+  ],
+});
 
 class UserController {
   async register(req: Request, res: Response) {
@@ -16,19 +24,21 @@ class UserController {
     const { email, password, role } = req.body;
 
     try {
-      const existingUser = await User.findOne({ where: { email } });
+      const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
         return res.status(400).json({ message: 'User already exists' });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = await User.create({ email, password: hashedPassword, role });
+      const newUser = await prisma.user.create({
+        data: { email, password: hashedPassword, role },
+      });
 
       const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET!, { expiresIn: '1h' });
 
       res.status(201).json({ token });
     } catch (error) {
-      console.error('Error registering user:', error);
+      logger.error('Error registering user:', error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
   }
@@ -42,7 +52,7 @@ class UserController {
     const { email, password } = req.body;
 
     try {
-      const user = await User.findOne({ where: { email } });
+      const user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
@@ -56,7 +66,7 @@ class UserController {
 
       res.status(200).json({ token });
     } catch (error) {
-      console.error('Error logging in:', error);
+      logger.error('Error logging in:', error);
       res.status(500).json({ message: 'Internal Server Error' });
     }
   }
@@ -64,19 +74,20 @@ class UserController {
   async getUserData(req: AuthRequest, res: Response) {
     try {
       const userId = req.user!._id;
-      const user = await User.findById(userId);
+      const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
       const analyticsData = await AnalyticsService.getUserData(userId);
       
       const userData = {
-        profile: user.getPublicProfile(),
+        profile: user, // Assuming getPublicProfile is replaced with direct user data
         analytics: analyticsData,
       };
 
       res.json(userData);
     } catch (error) {
+      logger.error('Error fetching user data:', error);
       res.status(500).json({ message: 'Error fetching user data', error });
     }
   }
@@ -97,6 +108,7 @@ class UserController {
 
       res.json({ message: 'Data deleted successfully' });
     } catch (error) {
+      logger.error('Error deleting user data:', error);
       res.status(500).json({ message: 'Error deleting user data', error });
     }
   }
@@ -106,9 +118,12 @@ class UserController {
       const userId = req.user!._id;
       const { allowSearchAnalytics, allowBehavioralTracking, dataRetentionPeriod, anonymizeData } = req.body;
 
-      const user = await User.findByIdAndUpdate(userId, {
-        settings: { allowSearchAnalytics, allowBehavioralTracking, dataRetentionPeriod, anonymizeData }
-      }, { new: true });
+      const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+          settings: { allowSearchAnalytics, allowBehavioralTracking, dataRetentionPeriod, anonymizeData }
+        }
+      });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -116,6 +131,7 @@ class UserController {
 
       res.json({ message: 'Settings updated successfully', settings: user.settings });
     } catch (error) {
+      logger.error('Error updating settings:', error);
       res.status(500).json({ message: 'Error updating settings', error });
     }
   }
@@ -123,7 +139,7 @@ class UserController {
   async getSettings(req: Request, res: Response) {
     try {
       const userId = req.user._id;
-      const user = await User.findById(userId);
+      const user = await prisma.user.findUnique({ where: { id: userId } });
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -131,6 +147,7 @@ class UserController {
 
       res.json(user.settings);
     } catch (error) {
+      logger.error('Error fetching settings:', error);
       res.status(500).json({ message: 'Error fetching settings', error });
     }
   }

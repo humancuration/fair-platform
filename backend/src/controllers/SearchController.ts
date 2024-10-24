@@ -1,30 +1,135 @@
 import { Request, Response } from 'express';
-import { Survey } from '../models/Survey';
-// Import other models as needed (Discussion, LearningModule, etc.)
+import { prisma } from '../lib/prisma';
+import logger from '../utils/logger';
 
-class SearchController {
-  public async globalSearch(req: Request, res: Response) {
-    try {
-      const { q } = req.query;
-      if (typeof q !== 'string') {
-        return res.status(400).json({ message: 'Invalid search query' });
-      }
-
-      // Perform basic search across different content types
-      const surveys = await Survey.find({ $text: { $search: q } }).limit(5);
-      // Add similar searches for other content types
-
-      const results = {
-        surveys,
-        // Add other content type results here
-      };
-
-      res.json(results);
-    } catch (error) {
-      console.error('Search error:', error);
-      res.status(500).json({ message: 'Error performing search' });
-    }
-  }
+interface SearchQuery {
+  q?: string;
+  type?: 'events' | 'groups' | 'users' | 'all';
+  page?: string;
+  limit?: string;
 }
 
-export default new SearchController();
+export const search = async (req: Request<{}, {}, {}, SearchQuery>, res: Response) => {
+  try {
+    const { q = '', type = 'all', page = '1', limit = '10' } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
+
+    const searchTerm = `%${q}%`;
+
+    let results: any = {};
+
+    if (type === 'all' || type === 'events') {
+      results.events = await prisma.event.findMany({
+        where: {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } }
+          ]
+        },
+        include: {
+          group: true,
+          createdBy: {
+            select: {
+              username: true
+            }
+          }
+        },
+        skip,
+        take
+      });
+    }
+
+    if (type === 'all' || type === 'groups') {
+      results.groups = await prisma.group.findMany({
+        where: {
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } }
+          ]
+        },
+        include: {
+          _count: {
+            select: {
+              members: true,
+              events: true
+            }
+          }
+        },
+        skip,
+        take
+      });
+    }
+
+    if (type === 'all' || type === 'users') {
+      results.users = await prisma.user.findMany({
+        where: {
+          OR: [
+            { username: { contains: q, mode: 'insensitive' } },
+            { firstName: { contains: q, mode: 'insensitive' } },
+            { lastName: { contains: q, mode: 'insensitive' } }
+          ]
+        },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          _count: {
+            select: {
+              groups: true,
+              events: true
+            }
+          }
+        },
+        skip,
+        take
+      });
+    }
+
+    // Get total counts for pagination
+    const counts = {
+      events: type === 'all' || type === 'events' ? 
+        await prisma.event.count({
+          where: {
+            OR: [
+              { title: { contains: q, mode: 'insensitive' } },
+              { description: { contains: q, mode: 'insensitive' } }
+            ]
+          }
+        }) : 0,
+      groups: type === 'all' || type === 'groups' ? 
+        await prisma.group.count({
+          where: {
+            OR: [
+              { name: { contains: q, mode: 'insensitive' } },
+              { description: { contains: q, mode: 'insensitive' } }
+            ]
+          }
+        }) : 0,
+      users: type === 'all' || type === 'users' ? 
+        await prisma.user.count({
+          where: {
+            OR: [
+              { username: { contains: q, mode: 'insensitive' } },
+              { firstName: { contains: q, mode: 'insensitive' } },
+              { lastName: { contains: q, mode: 'insensitive' } }
+            ]
+          }
+        }) : 0
+    };
+
+    res.json({
+      results,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: Object.values(counts).reduce((a, b) => a + b, 0),
+        counts
+      }
+    });
+  } catch (error) {
+    logger.error('Search error:', error);
+    res.status(500).json({ message: 'Search failed' });
+  }
+};

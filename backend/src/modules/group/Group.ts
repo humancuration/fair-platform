@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, BelongsToMany } from 'sequelize-typescript';
 import { User } from '../user/User';
-import { Event } from '../../models/Event';
+import { Event } from '../../../../backup/models/Event';
 import { GroupMember } from './GroupMember';
 import { GroupType } from './GroupType';
 

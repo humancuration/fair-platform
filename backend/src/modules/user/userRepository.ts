@@ -1,4 +1,4 @@
-import { User } from './userModel'; // Make sure this import is correct
+import { PrismaClient, User } from '@prisma/client';
 
 export interface IUserRepository {
   create(data: Partial<User>): Promise<User>;
@@ -8,24 +8,22 @@ export interface IUserRepository {
 }
 
 export class UserRepository implements IUserRepository {
+  private prisma = new PrismaClient();
+
   async create(data: Partial<User>): Promise<User> {
-    return await User.create(data as User);
+    return await this.prisma.user.create({ data });
   }
 
   async findById(id: string): Promise<User | null> {
-    return await User.findByPk(id);
+    return await this.prisma.user.findUnique({ where: { id } });
   }
 
   async update(id: string, data: Partial<User>): Promise<User | null> {
-    const user = await User.findByPk(id);
-    if (user) {
-      return await user.update(data);
-    }
-    return null;
+    return await this.prisma.user.update({ where: { id }, data });
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletedCount = await User.destroy({ where: { id } });
-    return deletedCount > 0;
+    const deletedUser = await this.prisma.user.delete({ where: { id } });
+    return !!deletedUser;
   }
 }

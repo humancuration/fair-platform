@@ -1,16 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User } from '../modules/user/User';
+import { PrismaClient } from '@prisma/client';
 import { JWT_SECRET, REFRESH_SECRET, REFRESH_EXPIRATION } from '../config/constants';
 import { createMoodleUser } from '../services/moodleService';
 import logger from '../utils/logger';
 import { ValidationError } from '../utils/errors';
 
+const prisma = new PrismaClient();
+
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       logger.warn(`Login attempt with non-existent email: ${email}`);
       return next(new ValidationError('User not found'));
@@ -48,8 +50,11 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
   }
 
   try {
-    const payload = jwt.verify(token, REFRESH_SECRET) as { id: number };
-    const user = await User.findByPk(payload.id);
+    const payload = jwt.verify(token, REFRESH_SECRET) as { id: string };
+    const user = await prisma.user.findUnique({
+      where: { id: payload.id }
+    });
+    
     if (!user) {
       return next(new ValidationError('Invalid Refresh Token'));
     }
@@ -72,12 +77,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   try {
     logger.info(`Registration attempt for email: ${email}`);
 
-    const user = await User.create({
-      email,
-      password: await bcrypt.hash(password, 10),
-      username,
-      firstName,
-      lastName,
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: await bcrypt.hash(password, 10),
+        username,
+        firstName,
+        lastName,
+      },
     });
 
     await createMoodleUser({

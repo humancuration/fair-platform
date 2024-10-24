@@ -1,5 +1,5 @@
 import { IUserRepository, UserRepository } from './userRepository';
-import { User } from './userModel';
+import { User } from '@prisma/client';
 
 export class UserService {
   private userRepository: IUserRepository;

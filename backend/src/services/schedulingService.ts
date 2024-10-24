@@ -1,6 +1,6 @@
-import { Event, EventType, RecurrencePattern, Attendee } from '../models/Event';
-import { Group } from '../models/Group';
-import { User } from '../models/User';
+import { Event, EventType, RecurrencePattern, Attendee } from '../../../backup/models/Event';
+import { Group } from '../../../backup/models/Group';
+import { User } from '../../../backup/models/User';
 import { NotificationService } from './notificationService';
 import { TimeSlot, AvailabilityMatrix } from '../types/scheduling';
 

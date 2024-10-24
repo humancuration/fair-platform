@@ -2,10 +2,10 @@
 
 import request from 'supertest';
 import app from '../app';
-import { sequelize } from '../models';
+import { sequelize } from '../../../backup/models';
 import User from '../modules/user/User';
-import AffiliateProgram from '../models/AffiliateProgram';
-import AffiliateLink from '../models/AffiliateLink';
+import AffiliateProgram from '../../../backup/models/AffiliateProgram';
+import AffiliateLink from '../../../backup/models/AffiliateLink';
 import jwt from 'jsonwebtoken';
 
 let token: string;

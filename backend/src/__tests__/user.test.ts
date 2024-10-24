@@ -1,7 +1,7 @@
 // tests/user.test.ts
 import request from 'supertest';
 import app from '../app';
-import { sequelize } from '../models';
+import { sequelize } from '../../../backup/models';
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });

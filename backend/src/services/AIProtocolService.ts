@@ -1,7 +1,7 @@
 import { createHash, createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 import { Redis } from 'ioredis';
 import { EventEmitter } from 'events';
-import { AIModel, AICapability, Protocol } from '../models';
+import { AIModel, AICapability, Protocol } from '../../../backup/models';
 import { ValidationError, AuthorizationError } from '../utils/errors';
 
 interface EncryptedPayload {

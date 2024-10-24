@@ -10,28 +10,19 @@ API:
 REST API (Express)
 GraphQL (Apollo Server 4)
 Load Balancing: Envoy
-ORM: Sequelize with sequelize-typescript
+ORM: Prisma
 Database: PostgreSQL (pg package)
 Authentication:
 JWT (jsonwebtoken)
 OAuth, Keycloak
 Version Control Integration: Isomorphic Git and Simple Git
 WebSocket: Socket.io
-Validation: Express Validator
 Documentation: Swagger (swagger-jsdoc, swagger-ui-express)
 Logging: Winston
 Testing: Jest
 Frontend:
 Language: TypeScript
 Framework: Remix
-State Management:
-Redux (@reduxjs/toolkit and react-redux)
-React Query or Remix's
-API Communication:
-Apollo Client for GraphQL
-Axios for REST
-Routing: Remix built-in routing
-Form Handling: Formik
 UI Components:
 Styled Components, mui
 React Icons
@@ -68,3 +59,4 @@ Discord integration
 tsparticles
 Howler.js
 Pleroma
+vis-network and d3.js

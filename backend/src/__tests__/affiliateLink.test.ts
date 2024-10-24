@@ -2,10 +2,10 @@
 
 import request from 'supertest';
 import app from '../app';
-import { sequelize } from '../models';
+import { sequelize } from '../../../backup/models';
 import User from '../modules/user/User';
-import Brand from '../models/Brand';
-import AffiliateProgram from '../models/AffiliateProgram';
+import Brand from '../../../backup/models/Brand';
+import AffiliateProgram from '../../../backup/models/AffiliateProgram';
 
 let token: string;
 

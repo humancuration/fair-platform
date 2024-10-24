@@ -1,0 +1,749 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Achievement {
+  id               String            @id @default(uuid())
+  name             String
+  description      String
+  icon             String
+  points           Int               @default(0)
+  userAchievements UserAchievement[] @relation("AchievementToUser")
+  users            User[]            // Add this field
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+
+// Add AI-related models
+model AIJob {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  modelId     Int
+  title       String
+  description String?
+  status      JobStatus @default(PENDING)
+  priority    Int       @default(1)
+  config      Json
+  result      Json?
+  user        User      @relation(fields: [userId], references: [id])
+  model       AIModel   @relation(fields: [modelId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([priority])
+  @@index([userId])
+}
+
+model AIModel {
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
+  type         ModelType
+  description  String?
+  status       ModelStatus @default(ACTIVE)
+  capabilities Json
+  metrics      Json        @default("{}")
+  jobs         AIJob[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+  @@index([type])
+}
+
+// Add Avatar customization
+model AvatarCustomization {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique  // Add @unique for one-to-one relation
+  baseImage   String
+  accessories Json     @default("[]")
+  colors      Json     @default("{}")
+  outfit      String?
+  mood        Mood     @default(NEUTRAL)
+  xp          Int      @default(0)
+  level       Int      @default(1)
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+model AffiliateProgram {
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  description    String?
+  commissionRate Decimal         @db.Decimal(5, 2)
+  isActive       Boolean         @default(true)
+  affiliateLinks AffiliateLink[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model AffiliateLink {
+  id        Int             @id @default(autoincrement())
+  userId    Int
+  programId Int
+  code      String          @unique
+  url       String
+  user      User            @relation(fields: [userId], references: [id])
+  program   AffiliateProgram @relation(fields: [programId], references: [id])
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([programId])
+}
+
+model Event {
+  id                Int              @id @default(autoincrement())
+  groupId           Int
+  title            String
+  description      String?
+  startDate        DateTime
+  endDate          DateTime
+  location         String?
+  virtualMeetingUrl String?
+  maxAttendees     Int?
+  createdById      Int
+  status           EventStatus      @default(DRAFT)
+  group            Group            @relation(fields: [groupId], references: [id])
+  createdBy        User             @relation("CreatedEvents", fields: [createdById], references: [id]) // Changed relation name to match User model
+  attendees        EventAttendee[]
+  recurringEvent   RecurringEvent?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([startDate])
+  @@index([groupId])
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+model EventAttendee {
+  id        Int           @id @default(autoincrement())
+  eventId   Int
+  userId    Int
+  status    AttendeeStatus @default(PENDING)
+  event     Event         @relation(fields: [eventId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([eventId, userId])
+}
+
+enum AttendeeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model RecurringEvent {
+  id            Int       @id @default(autoincrement())
+  parentEventId Int       @unique
+  frequency     Frequency
+  interval      Int       @default(1)
+  endDate       DateTime?
+  customPattern Json?
+  parentEvent   Event     @relation(fields: [parentEventId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model Group {
+  id              Int      @id @default(autoincrement())
+  name        String
+  description String?
+  avatar      String?
+  isPrivate   Boolean       @default(false)
+  events      Event[]
+  petitions   Petition[]
+  projects    Project[]
+  resources   Resource[]
+  members     GroupMember[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  grants      Grant[]
+  playlists   Playlist[]
+  emojis      Emoji[]    @relation("GroupEmojis")
+}
+
+model GroupMember {
+  userId    Int
+  groupId   Int
+  role      GroupMemberRole @default(Observer)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation("UserGroups", fields: [userId], references: [id])
+  group     Group           @relation(fields: [groupId], references: [id])
+
+  @@id([userId, groupId])
+}
+
+enum GroupMemberRole {
+  Observer
+  Contributor
+  CoreMember
+  Delegate
+}
+
+model Feedback {
+  id          String    @id @default(cuid())
+  type        String    // BUG, FEATURE, GENERAL
+  title       String
+  description String
+  priority    String?   // LOW, MEDIUM, HIGH
+  category    String?
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, REJECTED
+  userId      Int       // Changed from String to Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user        User      @relation(fields: [userId], references: [id])
+  comments    FeedbackComment[]
+}
+
+model FeedbackComment {
+  id          String    @id @default(cuid())
+  content     String
+  feedbackId  String
+  userId      Int       // Changed from String to Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  feedback    Feedback  @relation(fields: [feedbackId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model UserBadge {
+  id          String    @id @default(cuid())
+  userId      Int       // Changed from String to Int
+  type        String
+  reason      String?
+  awardedById Int       // Changed from String to Int
+  createdAt   DateTime  @default(now())
+  
+  user        User      @relation("UserBadges", fields: [userId], references: [id])
+  awardedBy   User      @relation("AwardedBadges", fields: [awardedById], references: [id])
+}
+
+model File {
+  id          String    @id @default(cuid())
+  name        String
+  path        String
+  mimeType    String
+  size        Int
+  type        String    // AVATAR, EVENT_IMAGE, GROUP_IMAGE, DOCUMENT
+  visibility  String    @default("PRIVATE")
+  userId      Int       // Changed from String to Int to match User.id
+  relatedId   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Report {
+  id            String    @id @default(cuid())
+  type          String    // EVENT, ANALYTICS, FINANCIAL
+  generatedById Int      // Changed from String to Int
+  filters       Json?
+  status        String    @default("PENDING")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  generatedBy   User      @relation(fields: [generatedById], references: [id])
+}
+
+model SupportTicket {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  category    String
+  priority    String
+  status      String    @default("OPEN")
+  userId      Int      // Changed from String to Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user        User      @relation(fields: [userId], references: [id])
+  responses   TicketResponse[]
+}
+
+model TicketResponse {
+  id          String    @id @default(cuid())
+  content     String
+  ticketId    String
+  responderId Int      // Changed from String to Int
+  createdAt   DateTime  @default(now())
+  
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id])
+  responder   User      @relation(fields: [responderId], references: [id])
+}
+
+model Petition {
+  id            Int       @id @default(autoincrement())
+  groupId       Int
+  title         String
+  description   String?
+  createdBy     Int
+  status        PetitionStatus @default(Open)
+  closingDate   DateTime?
+  requiredVotes Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  group         Group     @relation(fields: [groupId], references: [id])
+  creator       User      @relation("CreatedPetitions", fields: [createdBy], references: [id])
+  votes         Vote[]
+
+  @@index([status])
+  @@index([groupId])
+  @@index([createdBy])
+}
+
+enum PetitionStatus {
+  Open
+  Closed
+  Approved
+  Rejected
+}
+
+model Vote {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  petitionId Int
+  voteType   VoteType
+  comment    String?
+  weight     Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  petition   Petition @relation(fields: [petitionId], references: [id])
+
+  @@unique([userId, petitionId])
+  @@index([voteType])
+}
+
+enum VoteType {
+  For
+  Against
+  Abstain
+}
+
+model Grant {
+  id              Int         @id @default(autoincrement())
+  applicantId     Int
+  groupId         Int?
+  title           String
+  projectDescription String
+  amountRequested Decimal     @db.Decimal(10, 2)
+  amountGranted   Decimal     @db.Decimal(10, 2) @default(0)
+  status          GrantStatus @default(pending)
+  completionDate  DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  applicant       User        @relation("UserGrants", fields: [applicantId], references: [id])
+  group           Group?      @relation(fields: [groupId], references: [id])
+}
+
+model UserEmoji {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  emojiId   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  emoji     Emoji    @relation(fields: [emojiId], references: [id])
+}
+
+// Add Survey functionality
+model Survey {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?
+  questions       Json
+  createdById     Int
+  status          SurveyStatus     @default(DRAFT)
+  responses       SurveyResponse[]
+  createdBy       User             @relation(fields: [createdById], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model SurveyResponse {
+  id        String   @id @default(cuid())
+  surveyId  String
+  userId    Int
+  responses Json
+  survey    Survey   @relation(fields: [surveyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  message   String
+  type      NotificationType
+  read      Boolean         @default(false)
+  metadata  Json?
+  link      String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([read])
+}
+
+// Additional enums
+
+enum FrequencyType {
+  daily
+  weekly
+  monthly
+}
+
+enum GrantStatus {
+  pending
+  approved
+  rejected
+  completed
+}
+
+enum NotificationType {
+  version_control
+  event
+  mention
+  group
+  achievement
+  other
+}
+
+model Campaign {
+  id                  String               @id @default(cuid())
+  title               String
+  description         String
+  startDate           DateTime
+  endDate             DateTime
+  status              CampaignStatus       @default(DRAFT)
+  createdById         Int
+  createdBy           User                 @relation(fields: [createdById], references: [id])
+  participants        CampaignParticipant[]
+  rewards             CampaignReward[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model CampaignParticipant {
+  id          String    @id @default(cuid())
+  campaignId  String
+  userId      Int
+  status      ParticipantStatus @default(ACTIVE)
+  progress    Json      @default("{}")
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([campaignId, userId])
+}
+
+model CampaignReward {
+  id          String    @id @default(cuid())
+  campaignId  String
+  userId      Int
+  type        RewardType
+  amount      Int
+  claimed     Boolean   @default(false)
+  claimedAt   DateTime?
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Playlist {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  userId      Int
+  groupId     Int?
+  mediaItems  Json      @default("[]") // Array of media items with order
+  visibility  Visibility @default(PRIVATE)
+  user        User      @relation(fields: [userId], references: [id])
+  group       Group?    @relation(fields: [groupId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([groupId])
+}
+
+model UserSettings {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @unique
+  theme             String    @default("light")
+  notifications     Json      @default("{}")
+  language          String    @default("en")
+  timezone          String    @default("UTC")
+  emailPreferences  Json      @default("{}")
+  privacySettings   Json      @default("{}")
+  user              User      @relation(fields: [userId], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  groupId     Int
+  name        String
+  description String?
+  createdBy   Int
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  dueDate     DateTime?
+  priority    Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  group       Group         @relation(fields: [groupId], references: [id])
+  creator     User          @relation(fields: [createdBy], references: [id])
+
+  @@index([status])
+  @@index([groupId])
+  @@index([createdBy])
+}
+
+// Additional enums
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum ParticipantStatus {
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  WITHDRAWN
+}
+
+
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum ModelType {
+  INFERENCE
+  TRAINING
+  GENERAL
+}
+
+enum ModelStatus {
+  ACTIVE
+  MAINTENANCE
+  DEPRECATED
+}
+
+enum Mood {
+  HAPPY
+  SAD
+  EXCITED
+  ANGRY
+  NEUTRAL
+}
+
+
+model LinkedContent {
+  id          Int      @id @default(autoincrement())
+  type        LinkedContentType
+  relatedId   Int
+  title       String
+  description String?
+  createdById Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy   User     @relation(fields: [createdById], references: [id])
+
+  @@index([type, relatedId])
+}
+
+enum LinkedContentType {
+  DISCUSSION
+  LEARNING_MODULE
+  SURVEY
+  RESOURCE
+}
+
+model Resource {
+  id             Int           @id @default(autoincrement())
+  groupId        Int
+  userId         Int
+  type           ResourceType
+  name           String
+  description    String
+  available      Boolean       @default(true)
+  availableUntil DateTime?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  group          Group         @relation(fields: [groupId], references: [id])
+  user           User          @relation(fields: [userId], references: [id])
+
+  @@index([type])
+  @@index([groupId])
+  @@index([userId])
+}
+
+enum ResourceType {
+  Skill
+  Resource
+  Time
+  Tool
+  Other
+}
+
+enum RewardType {
+  POINTS
+  BADGE
+  ITEM
+  CURRENCY
+}
+
+
+enum SurveyStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+model User {
+  id                 Int                 @id @default(autoincrement())
+  email               String            @unique
+  username            String            @unique
+  password            String
+  firstName           String?
+  lastName            String?
+  role                Role               @default(USER)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  events              Event[]           @relation("CreatedEvents")
+  eventAttendees      EventAttendee[]
+  affiliateLinks      AffiliateLink[]
+  notifications       Notification[]
+  createdCampaigns    Campaign[]
+  campaignParticipations CampaignParticipant[]
+  campaignRewards     CampaignReward[]
+  settings             UserSettings?
+  feedback             Feedback[]
+  feedbackComments     FeedbackComment[]
+  badges               UserBadge[]         @relation("UserBadges")
+  awardedBadges        UserBadge[]         @relation("AwardedBadges")
+  files                File[]
+  generatedReports     Report[]
+  supportTickets       SupportTicket[]
+  ticketResponses      TicketResponse[]
+  createdPetitions    Petition[]        @relation("CreatedPetitions")
+  aiJobs               AIJob[]
+  avatarCustomization AvatarCustomization?
+  surveyResponses     SurveyResponse[]
+  createdSurveys      Survey[]
+  linkedContents       LinkedContent[]
+  achievements    Achievement[]
+  votes           Vote[]
+  projects        Project[]
+  resources       Resource[]
+  groupMemberships    GroupMember[]    @relation("UserGroups")
+  userRewards          UserReward[]
+  grants               Grant[]            @relation("UserGrants")
+  userEmojis           UserEmoji[]
+  playlists            Playlist[]
+  userAchievements     UserAchievement[]
+}
+
+model UserAchievement {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  achievementId String
+  earnedAt      DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
+  achievement   Achievement @relation("AchievementToUser", fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+  SHARED
+}
+
+model UserReward {
+  id            Int      @id @default(autoincrement())
+  userId        Int      // Changed from String to Int
+  totalPoints   Int      @default(0)
+  rewardsEarned Int[]
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+// Add missing JobStatus enum
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// Add missing Emoji model
+model Emoji {
+  id        Int         @id @default(autoincrement())
+  name      String
+  code      String
+  groups    Group[]     @relation("GroupEmojis")
+  users     UserEmoji[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+
+
+
+
+
+
+

@@ -44,6 +44,6 @@
     "noFallthroughCasesInSwitch": true,
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["src"],
+  "include": ["src", "../backup/models"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

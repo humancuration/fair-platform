@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppDataSource } from '../data-source';
-import { UserActivity } from '../models/UserActivity';
+import { UserActivity } from '../../../backup/models/UserActivity';
 import { awardPoints } from '../modules/campaign/rewardsService';
 import logger from '../utils/logger';
 
