@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import Brand from '../modules/dashboard/affiliate/Brands';
+import { PrismaClient } from '@prisma/client';
+import { authenticateJWT } from '../middleware/auth';
 
+const prisma = new PrismaClient();
 const router = Router();
 
 // Get all brands
 router.get('/', async (req, res) => {
   try {
-    const brands = await Brand.findAll();
+    const brands = await prisma.brand.findMany();
     res.json(brands);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch brands' });
@@ -16,7 +18,9 @@ router.get('/', async (req, res) => {
 // Get a single brand by ID
 router.get('/:id', async (req, res) => {
   try {
-    const brand = await Brand.findByPk(req.params.id);
+    const brand = await prisma.brand.findUnique({
+      where: { id: req.params.id }
+    });
     if (brand) {
       res.json(brand);
     } else {
@@ -28,9 +32,11 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create a new brand
-router.post('/', async (req, res) => {
+router.post('/', authenticateJWT, async (req, res) => {
   try {
-    const newBrand = await Brand.create(req.body);
+    const newBrand = await prisma.brand.create({
+      data: req.body
+    });
     res.status(201).json(newBrand);
   } catch (error) {
     res.status(400).json({ error: 'Failed to create brand' });
@@ -38,33 +44,25 @@ router.post('/', async (req, res) => {
 });
 
 // Update a brand
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticateJWT, async (req, res) => {
   try {
-    const [updated] = await Brand.update(req.body, {
+    const updatedBrand = await prisma.brand.update({
       where: { id: req.params.id },
+      data: req.body
     });
-    if (updated) {
-      const updatedBrand = await Brand.findByPk(req.params.id);
-      res.json(updatedBrand);
-    } else {
-      res.status(404).json({ error: 'Brand not found' });
-    }
+    res.json(updatedBrand);
   } catch (error) {
     res.status(400).json({ error: 'Failed to update brand' });
   }
 });
 
 // Delete a brand
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateJWT, async (req, res) => {
   try {
-    const deleted = await Brand.destroy({
-      where: { id: req.params.id },
+    await prisma.brand.delete({
+      where: { id: req.params.id }
     });
-    if (deleted) {
-      res.status(204).send();
-    } else {
-      res.status(404).json({ error: 'Brand not found' });
-    }
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete brand' });
   }

@@ -1,4 +1,10 @@
 import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+const router = Router();
+
+// Import route modules
 import userRoutes from '../modules/user/userRoutes';
 import companyRoutes from './companyRoutes';
 import aiRoutes from '../modules/ai/aiRoutes';
@@ -16,7 +22,6 @@ import uploadRoutes from '../modules/versionControl/uploadRoutes'; // Import upl
 import testimonialRoutes from './testimonialRoutes';
 import wishlistRoutes from './wishlistRoutes';
 import communityWishlistRoutes from './communityWishlistRoutes';
-import express from 'express';
 import campaignRoutes from './campaignRoutes';
 import groupRoutes from './groupRoutes';
 import eventRoutes from './eventRoutes';
@@ -26,20 +31,7 @@ import gitRoutes from '../modules/versionControl/gitRoutes';
 import authRoutes from './authRoutes';
 import aiEthicsRoutes from '../modules/ai/aiEthicsRoutes';
 
-const router = express.Router();
-
-// Import other routes
-import * as campaignController from '../modules/campaign/campaignController';
-
-const router = Router();
-
-// Campaign routes
-router.post('/campaigns', campaignController.createCampaign);
-router.get('/campaigns', campaignController.getAllCampaigns);
-router.get('/campaigns/:id', campaignController.getCampaignById);
-router.put('/campaigns/:id', campaignController.updateCampaign);
-router.delete('/campaigns/:id', campaignController.deleteCampaign);
-
+// Use routes
 router.use('/users', userRoutes);
 router.use('/companies', companyRoutes);
 router.use('/ai', aiRoutes);
@@ -64,11 +56,6 @@ router.use('/n8n', n8nRoutes);
 router.use('/mautic', mauticRoutes);
 router.use('/git', gitRoutes);
 router.use('/auth', authRoutes);
-router.use('/affiliate-links', affiliateLinkRoutes);
-router.use('/affiliate-programs', affiliateProgramRoutes);
-router.use('/campaigns', campaignRoutes);
-router.use('/analytics', analyticsRoutes);
 router.use('/ai-ethics', aiEthicsRoutes);
-// Use other routes
 
 export default router;

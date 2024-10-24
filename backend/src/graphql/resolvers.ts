@@ -2,43 +2,24 @@ import { PubSub } from 'graphql-subscriptions';
 import { UserService } from '../modules/user/userService';
 import { GroupService } from '../modules/group/groupService';
 import { GraphQLError } from 'graphql';
-import versionControlResolvers from '../modules/versionControl/versionControlResolvers';
 import { IContext } from '../types/context';
 import { UserInput, GroupInput } from '../types/inputs';
-import  logger from '../utils/logger';
+import logger from '../utils/logger';
 import { IResolvers } from '@graphql-tools/utils';
-import { User } from '../modules/user/User';
-import { Group } from '../modules/group/Group';
-import { Event } from '../../../backup/models/Event';
-import { Petition } from '../../../backup/models/petition.model';
-import { Vote } from '../../../backup/models/vote.model';
-import { Resource } from '../../../backup/models/resource.model';
-import { Project } from '../../../backup/models/project.model';
-import { Grant } from '../../../backup/models/Grant';
-import { Achievement } from '../../../backup/models/Achievement';
-import { UserAchievement } from '../../../backup/models/UserAchievement';
-import { Item } from '../../../backup/models/Item';
-import { Inventory } from '../../../backup/models/Inventory';
-import { Testimonial } from '../../../backup/models/Testimonial';
-import { AffiliateLink } from '../../../backup/models/AffiliateLink';
-import { AffiliateProgram } from '../../../backup/models/AffiliateProgram';
-import { GroupMember } from '../../../backup/models/GroupMember';
-import { SurveyResponse } from '../../../backup/models/SurveyResponse';
-import { surveyAnalyticsService } from '../modules/survey/surveyAnalyticsService';
+import { prisma } from '../config/database';
 import { uploadToMinIO } from '../utils/minio';
-import { Emoji } from '../../../backup/models/Emoji';
-import { UserEmoji } from '../../../backup/models/UserEmoji';
-import { Op } from 'sequelize';
+import { SurveyAnalyticsService } from '../modules/survey/surveyAnalyticsService';
+import { Emoji, UserEmoji } from '@prisma/client';
 
 const pubsub = new PubSub();
 const userService = new UserService();
 const groupService = new GroupService();
+const surveyAnalyticsService = new SurveyAnalyticsService();
 
 const resolvers: IResolvers = {
   Query: {
     user: async (_: unknown, { id }: { id: string }, context: IContext) => {
       try {
-        // Check authentication
         if (!context.currentUser) {
           throw new GraphQLError('Not authenticated', {
             extensions: { code: 'UNAUTHENTICATED' },
@@ -59,180 +40,141 @@ const resolvers: IResolvers = {
         });
       }
     },
-    group: async (_: unknown, { id }: { id: string }, context: IContext) => {
-      try {
-        // Check authentication
-        if (!context.currentUser) {
-          throw new GraphQLError('Not authenticated', {
-            extensions: { code: 'UNAUTHENTICATED' },
-          });
-        }
 
-        const group = await groupService.getGroupById(id);
-        if (!group) {
-          throw new GraphQLError('Group not found', {
-            extensions: { code: 'GROUP_NOT_FOUND' },
-          });
-        }
-        return group;
-      } catch (error) {
-        logger.error('Error fetching group:', error);
-        throw new GraphQLError('Failed to fetch group', {
-          extensions: { code: 'INTERNAL_SERVER_ERROR' },
-        });
-      }
-    },
-    allGroups: async (_: unknown, __: unknown, context: IContext) => {
-      try {
-        // Check authentication
-        if (!context.currentUser) {
-          throw new GraphQLError('Not authenticated', {
-            extensions: { code: 'UNAUTHENTICATED' },
-          });
-        }
-
-        return await groupService.getAllGroups();
-      } catch (error) {
-        logger.error('Error fetching groups:', error);
-        throw new GraphQLError('Failed to fetch groups', {
-          extensions: { code: 'INTERNAL_SERVER_ERROR' },
-        });
-      }
-    },
-    ...versionControlResolvers.Query,
     // User queries
-    users: async () => User.findAll(),
+    users: async () => {
+      return prisma.user.findMany();
+    },
 
     // Group queries
-    groups: async () => Group.findAll(),
-    groupMembers: async (_, { groupId }) => {
-      return GroupMember.findAll({
+    groups: async () => {
+      return prisma.group.findMany();
+    },
+
+    groupMembers: async (_: unknown, { groupId }: { groupId: number }) => {
+      return prisma.groupMember.findMany({
         where: { groupId },
-        include: [User],
+        include: { user: true }
       });
     },
 
     // Event queries
-    events: async (_, { groupId }) => {
-      return Event.findAll({
+    events: async (_: unknown, { groupId }: { groupId?: number }) => {
+      return prisma.event.findMany({
         where: groupId ? { groupId } : undefined,
-        include: [Group, 'attendees'],
+        include: {
+          group: true,
+          attendees: true
+        }
       });
     },
 
     // Petition queries
-    petitions: async (_, { groupId, status }) => {
-      return Petition.findAll({
+    petitions: async (_: unknown, { groupId, status }: { groupId?: number; status?: string }) => {
+      return prisma.petition.findMany({
         where: {
           ...(groupId && { groupId }),
-          ...(status && { status }),
+          ...(status && { status })
         },
-        include: [Group, 'votes'],
+        include: {
+          group: true,
+          votes: true
+        }
       });
     },
 
     // Resource queries
-    resources: async (_, { groupId, type }) => {
-      return Resource.findAll({
+    resources: async (_: unknown, { groupId, type }: { groupId?: number; type?: string }) => {
+      return prisma.resource.findMany({
         where: {
           ...(groupId && { groupId }),
-          ...(type && { type }),
+          ...(type && { type })
         },
-        include: [Group, User],
+        include: {
+          group: true,
+          user: true
+        }
       });
     },
 
     // Project queries
-    projects: async (_, { groupId, status }) => {
-      return Project.findAll({
+    projects: async (_: unknown, { groupId, status }: { groupId?: number; status?: string }) => {
+      return prisma.project.findMany({
         where: {
           ...(groupId && { groupId }),
-          ...(status && { status }),
+          ...(status && { status })
         },
-        include: [Group, 'creator'],
+        include: {
+          group: true,
+          creator: true
+        }
       });
     },
 
     // Grant queries
-    grants: async (_, { status }) => {
-      return Grant.findAll({
+    grants: async (_: unknown, { status }: { status?: string }) => {
+      return prisma.grant.findMany({
         where: status ? { status } : undefined,
-        include: ['applicant', Group],
+        include: {
+          applicant: true,
+          group: true
+        }
       });
     },
 
     // Achievement queries
-    achievements: async () => Achievement.findAll(),
-    userAchievements: async (_, { userId }) => {
-      return UserAchievement.findAll({
-        where: { userId },
-        include: [Achievement],
-      });
+    achievements: async () => {
+      return prisma.achievement.findMany();
     },
 
-    // Item and Inventory queries
-    items: async (_, { type }) => {
-      return Item.findAll({
-        where: type ? { type } : undefined,
-      });
-    },
-    inventory: async (_, { userId }) => {
-      return Inventory.findAll({
+    userAchievements: async (_: unknown, { userId }: { userId: number }) => {
+      return prisma.userAchievement.findMany({
         where: { userId },
-        include: [Item],
-      });
-    },
-
-    // Testimonial queries
-    testimonials: async (_, { status }) => {
-      return Testimonial.findAll({
-        where: status ? { status } : undefined,
-        include: [User],
-      });
-    },
-
-    // Affiliate queries
-    affiliatePrograms: async () => AffiliateProgram.findAll(),
-    affiliateLinks: async (_, { userId }) => {
-      return AffiliateLink.findAll({
-        where: { userId },
-        include: [AffiliateProgram],
+        include: { achievement: true }
       });
     },
 
     // Survey queries
-    surveyResults: async (_, { surveyId }) => {
-      return await SurveyResponse.findAll({
+    surveyResults: async (_: unknown, { surveyId }: { surveyId: string }) => {
+      return prisma.surveyResponse.findMany({
         where: { surveyId }
       });
     },
 
-    combinedAnalysis: async (_, { surveyIds }) => {
-      return await surveyAnalyticsService.combineSurveyResults(surveyIds);
+    combinedAnalysis: async (_: unknown, { surveyIds }: { surveyIds: string[] }) => {
+      return surveyAnalyticsService.combineSurveyResults(surveyIds);
     },
 
-    crossSurveyCorrelations: async (_, { surveyIds, questionIds }) => {
-      return await surveyAnalyticsService.computeCorrelations(surveyIds, questionIds);
+    crossSurveyCorrelations: async (_: unknown, { surveyIds, questionIds }: { surveyIds: string[], questionIds: string[] }) => {
+      return surveyAnalyticsService.computeCorrelations(surveyIds, questionIds);
     },
 
-    groupEmojis: async (_, { groupId }, { user }) => {
-      // Check if user has access to group
-      const group = await Group.findByPk(groupId);
+    groupEmojis: async (_: unknown, { groupId }: { groupId: number }, context: IContext) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      const group = await prisma.group.findUnique({
+        where: { id: groupId }
+      });
+      
       if (!group) throw new Error('Group not found');
       
-      return await Emoji.findAll({
+      return prisma.emoji.findMany({
         where: {
           groupId,
-          [Op.or]: [
+          OR: [
             { isPublic: true },
-            { createdById: user.id }
+            { createdById: context.currentUser.userId } // Assuming userId is the correct property
           ]
         }
       });
     },
     
     publicEmojis: async () => {
-      return await Emoji.findAll({
+      return prisma.emoji.findMany({
         where: { 
           isPublic: true,
           groupId: null
@@ -240,21 +182,26 @@ const resolvers: IResolvers = {
       });
     },
     
-    purchasedEmojis: async (_, __, { user }) => {
-      const userEmojis = await UserEmoji.findAll({
-        where: { userId: user.id },
-        include: [Emoji]
+    purchasedEmojis: async (_: unknown, __: unknown, context: IContext) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      const userEmojis = await prisma.userEmoji.findMany({
+        where: { userId: context.currentUser.userId }, // Assuming userId is the correct property
+        include: { emoji: true }
       });
       
-      return userEmojis.map(ue => ue.emoji);
+      return userEmojis.map((ue: UserEmoji & { emoji: Emoji }) => ue.emoji);
     }
   },
 
   Mutation: {
     createUser: async (_: unknown, { input }: { input: UserInput }, context: IContext) => {
       try {
-        // Check authentication and authorization
-        if (!context.currentUser || !context.currentUser.isAdmin) {
+        if (!context.currentUser?.isAdmin) {
           throw new GraphQLError('Not authorized to create users', {
             extensions: { code: 'FORBIDDEN' },
           });
@@ -269,9 +216,9 @@ const resolvers: IResolvers = {
         });
       }
     },
+
     createGroup: async (_: unknown, { input }: { input: GroupInput }, context: IContext) => {
       try {
-        // Check authentication
         if (!context.currentUser) {
           throw new GraphQLError('Not authenticated', {
             extensions: { code: 'UNAUTHENTICATED' },
@@ -288,81 +235,94 @@ const resolvers: IResolvers = {
         });
       }
     },
-    joinGroup: async (_: unknown, { groupId }: { groupId: string }, context: IContext) => {
+
+    uploadEmoji: async (_: unknown, 
+      { groupId, file, name, price, isPublic }: { groupId?: number; file: any; name: string; price?: number; isPublic?: boolean }, 
+      context: IContext
+    ) => {
       if (!context.currentUser) {
-        throw new GraphQLError('You must be logged in to join a group', {
+        throw new GraphQLError('Not authenticated', {
           extensions: { code: 'UNAUTHENTICATED' },
         });
       }
-      try {
-        const updatedGroup = await groupService.addMemberToGroup(groupId, context.currentUser.id);
-        pubsub.publish('NEW_GROUP_MEMBER', { newGroupMember: context.currentUser, groupId });
-        return updatedGroup;
-      } catch (error) {
-        logger.error('Error joining group:', error);
-        throw new GraphQLError('Failed to join group', {
-          extensions: { code: 'INTERNAL_SERVER_ERROR' },
-        });
-      }
-    },
-    ...versionControlResolvers.Mutation,
-    uploadEmoji: async (_, { groupId, file, name, price, isPublic }, { user }) => {
-      // If groupId provided, verify user has permission to upload to group
+
       if (groupId) {
-        const group = await Group.findByPk(groupId);
+        const group = await prisma.group.findUnique({
+          where: { id: groupId }
+        });
         if (!group) throw new Error('Group not found');
-        // Check if user is admin
       }
       
       const { createReadStream, filename } = await file;
       const stream = createReadStream();
       
-      // Upload to MinIO
       const url = await uploadToMinIO(stream, `emojis/${Date.now()}-${filename}`);
       
-      return await Emoji.create({
-        name,
-        url,
-        createdById: user.id,
-        groupId,
-        price,
-        isPublic
+      return prisma.emoji.create({
+        data: {
+          name,
+          url,
+          createdById: context.currentUser.userId, // Assuming userId is the correct property
+          groupId,
+          price,
+          isPublic
+        }
       });
     },
     
-    updateEmoji: async (_, { emojiId, ...updates }, { user }) => {
-      const emoji = await Emoji.findByPk(emojiId);
+    updateEmoji: async (_: unknown, 
+      { emojiId, ...updates }: { emojiId: number; [key: string]: any }, 
+      context: IContext
+    ) => {
+      const emoji = await prisma.emoji.findUnique({
+        where: { id: emojiId }
+      });
+
       if (!emoji) throw new Error('Emoji not found');
-      if (emoji.createdById !== user.id) throw new Error('Unauthorized');
+      if (emoji.createdById !== context.currentUser.userId) throw new Error('Unauthorized');
       
-      await emoji.update(updates);
-      return emoji;
+      return prisma.emoji.update({
+        where: { id: emojiId },
+        data: updates
+      });
     },
     
-    deleteEmoji: async (_, { emojiId }, { user }) => {
-      const emoji = await Emoji.findByPk(emojiId);
+    deleteEmoji: async (_: unknown, { emojiId }: { emojiId: number }, context: IContext) => {
+      const emoji = await prisma.emoji.findUnique({
+        where: { id: emojiId }
+      });
+
       if (!emoji) throw new Error('Emoji not found');
-      if (emoji.createdById !== user.id) throw new Error('Unauthorized');
+      if (emoji.createdById !== context.currentUser.userId) throw new Error('Unauthorized');
       
-      await emoji.destroy();
+      await prisma.emoji.delete({
+        where: { id: emojiId }
+      });
+
       return true;
     },
     
-    purchaseEmoji: async (_, { emojiId }, { user }) => {
-      const emoji = await Emoji.findByPk(emojiId);
+    purchaseEmoji: async (_: unknown, { emojiId }: { emojiId: number }, context: IContext) => {
+      const emoji = await prisma.emoji.findUnique({
+        where: { id: emojiId }
+      });
+
       if (!emoji) throw new Error('Emoji not found');
       
       // Handle payment through Stripe
       // ... payment processing code ...
       
-      await UserEmoji.create({
-        userId: user.id,
-        emojiId: emoji.id
+      await prisma.userEmoji.create({
+        data: {
+          userId: context.currentUser.userId,
+          emojiId: emoji.id
+        }
       });
       
       return true;
     }
   },
+
   Subscription: {
     groupCreated: {
       subscribe: () => pubsub.asyncIterator(['GROUP_CREATED']),
