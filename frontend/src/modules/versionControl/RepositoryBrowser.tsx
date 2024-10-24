@@ -1,179 +1,219 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@apollo/client';
-import {
-  GET_REPOSITORIES,
-  INITIALIZE_REPOSITORY,
-  CLONE_REPOSITORY,
-  PUSH_CHANGES,
-  CREATE_BRANCH,
-  SWITCH_BRANCH,
-  GET_STATUS,
-  GET_LOG
-} from './repositoryOperations';
+import { json } from '@remix-run/node';
+import { useLoaderData, useActionData, useFetcher, Form } from '@remix-run/react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Box, 
+  Button, 
+  TextField, 
+  Typography,
+  Alert,
+  CircularProgress,
+  Card,
+  CardContent,
+  Grid 
+} from '@mui/material';
+import { Repository } from './types';
+import { RepositoryDetails } from './components/RepositoryDetails';
+import { RepositorySettings } from './components/RepositorySettings';
 import FileUploader from './FileUploader';
-import VersionHistory from './VersionHistory';
+import { useToast } from '../../hooks/useToast';
+import logger from '../../utils/logger';
 
-const RepositoryBrowser: React.FC = () => {
-  const [repositories, setRepositories] = useState<any[]>([]);
-  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
-  const { data, loading, error } = useQuery(GET_REPOSITORIES);
-  const [initializeRepository] = useMutation(INITIALIZE_REPOSITORY);
-  const [cloneRepository] = useMutation(CLONE_REPOSITORY);
-  const [pushChanges] = useMutation(PUSH_CHANGES);
-  const [createBranch] = useMutation(CREATE_BRANCH);
-  const [switchBranch] = useMutation(SWITCH_BRANCH);
+// Loader function for fetching repositories
+export async function loader() {
+  try {
+    const repositories = await getRepositories(); // Implement this function to fetch repos
+    return json({ repositories });
+  } catch (error) {
+    logger.error('Error loading repositories:', error);
+    throw new Error('Failed to load repositories');
+  }
+}
 
-  const { data: statusData, refetch: refetchStatus } = useQuery(GET_STATUS, {
-    variables: { dir: selectedRepo },
-    skip: !selectedRepo,
-  });
+// Action function for handling mutations
+export async function action({ request }: { request: Request }) {
+  const formData = await request.formData();
+  const intent = formData.get('intent');
 
-  const { data: logData, refetch: refetchLog } = useQuery(GET_LOG, {
-    variables: { dir: selectedRepo, depth: 10 },
-    skip: !selectedRepo,
-  });
+  try {
+    switch (intent) {
+      case 'initialize':
+        const name = formData.get('name') as string;
+        const description = formData.get('description') as string;
+        return await initializeRepository(name, description);
 
+      case 'clone':
+        const url = formData.get('url') as string;
+        const repoName = formData.get('repoName') as string;
+        return await cloneRepository(url, repoName);
+
+      case 'createBranch':
+        const branchName = formData.get('branchName') as string;
+        const repoDir = formData.get('repoDir') as string;
+        return await createBranch(repoDir, branchName);
+
+      default:
+        return json({ error: 'Invalid action' }, { status: 400 });
+    }
+  } catch (error) {
+    logger.error('Action error:', error);
+    return json({ error: error.message }, { status: 500 });
+  }
+}
+
+export default function RepositoryBrowser() {
+  const { repositories } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const fetcher = useFetcher();
+  const { showToast } = useToast();
+  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
+
+  // Show errors from action data
   useEffect(() => {
-    if (data) {
-      setRepositories(data.repositories);
+    if (actionData?.error) {
+      showToast({
+        type: 'error',
+        message: actionData.error
+      });
     }
-  }, [data]);
+  }, [actionData, showToast]);
 
-  const handleInitialize = async (name: string) => {
-    try {
-      const result = await initializeRepository({ variables: { name } });
-      if (result.data.initializeRepository) {
-        setRepositories([...repositories, result.data.initializeRepository]);
-      }
-    } catch (error) {
-      console.error('Error initializing repository:', error);
-    }
+  const handleRepoSelect = (repo: Repository) => {
+    setSelectedRepo(repo);
   };
-
-  const handleClone = async (url: string, name: string) => {
-    try {
-      const result = await cloneRepository({ variables: { url, name } });
-      if (result.data.cloneRepository) {
-        setRepositories([...repositories, result.data.cloneRepository]);
-      }
-    } catch (error) {
-      console.error('Error cloning repository:', error);
-    }
-  };
-
-  const handlePush = async (repoName: string) => {
-    try {
-      const result = await pushChanges({ variables: { repoName } });
-      if (result.data.pushChanges) {
-        console.log('Changes pushed successfully');
-        refetchStatus();
-        refetchLog();
-      }
-    } catch (error) {
-      console.error('Error pushing changes:', error);
-    }
-  };
-
-  const handleCreateBranch = async (branchName: string) => {
-    if (!selectedRepo) return;
-    try {
-      const result = await createBranch({ variables: { dir: selectedRepo, branchName } });
-      if (result.data.createBranch) {
-        console.log('Branch created successfully');
-        refetchStatus();
-        refetchLog();
-      }
-    } catch (error) {
-      console.error('Error creating branch:', error);
-    }
-  };
-
-  const handleSwitchBranch = async (branchName: string) => {
-    if (!selectedRepo) return;
-    try {
-      const result = await switchBranch({ variables: { dir: selectedRepo, branchName } });
-      if (result.data.switchBranch) {
-        console.log('Switched branch successfully');
-        refetchStatus();
-        refetchLog();
-      }
-    } catch (error) {
-      console.error('Error switching branch:', error);
-    }
-  };
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div>
-      <h2>Repositories</h2>
-      <ul>
-        {repositories.map(repo => (
-          <li key={repo.id}>
-            {repo.name} 
-            <button onClick={() => setSelectedRepo(repo.name)}>Select</button>
-            <button onClick={() => handlePush(repo.name)}>Push Changes</button>
-          </li>
-        ))}
-      </ul>
-      <div>
-        <h3>Initialize New Repository</h3>
-        <input type="text" placeholder="Repository Name" id="newRepoName" />
-        <button onClick={() => handleInitialize((document.getElementById('newRepoName') as HTMLInputElement).value)}>
-          Initialize
-        </button>
-      </div>
-      <div>
-        <h3>Clone Repository</h3>
-        <input type="text" placeholder="Repository URL" id="cloneUrl" />
-        <input type="text" placeholder="Repository Name" id="cloneName" />
-        <button onClick={() => handleClone(
-          (document.getElementById('cloneUrl') as HTMLInputElement).value,
-          (document.getElementById('cloneName') as HTMLInputElement).value
-        )}>
-          Clone
-        </button>
-      </div>
-      {selectedRepo && (
-        <div>
-          <h3>Selected Repository: {selectedRepo}</h3>
-          <div>
-            <h4>Create Branch</h4>
-            <input type="text" placeholder="Branch Name" id="newBranchName" />
-            <button onClick={() => handleCreateBranch((document.getElementById('newBranchName') as HTMLInputElement).value)}>
-              Create Branch
-            </button>
-          </div>
-          <div>
-            <h4>Switch Branch</h4>
-            <input type="text" placeholder="Branch Name" id="switchBranchName" />
-            <button onClick={() => handleSwitchBranch((document.getElementById('switchBranchName') as HTMLInputElement).value)}>
-              Switch Branch
-            </button>
-          </div>
-          <FileUploader repoName={selectedRepo} />
-          {statusData && (
-            <div>
-              <h4>Repository Status</h4>
-              <pre>{JSON.stringify(statusData.getStatus, null, 2)}</pre>
-            </div>
-          )}
-          {logData && (
-            <VersionHistory
-              versions={logData.getLog.map((commit: any) => ({
-                id: commit.oid,
-                content: commit.message,
-                title: `Commit ${commit.oid.slice(0, 7)}`,
-                timestamp: new Date(commit.author.timestamp).toLocaleString(),
-              }))}
-              onRevert={() => {}} // Implement revert functionality if needed
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Repository Management
+      </Typography>
 
-export default RepositoryBrowser;
+      {fetcher.state === 'loading' && <CircularProgress />}
+
+      <Grid container spacing={3}>
+        {/* Repository List */}
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Your Repositories</Typography>
+              <AnimatePresence>
+                {repositories.map((repo: Repository) => (
+                  <motion.div
+                    key={repo.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <Card 
+                      variant="outlined" 
+                      sx={{ mb: 1, cursor: 'pointer' }}
+                      onClick={() => handleRepoSelect(repo)}
+                    >
+                      <CardContent>
+                        <Typography variant="h6">{repo.name}</Typography>
+                        {repo.description && (
+                          <Typography color="textSecondary">
+                            {repo.description}
+                          </Typography>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          {selectedRepo ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <RepositoryDetails repository={selectedRepo} />
+              <Box mt={2}>
+                <RepositorySettings 
+                  repository={selectedRepo}
+                  onUpdate={() => {
+                    showToast({
+                      type: 'success',
+                      message: 'Repository settings updated successfully!'
+                    });
+                  }}
+                />
+              </Box>
+            </motion.div>
+          ) : (
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Create New Repository
+                </Typography>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="initialize" />
+                  <Box sx={{ '& > *': { mb: 2 } }}>
+                    <TextField
+                      fullWidth
+                      label="Repository Name"
+                      name="name"
+                      required
+                      inputProps={{
+                        pattern: '^[a-zA-Z0-9-_]+$',
+                        title: 'Use only letters, numbers, hyphens, and underscores'
+                      }}
+                    />
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={3}
+                      label="Description (optional)"
+                      name="description"
+                    />
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={fetcher.state === 'submitting'}
+                    >
+                      {fetcher.state === 'submitting' ? 'Creating...' : 'Create Repository'}
+                    </Button>
+                  </Box>
+                </Form>
+
+                <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+                  Clone Repository
+                </Typography>
+                <fetcher.Form method="post">
+                  <input type="hidden" name="intent" value="clone" />
+                  <Box sx={{ '& > *': { mb: 2 } }}>
+                    <TextField
+                      fullWidth
+                      label="Repository URL"
+                      name="url"
+                      required
+                    />
+                    <TextField
+                      fullWidth
+                      label="Repository Name"
+                      name="repoName"
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      disabled={fetcher.state === 'submitting'}
+                    >
+                      {fetcher.state === 'submitting' ? 'Cloning...' : 'Clone Repository'}
+                    </Button>
+                  </Box>
+                </fetcher.Form>
+              </CardContent>
+            </Card>
+          )}
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}

@@ -8,7 +8,7 @@ import { RewardRepository } from '../../repositories/RewardRepository';
 import { NotFoundError, ValidationError } from '../../utils/errors';
 import logger from '../../utils/logger';
 import { sequelize } from '../../config/database';
-import { NotificationService } from '../../services/NotificationService';
+import { NotificationService } from '../../services/notificationService';
 
 export class CampaignService {
   private campaignRepo: CampaignRepository;

@@ -123,4 +123,43 @@ export const typeDefs = gql`
     combinedAnalysis(surveyIds: [ID!]!): [SurveyAnalysis!]!
     crossSurveyCorrelations(surveyIds: [ID!]!, questionIds: [String!]!): [Correlation!]!
   }
+
+  type Emoji {
+    id: ID!
+    name: String!
+    url: String!
+    createdBy: User!
+    groupId: String
+    price: Float!
+    isPublic: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  extend type Query {
+    groupEmojis(groupId: ID!): [Emoji!]!
+    publicEmojis: [Emoji!]!
+    purchasedEmojis: [Emoji!]!
+  }
+
+  extend type Mutation {
+    uploadEmoji(
+      groupId: ID
+      file: Upload!
+      name: String!
+      price: Float!
+      isPublic: Boolean!
+    ): Emoji!
+    
+    updateEmoji(
+      emojiId: ID!
+      name: String
+      price: Float
+      isPublic: Boolean
+    ): Emoji!
+    
+    deleteEmoji(emojiId: ID!): Boolean!
+    
+    purchaseEmoji(emojiId: ID!): Boolean!
+  }
 `;

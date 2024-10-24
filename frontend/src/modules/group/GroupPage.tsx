@@ -16,6 +16,11 @@ import api from '@/utils/api';
 import GroupChallenges from './GroupChallenges';
 import GroupResourceMarketplace from './GroupResourceMarketplace';
 import GroupDecisionMaking from './GroupDecisionMaking';
+import GroupAchievements from './GroupAchievements';
+import ActivePolls from './ActivePolls';
+import GroupGuidelines from './GroupGuidelines';
+import CustomEmojis from './CustomEmojis';
+import GroupAnalytics from './GroupAnalytics';
 
 const GroupPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -130,6 +135,58 @@ const GroupPage: React.FC = () => {
         <div className="mt-8 bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-4">Members</h2>
           <MemberList groupId={group.id} />
+        </div>
+
+        {/* New Features */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-semibold mb-4">Group Achievements</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {group.achievements?.map((achievement) => (
+                <div key={achievement.id} className="border rounded p-4">
+                  <h3 className="font-semibold">{achievement.name}</h3>
+                  <p className="text-sm text-gray-600">{achievement.description}</p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Earned: {new Date(achievement.dateEarned).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-semibold mb-4">Active Polls</h2>
+            <PollList groupId={group.id} />
+          </div>
+        </div>
+
+        <div className="mt-8 bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-semibold mb-4">Group Guidelines</h2>
+          <div className="space-y-2">
+            {group.guidelines?.map((guideline, index) => (
+              <p key={index} className="flex items-start">
+                <span className="mr-2">•</span>
+                {guideline}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-semibold mb-4">Custom Emojis</h2>
+          <div className="grid grid-cols-6 gap-4">
+            {Object.entries(group.customEmojis || {}).map(([name, url]) => (
+              <div key={name} className="text-center">
+                <img src={url} alt={name} className="w-8 h-8 mx-auto" />
+                <p className="text-xs mt-1">:{name}:</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-semibold mb-4">Group Analytics</h2>
+          <GroupAnalytics groupId={group.id} />
         </div>
       </div>
 

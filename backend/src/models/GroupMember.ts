@@ -1,48 +1,34 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../modules/user/User';
-import { Group } from '../modules/group/Group';
+import {
+  Table,
+  Column,
+  Model,
+  ForeignKey,
+  DataType
+} from 'sequelize-typescript';
+import { User } from './User';
+import { Group } from './Group';
 
 @Table({
-  tableName: 'group_members',
-  timestamps: true,
-  indexes: [
-    {
-      fields: ['userId', 'groupId'],
-      unique: true,
-    },
-  ],
+  tableName: 'group_members'
 })
-export class GroupMember extends Model<GroupMember> {
+export class GroupMember extends Model {
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   userId!: number;
 
   @ForeignKey(() => Group)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
   groupId!: number;
 
   @Column({
-    type: DataType.ENUM('member', 'moderator', 'admin'),
-    defaultValue: 'member',
+    type: DataType.BOOLEAN,
+    defaultValue: false
   })
-  role!: 'member' | 'moderator' | 'admin';
-
-  @Column({
-    type: DataType.DATE,
-    allowNull: false,
-    defaultValue: DataType.NOW,
-  })
-  joinedAt!: Date;
-
-  @BelongsTo(() => User)
-  user!: User;
-
-  @BelongsTo(() => Group)
-  group!: Group;
+  isAdmin!: boolean;
 }

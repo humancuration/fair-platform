@@ -111,6 +111,66 @@ export class Group extends Model<Group> {
 
   @BelongsToMany(() => User, () => GroupMember)
   delegates!: User[];
+
+  @Column({
+    type: DataType.ENUM('Public', 'Private', 'Secret'),
+    allowNull: false,
+    defaultValue: 'Public',
+  })
+  visibility!: 'Public' | 'Private' | 'Secret';
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  isVerified!: boolean;
+
+  @Column({
+    type: DataType.INTEGER,
+    defaultValue: 0,
+  })
+  reputationScore!: number;
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+  })
+  customEmojis?: { [key: string]: string };
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    allowNull: true,
+  })
+  socialLinks?: string[];
+
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+  })
+  achievements?: {
+    id: string;
+    name: string;
+    description: string;
+    dateEarned: Date;
+  }[];
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    allowNull: true,
+  })
+  guidelines?: string[];
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  allowsPolls!: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: true,
+  })
+  allowsComments!: boolean;
 }
 
 export default Group;

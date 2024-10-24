@@ -1,18 +1,53 @@
 import { useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { useSnackbar, VariantType } from 'notistack';
+import logger from '../utils/logger';
+
+interface ToastOptions {
+  variant?: VariantType;
+  autoHideDuration?: number;
+  preventDuplicate?: boolean;
+}
+
+interface ToastMessage {
+  type: 'success' | 'error' | 'info' | 'warning';
+  message: string;
+}
 
 export const useToast = () => {
-  const success = useCallback((message: string) => {
-    toast.success(message);
-  }, []);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  const error = useCallback((message: string) => {
-    toast.error(message);
-  }, []);
+  const showToast = useCallback(({ type, message }: ToastMessage, options?: ToastOptions) => {
+    logger.info(`Showing toast: ${type} - ${message}`);
+    enqueueSnackbar(message, {
+      variant: type,
+      autoHideDuration: 3000,
+      preventDuplicate: true,
+      ...options
+    });
+  }, [enqueueSnackbar]);
 
-  const info = useCallback((message: string) => {
-    toast.info(message);
-  }, []);
+  const success = useCallback((message: string, options?: ToastOptions) => {
+    showToast({ type: 'success', message }, options);
+  }, [showToast]);
 
-  return { success, error, info };
+  const error = useCallback((message: string, options?: ToastOptions) => {
+    showToast({ type: 'error', message }, options);
+  }, [showToast]);
+
+  const info = useCallback((message: string, options?: ToastOptions) => {
+    showToast({ type: 'info', message }, options);
+  }, [showToast]);
+
+  const warning = useCallback((message: string, options?: ToastOptions) => {
+    showToast({ type: 'warning', message }, options);
+  }, [showToast]);
+
+  return {
+    showToast,
+    success,
+    error,
+    info,
+    warning,
+    close: closeSnackbar
+  };
 };

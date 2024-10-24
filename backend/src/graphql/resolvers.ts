@@ -25,6 +25,10 @@ import { AffiliateProgram } from '../models/AffiliateProgram';
 import { GroupMember } from '../models/GroupMember';
 import { SurveyResponse } from '../models/SurveyResponse';
 import { surveyAnalyticsService } from '../modules/survey/surveyAnalyticsService';
+import { uploadToMinIO } from '../utils/minio';
+import { Emoji } from '../models/Emoji';
+import { UserEmoji } from '../models/UserEmoji';
+import { Op } from 'sequelize';
 
 const pubsub = new PubSub();
 const userService = new UserService();
@@ -209,6 +213,40 @@ const resolvers: IResolvers = {
 
     crossSurveyCorrelations: async (_, { surveyIds, questionIds }) => {
       return await surveyAnalyticsService.computeCorrelations(surveyIds, questionIds);
+    },
+
+    groupEmojis: async (_, { groupId }, { user }) => {
+      // Check if user has access to group
+      const group = await Group.findByPk(groupId);
+      if (!group) throw new Error('Group not found');
+      
+      return await Emoji.findAll({
+        where: {
+          groupId,
+          [Op.or]: [
+            { isPublic: true },
+            { createdById: user.id }
+          ]
+        }
+      });
+    },
+    
+    publicEmojis: async () => {
+      return await Emoji.findAll({
+        where: { 
+          isPublic: true,
+          groupId: null
+        }
+      });
+    },
+    
+    purchasedEmojis: async (_, __, { user }) => {
+      const userEmojis = await UserEmoji.findAll({
+        where: { userId: user.id },
+        include: [Emoji]
+      });
+      
+      return userEmojis.map(ue => ue.emoji);
     }
   },
 
@@ -268,6 +306,62 @@ const resolvers: IResolvers = {
       }
     },
     ...versionControlResolvers.Mutation,
+    uploadEmoji: async (_, { groupId, file, name, price, isPublic }, { user }) => {
+      // If groupId provided, verify user has permission to upload to group
+      if (groupId) {
+        const group = await Group.findByPk(groupId);
+        if (!group) throw new Error('Group not found');
+        // Check if user is admin
+      }
+      
+      const { createReadStream, filename } = await file;
+      const stream = createReadStream();
+      
+      // Upload to MinIO
+      const url = await uploadToMinIO(stream, `emojis/${Date.now()}-${filename}`);
+      
+      return await Emoji.create({
+        name,
+        url,
+        createdById: user.id,
+        groupId,
+        price,
+        isPublic
+      });
+    },
+    
+    updateEmoji: async (_, { emojiId, ...updates }, { user }) => {
+      const emoji = await Emoji.findByPk(emojiId);
+      if (!emoji) throw new Error('Emoji not found');
+      if (emoji.createdById !== user.id) throw new Error('Unauthorized');
+      
+      await emoji.update(updates);
+      return emoji;
+    },
+    
+    deleteEmoji: async (_, { emojiId }, { user }) => {
+      const emoji = await Emoji.findByPk(emojiId);
+      if (!emoji) throw new Error('Emoji not found');
+      if (emoji.createdById !== user.id) throw new Error('Unauthorized');
+      
+      await emoji.destroy();
+      return true;
+    },
+    
+    purchaseEmoji: async (_, { emojiId }, { user }) => {
+      const emoji = await Emoji.findByPk(emojiId);
+      if (!emoji) throw new Error('Emoji not found');
+      
+      // Handle payment through Stripe
+      // ... payment processing code ...
+      
+      await UserEmoji.create({
+        userId: user.id,
+        emojiId: emoji.id
+      });
+      
+      return true;
+    }
   },
   Subscription: {
     groupCreated: {

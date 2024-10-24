@@ -5,7 +5,16 @@ export const GET_REPOSITORIES = gql`
     repositories {
       id
       name
-      url
+      description
+      owner {
+        username
+        email
+      }
+      isPrivate
+      defaultBranch
+      lfsEnabled
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -74,6 +83,37 @@ export const GET_LOG = gql`
         email
         timestamp
       }
+    }
+  }
+`;
+
+export const DELETE_REPOSITORY = gql`
+  mutation DeleteRepository($id: ID!) {
+    deleteRepository(id: $id)
+  }
+`;
+
+export const UPDATE_REPOSITORY = gql`
+  mutation UpdateRepository(
+    $id: ID!
+    $name: String
+    $description: String
+    $isPrivate: Boolean
+    $defaultBranch: String
+  ) {
+    updateRepository(
+      id: $id
+      name: $name
+      description: $description
+      isPrivate: $isPrivate
+      defaultBranch: $defaultBranch
+    ) {
+      id
+      name
+      description
+      isPrivate
+      defaultBranch
+      updatedAt
     }
   }
 `;
