@@ -1,18 +1,10 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
-import { User } from '../modules/user/User';
-import { WishlistItem } from '../modules/wishlist/WishlistItem';
+import { User } from '../user/User';
+import { WishlistItem } from './WishlistItem';
 
 @Table({
   tableName: 'wishlists',
   timestamps: true,
-  indexes: [
-    {
-      fields: ['userId'],
-    },
-    {
-      fields: ['visibility'],
-    },
-  ],
 })
 export class Wishlist extends Model<Wishlist> {
   @Column({
@@ -32,9 +24,6 @@ export class Wishlist extends Model<Wishlist> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
   })
   name!: string;
 
@@ -45,26 +34,10 @@ export class Wishlist extends Model<Wishlist> {
   description?: string;
 
   @Column({
-    type: DataType.ENUM('private', 'public', 'shared'),
-    defaultValue: 'private',
+    type: DataType.BOOLEAN,
+    defaultValue: false,
   })
-  visibility!: 'private' | 'public' | 'shared';
-
-  @Column({
-    type: DataType.ARRAY(DataType.STRING),
-    defaultValue: [],
-  })
-  sharedWith!: string[];
-
-  @Column({
-    type: DataType.JSON,
-    defaultValue: {},
-  })
-  settings!: {
-    allowComments: boolean;
-    notifyOnChanges: boolean;
-    sortOrder: 'manual' | 'priority' | 'date' | 'price';
-  };
+  isPublic!: boolean;
 
   @BelongsTo(() => User)
   user!: User;

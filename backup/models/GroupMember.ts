@@ -1,34 +1,32 @@
-import {
-  Table,
-  Column,
-  Model,
-  ForeignKey,
-  DataType
-} from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
 import { User } from './User';
 import { Group } from './Group';
 
 @Table({
-  tableName: 'group_members'
+  tableName: 'group_members',
+  timestamps: true,
 })
-export class GroupMember extends Model {
+export class GroupMember extends Model<GroupMember> {
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    primaryKey: true,
   })
   userId!: number;
 
   @ForeignKey(() => Group)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false
+    primaryKey: true,
   })
   groupId!: number;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false
+    type: DataType.ENUM('Observer', 'Contributor', 'CoreMember', 'Delegate'),
+    allowNull: false,
+    defaultValue: 'Observer',
   })
-  isAdmin!: boolean;
+  role!: 'Observer' | 'Contributor' | 'CoreMember' | 'Delegate';
 }
+
+export default GroupMember;

@@ -1,18 +1,12 @@
+// models/AffiliateLink.ts
+
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../../backend/src/modules/user/User';
-import { AffiliateProgram } from './AffiliateProgram';
+import { AffiliateProgram } from '../../../../../backup/models/AffiliateProgram';
+import { User } from '../modules/user/User';
 
 @Table({
   tableName: 'affiliate_links',
   timestamps: true,
-  indexes: [
-    {
-      fields: ['userId'],
-    },
-    {
-      fields: ['programId'],
-    },
-  ],
 })
 export class AffiliateLink extends Model<AffiliateLink> {
   @Column({
@@ -22,36 +16,66 @@ export class AffiliateLink extends Model<AffiliateLink> {
   })
   id!: number;
 
-  @ForeignKey(() => User)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  userId!: number;
-
   @ForeignKey(() => AffiliateProgram)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  programId!: number;
+  affiliateProgramId!: number;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  creatorId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  originalLink!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    unique: true,
+  })
+  customAlias?: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     unique: true,
   })
-  code!: string;
+  trackingCode!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    unique: true,
   })
-  url!: string;
+  generatedLink!: string;
 
-  @BelongsTo(() => User)
-  user!: User;
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  clicks!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  conversions!: number;
 
   @BelongsTo(() => AffiliateProgram)
-  program!: AffiliateProgram;
+  affiliateProgram!: AffiliateProgram;
+
+  @BelongsTo(() => User)
+  creator!: User;
 }
+
+export default AffiliateLink;

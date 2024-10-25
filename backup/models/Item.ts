@@ -1,68 +1,47 @@
-import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
-import { Inventory } from './Inventory';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../../config/database';
 
-@Table({
-  tableName: 'items',
-  timestamps: true,
-  indexes: [
-    {
-      fields: ['type'],
-    },
-    {
-      fields: ['rarity'],
-    },
-  ],
-})
-export class Item extends Model<Item> {
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
-    primaryKey: true,
-  })
-  id!: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
-  })
-  name!: string;
-
-  @Column({
-    type: DataType.ENUM('accessory', 'color', 'base'),
-    allowNull: false,
-  })
-  type!: 'accessory' | 'color' | 'base';
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      min: 1,
-      max: 100,
-    },
-  })
-  rarity!: number;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
-  })
-  image!: string;
-
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  description?: string;
-
-  @HasMany(() => Inventory)
-  inventories!: Inventory[];
+export class Item extends Model {
+  public id!: string;
+  public name!: string;
+  public type!: string;
+  public rarity!: string;
+  public description!: string;
+  public imageUrl!: string;
 }
 
-export default Item;
+Item.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    rarity: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'common',
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    imageUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+  },
+  {
+    sequelize,
+    modelName: 'Item',
+    tableName: 'items',
+  }
+);

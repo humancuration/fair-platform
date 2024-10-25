@@ -1,18 +1,10 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../modules/user/User';
 import { Survey } from './Survey';
+import { User } from '../modules/user/User';
 
 @Table({
   tableName: 'survey_responses',
-  timestamps: true,
-  indexes: [
-    {
-      fields: ['surveyId'],
-    },
-    {
-      fields: ['userId'],
-    },
-  ],
+  timestamps: false,
 })
 export class SurveyResponse extends Model<SurveyResponse> {
   @Column({
@@ -34,28 +26,25 @@ export class SurveyResponse extends Model<SurveyResponse> {
     type: DataType.INTEGER,
     allowNull: false,
   })
-  userId!: number;
+  respondentId!: number;
 
   @Column({
     type: DataType.JSON,
     allowNull: false,
   })
-  answers!: Array<{
-    questionId: string;
-    answer: string | string[] | number;
-  }>;
+  answers!: any;
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: true,
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
   })
-  isComplete!: boolean;
+  createdAt!: Date;
 
   @BelongsTo(() => Survey)
   survey!: Survey;
 
   @BelongsTo(() => User)
-  user!: User;
+  respondent!: User;
 }
 
 export default SurveyResponse;

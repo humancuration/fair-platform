@@ -1,18 +1,9 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../modules/user/User';
+import { User } from '../modulesb/user/User';
 
 @Table({
   tableName: 'minsites',
   timestamps: true,
-  indexes: [
-    {
-      fields: ['userId'],
-    },
-    {
-      fields: ['slug'],
-      unique: true,
-    },
-  ],
 })
 export class Minsite extends Model<Minsite> {
   @Column({
@@ -21,6 +12,18 @@ export class Minsite extends Model<Minsite> {
     primaryKey: true,
   })
   id!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  title!: string;
+
+  @Column({
+    type: DataType.TEXT,
+    allowNull: false,
+  })
+  content!: string;
 
   @ForeignKey(() => User)
   @Column({
@@ -32,64 +35,38 @@ export class Minsite extends Model<Minsite> {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
     validate: {
-      notEmpty: true,
+      isIn: [['blank', 'blog', 'portfolio', 'landing']],
     },
   })
-  slug!: string;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: true,
-    },
-  })
-  title!: string;
+  template!: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
+    validate: {
+      len: [0, 10000],
+    },
   })
-  description?: string;
+  customCSS?: string;
 
   @Column({
     type: DataType.JSON,
-    defaultValue: {},
+    allowNull: true,
   })
-  theme!: {
-    colors: Record<string, string>;
-    fonts: Record<string, string>;
-    layout: string;
-  };
+  seoMetadata?: object;
 
   @Column({
-    type: DataType.JSON,
+    type: DataType.ARRAY(DataType.STRING),
     defaultValue: [],
   })
-  sections!: Array<{
-    type: string;
-    content: Record<string, any>;
-    order: number;
-  }>;
+  components!: string[];
 
   @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: true,
+    type: DataType.ARRAY(DataType.JSON),
+    defaultValue: [],
   })
-  isPublished!: boolean;
-
-  @Column({
-    type: DataType.JSON,
-    defaultValue: {},
-  })
-  seo!: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-    ogImage?: string;
-  };
+  versions!: object[];
 
   @BelongsTo(() => User)
   user!: User;
