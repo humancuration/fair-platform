@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { Avatar } from './Avatar';
+import { prisma } from './Avatar';
 import { Inventory } from '../inventory/Inventory';
 import { Item } from '../item/Item';
 import { Achievement } from '../achievement/Achievement';
-import { sequelize } from '../../config/database';
 import { 
   processAvatarEmotion, 
   calculateNewMood, 
@@ -11,14 +10,19 @@ import {
 } from '../../services/AvatarEmotionService';
 
 export const createAvatar = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId, baseImage, accessories, colors, outfit } = req.body;
-    const avatar = await Avatar.create({ userId, baseImage, accessories, colors, outfit }, { transaction: t });
-    await t.commit();
+    const avatar = await prisma.avatar.create({
+      data: {
+        userId,
+        baseImage,
+        accessories,
+        colors,
+        outfit,
+      },
+    });
     res.status(201).json(avatar);
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error creating avatar', error });
   }
 };
@@ -26,7 +30,9 @@ export const createAvatar = async (req: Request, res: Response) => {
 export const getAvatar = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const avatar = await Avatar.findOne({ where: { userId } });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
       return res.status(404).json({ message: 'Avatar not found' });
     }
@@ -37,20 +43,25 @@ export const getAvatar = async (req: Request, res: Response) => {
 };
 
 export const updateAvatar = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId } = req.params;
     const { baseImage, accessories, colors, outfit, mood, xp, level } = req.body;
-    const avatar = await Avatar.findOne({ where: { userId }, transaction: t });
-    if (!avatar) {
-      await t.rollback();
-      return res.status(404).json({ message: 'Avatar not found' });
-    }
-    await avatar.update({ baseImage, accessories, colors, outfit, mood, xp, level }, { transaction: t });
-    await t.commit();
+    
+    const avatar = await prisma.avatar.update({
+      where: { userId },
+      data: {
+        baseImage,
+        accessories,
+        colors,
+        outfit,
+        mood,
+        xp,
+        level,
+      },
+    });
+    
     res.json(avatar);
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error updating avatar', error });
   }
 };
@@ -58,9 +69,9 @@ export const updateAvatar = async (req: Request, res: Response) => {
 export const getUserInventory = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const inventory = await Inventory.findAll({
+    const inventory = await prisma.inventory.findMany({
       where: { userId },
-      include: [{ model: Item }],
+      include: { item: true },
     });
     res.json(inventory);
   } catch (error) {
@@ -105,13 +116,13 @@ export const addAchievement = async (req: Request, res: Response) => {
 };
 
 export const updateXpAndLevel = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId } = req.params;
     const { xpGained } = req.body;
-    const avatar = await Avatar.findOne({ where: { userId }, transaction: t });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
-      await t.rollback();
       return res.status(404).json({ message: 'Avatar not found' });
     }
     
@@ -123,11 +134,20 @@ export const updateXpAndLevel = async (req: Request, res: Response) => {
       newLevel++;
     }
     
-    await avatar.update({ xp: newXp, level: newLevel }, { transaction: t });
-    await t.commit();
+    const updatedAvatar = await prisma.$transaction(async (prisma) => {
+      const updated = await prisma.avatar.update({
+        where: { userId },
+        data: {
+          xp: newXp,
+          level: newLevel,
+        },
+      });
+      
+      return updated;
+    });
+    
     res.json({ xp: newXp, level: newLevel });
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error updating XP and level', error });
   }
 };
@@ -136,11 +156,21 @@ export const updateAvatarEmotion = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { emotion, intensity } = req.body;
-    const avatar = await Avatar.findOne({ where: { userId } });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
       return res.status(404).json({ message: 'Avatar not found' });
     }
-    await avatar.update({ emotion, emotionIntensity: intensity });
+    await prisma.$transaction(async (prisma) => {
+      await prisma.avatar.update({
+        where: { userId },
+        data: {
+          emotion,
+          emotionIntensity: intensity,
+        },
+      });
+    });
     res.json(avatar);
   } catch (error) {
     res.status(500).json({ message: 'Error updating avatar emotion', error });
@@ -150,7 +180,9 @@ export const updateAvatarEmotion = async (req: Request, res: Response) => {
 export const getAvatarEmotion = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const avatar = await Avatar.findOne({ where: { userId } });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
       return res.status(404).json({ message: 'Avatar not found' });
     }
@@ -164,11 +196,20 @@ export const updateAvatarBackground = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { backgroundId } = req.body;
-    const avatar = await Avatar.findOne({ where: { userId } });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
       return res.status(404).json({ message: 'Avatar not found' });
     }
-    await avatar.update({ background: backgroundId });
+    await prisma.$transaction(async (prisma) => {
+      await prisma.avatar.update({
+        where: { userId },
+        data: {
+          background: backgroundId,
+        },
+      });
+    });
     res.json(avatar);
   } catch (error) {
     res.status(500).json({ message: 'Error updating avatar background', error });
@@ -179,11 +220,20 @@ export const updateAvatarMood = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { mood } = req.body;
-    const avatar = await Avatar.findOne({ where: { userId } });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
       return res.status(404).json({ message: 'Avatar not found' });
     }
-    await avatar.update({ mood });
+    await prisma.$transaction(async (prisma) => {
+      await prisma.avatar.update({
+        where: { userId },
+        data: {
+          mood,
+        },
+      });
+    });
     res.json(avatar);
   } catch (error) {
     res.status(500).json({ message: 'Error updating avatar mood', error });
@@ -192,14 +242,15 @@ export const updateAvatarMood = async (req: Request, res: Response) => {
 
 // Add interactive avatar features
 export const updateAvatarInteraction = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId } = req.params;
     const { interactionType, context } = req.body;
     
-    const avatar = await Avatar.findOne({ where: { userId }, transaction: t });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
+
     if (!avatar) {
-      await t.rollback();
       return res.status(404).json({ message: 'Avatar not found' });
     }
 
@@ -207,33 +258,38 @@ export const updateAvatarInteraction = async (req: Request, res: Response) => {
     const emotionalResponse = await processAvatarEmotion(interactionType, context);
     const newMood = calculateNewMood(avatar.mood, emotionalResponse);
     
-    // Update avatar state
-    await avatar.update({
-      mood: newMood,
-      emotionIntensity: emotionalResponse.intensity,
-      lastInteraction: new Date()
-    }, { transaction: t });
-
-    // Generate animation data
-    const animationData = generateEmotionAnimation(newMood, emotionalResponse.intensity);
+    // Update avatar state using Prisma transaction
+    const updatedAvatar = await prisma.$transaction(async (prisma) => {
+      const updated = await prisma.avatar.update({
+        where: { userId },
+        data: {
+          mood: newMood,
+          emotionIntensity: emotionalResponse.intensity,
+          lastInteraction: new Date(),
+        },
+      });
+      
+      // Generate animation data
+      const animationData = generateEmotionAnimation(newMood, emotionalResponse.intensity);
+      
+      return { avatar: updated, animationData };
+    });
     
-    await t.commit();
-    res.json({ avatar, animationData });
+    res.json(updatedAvatar);
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error updating avatar interaction', error });
   }
 };
 
 // Add new functions to handle avatar interactions
 export const handleDailyReward = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId } = req.params;
-    const avatar = await Avatar.findOne({ where: { userId }, transaction: t });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     
     if (!avatar) {
-      await t.rollback();
       return res.status(404).json({ message: 'Avatar not found' });
     }
 
@@ -243,7 +299,6 @@ export const handleDailyReward = async (req: Request, res: Response) => {
     const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
     if (daysDiff < 1) {
-      await t.rollback();
       return res.status(400).json({ message: 'Daily reward already claimed' });
     }
 
@@ -253,81 +308,89 @@ export const handleDailyReward = async (req: Request, res: Response) => {
     const streakBonus = Math.floor(newStreakCount / 5) * 50;
     const totalReward = baseReward + streakBonus;
 
-    await avatar.update({
-      xp: avatar.xp + totalReward,
-      lastDailyReward: now,
-      streakCount: newStreakCount,
-      energy: Math.min(avatar.energy + 25, 100),
-      happiness: Math.min(avatar.happiness + 10, 100),
-    }, { transaction: t });
+    await prisma.$transaction(async (prisma) => {
+      await prisma.avatar.update({
+        where: { userId },
+        data: {
+          xp: avatar.xp + totalReward,
+          lastDailyReward: now,
+          streakCount: newStreakCount,
+          energy: Math.min(avatar.energy + 25, 100),
+          happiness: Math.min(avatar.happiness + 10, 100),
+        },
+      });
+    });
 
-    await t.commit();
     res.json({ 
       reward: totalReward, 
       streakCount: newStreakCount, 
       nextStreakBonus: Math.floor((newStreakCount + 1) / 5) * 50 
     });
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error processing daily reward', error });
   }
 };
 
 export const trainAvatarStat = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId } = req.params;
     const { stat } = req.body;
     
-    const avatar = await Avatar.findOne({ where: { userId }, transaction: t });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     if (!avatar) {
-      await t.rollback();
       return res.status(404).json({ message: 'Avatar not found' });
     }
 
     if (avatar.energy < 10) {
-      await t.rollback();
       return res.status(400).json({ message: 'Not enough energy' });
     }
 
     const stats = { ...avatar.stats };
     stats[stat] = Math.min(stats[stat] + 1, 100);
 
-    await avatar.update({
-      stats,
-      energy: avatar.energy - 10,
-      xp: avatar.xp + 25
-    }, { transaction: t });
+    await prisma.$transaction(async (prisma) => {
+      await prisma.avatar.update({
+        where: { userId },
+        data: {
+          stats,
+          energy: avatar.energy - 10,
+          xp: avatar.xp + 25
+        },
+      });
+    });
 
-    await t.commit();
     res.json({ stats, energy: avatar.energy, xp: avatar.xp });
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error training avatar', error });
   }
 };
 
 export const restAvatar = async (req: Request, res: Response) => {
-  const t = await sequelize.transaction();
   try {
     const { userId } = req.params;
-    const avatar = await Avatar.findOne({ where: { userId }, transaction: t });
+    const avatar = await prisma.avatar.findUnique({
+      where: { userId },
+    });
     
     if (!avatar) {
-      await t.rollback();
       return res.status(404).json({ message: 'Avatar not found' });
     }
 
     const energyGain = Math.min(avatar.energy + 50, 100);
-    await avatar.update({ 
-      energy: energyGain,
-      lastInteraction: new Date()
-    }, { transaction: t });
+    await prisma.$transaction(async (prisma) => {
+      await prisma.avatar.update({
+        where: { userId },
+        data: {
+          energy: energyGain,
+          lastInteraction: new Date()
+        },
+      });
+    });
 
-    await t.commit();
     res.json({ energy: energyGain });
   } catch (error) {
-    await t.rollback();
     res.status(500).json({ message: 'Error resting avatar', error });
   }
 };

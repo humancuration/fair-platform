@@ -1,45 +1,100 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { Campaign } from './Campaign';
+import { PrismaClient } from '@prisma/client';
+import type { CampaignReward, Prisma } from '@prisma/client';
 
-@Table({
-  tableName: 'rewards',
-  timestamps: true,
-})
-export class Reward extends Model<Reward> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
+const prisma = new PrismaClient();
 
-  @ForeignKey(() => Campaign)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  campaignId!: number;
+export type RewardCreate = Omit<CampaignReward, 'id' | 'createdAt' | 'updatedAt'>;
+export type RewardUpdate = Partial<RewardCreate>;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  title!: string;
+export const RewardModel = {
+  create: async (data: RewardCreate): Promise<CampaignReward> => {
+    return prisma.campaignReward.create({
+      data,
+      include: {
+        campaign: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  description?: string;
+  findById: async (id: number): Promise<CampaignReward | null> => {
+    return prisma.campaignReward.findUnique({
+      where: { id },
+      include: {
+        campaign: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.FLOAT,
-    allowNull: false,
-  })
-  amount!: number;
+  findByCampaign: async (campaignId: string): Promise<CampaignReward[]> => {
+    return prisma.campaignReward.findMany({
+      where: { campaignId },
+      include: {
+        campaign: true
+      }
+    });
+  },
 
-  @BelongsTo(() => Campaign)
-  campaign!: Campaign;
-}
+  update: async (id: number, data: RewardUpdate): Promise<CampaignReward> => {
+    return prisma.campaignReward.update({
+      where: { id },
+      data,
+      include: {
+        campaign: true
+      }
+    });
+  },
 
-export default Reward;
+  delete: async (id: number): Promise<CampaignReward> => {
+    return prisma.campaignReward.delete({
+      where: { id }
+    });
+  },
+
+  // Additional methods for reward management
+  getAvailableRewards: async (campaignId: string, contributionAmount: number): Promise<CampaignReward[]> => {
+    return prisma.campaignReward.findMany({
+      where: {
+        campaignId,
+        amount: {
+          lte: contributionAmount
+        }
+      },
+      orderBy: {
+        amount: 'desc'
+      }
+    });
+  },
+
+  checkEligibility: async (userId: number, rewardId: number): Promise<boolean> => {
+    const reward = await prisma.campaignReward.findUnique({
+      where: { id: rewardId },
+      include: {
+        campaign: {
+          include: {
+            participants: {
+              where: {
+                userId
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!reward) return false;
+
+    const userContributions = await prisma.contribution.aggregate({
+      where: {
+        campaignId: reward.campaignId,
+        contributorId: userId
+      },
+      _sum: {
+        amount: true
+      }
+    });
+
+    return (userContributions._sum.amount || 0) >= reward.amount;
+  }
+};
+
+export default RewardModel;

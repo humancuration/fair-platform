@@ -1,60 +1,83 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { Campaign } from './Campaign';
-import { User } from '../user/User';
+import { PrismaClient } from '@prisma/client';
+import type { Contribution as PrismaContribution } from '@prisma/client';
 
-@Table({
-  tableName: 'contributions',
-  timestamps: false,
-})
-export class Contribution extends Model<Contribution> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
+const prisma = new PrismaClient();
 
-  @ForeignKey(() => Campaign)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  campaignId!: number;
+export type ContributionCreate = Omit<PrismaContribution, 'id' | 'createdAt'>;
+export type ContributionUpdate = Partial<ContributionCreate>;
 
-  @ForeignKey(() => User)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  contributorId!: number;
+export const ContributionModel = {
+  create: async (data: ContributionCreate): Promise<PrismaContribution> => {
+    return prisma.contribution.create({
+      data,
+      include: {
+        campaign: true,
+        contributor: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.FLOAT,
-    allowNull: false,
-  })
-  amount!: number;
+  findById: async (id: number): Promise<PrismaContribution | null> => {
+    return prisma.contribution.findUnique({
+      where: { id },
+      include: {
+        campaign: true,
+        contributor: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  reward?: string;
+  findByCampaign: async (campaignId: string): Promise<PrismaContribution[]> => {
+    return prisma.contribution.findMany({
+      where: { campaignId },
+      include: {
+        contributor: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  paymentIntentId!: string;
+  findByContributor: async (contributorId: number): Promise<PrismaContribution[]> => {
+    return prisma.contribution.findMany({
+      where: { contributorId },
+      include: {
+        campaign: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.DATE,
-    defaultValue: DataType.NOW,
-  })
-  createdAt!: Date;
+  update: async (id: number, data: ContributionUpdate): Promise<PrismaContribution> => {
+    return prisma.contribution.update({
+      where: { id },
+      data,
+      include: {
+        campaign: true,
+        contributor: true
+      }
+    });
+  },
 
-  @BelongsTo(() => Campaign)
-  campaign!: Campaign;
+  delete: async (id: number): Promise<PrismaContribution> => {
+    return prisma.contribution.delete({
+      where: { id }
+    });
+  },
 
-  @BelongsTo(() => User)
-  contributor!: User;
-}
+  getTotalContributionsByCampaign: async (campaignId: string): Promise<number> => {
+    const result = await prisma.contribution.aggregate({
+      where: { campaignId },
+      _sum: {
+        amount: true
+      }
+    });
+    return result._sum.amount || 0;
+  },
+
+  getContributorCount: async (campaignId: string): Promise<number> => {
+    return prisma.contribution.count({
+      where: { campaignId },
+      distinct: ['contributorId']
+    });
+  }
+};
+
+export default ContributionModel;

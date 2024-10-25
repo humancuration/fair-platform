@@ -740,10 +740,42 @@ model Emoji {
   updatedAt DateTime    @updatedAt
 }
 
+// Add these models to the existing schema.prisma file
 
+model AnalyticsEvent {
+  id        Int      @id @default(autoincrement())
+  userId    String?
+  eventType String
+  eventData Json
+  timestamp DateTime @default(now())
 
+  @@index([userId])
+  @@index([eventType])
+  @@index([timestamp])
+}
 
+model Avatar {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  baseImage        String
+  accessories      Json     @default("[]") // string[]
+  colors           Json     @default("{}") // Record<string, string>
+  outfit           String?
+  mood             String   @default("happy")
+  emotion          String   @default("neutral")
+  emotionIntensity Int      @default(5)
+  lastInteraction  DateTime @default(now())
+  xp               Int      @default(0)
+  level            Int      @default(1)
+  background       String?
+  energy           Int      @default(100)
+  happiness        Int      @default(100)
+  customizations   Json     @default("{}")
+  achievements     Json     @default("[]") // string[]
+  stats           Json     @default("{\"strength\":1,\"agility\":1,\"intelligence\":1,\"charisma\":1}")
+  lastDailyReward DateTime @default(now())
+  streakCount     Int      @default(0)
+  user            User     @relation(fields: [userId], references: [id])
 
-
-
-
+  @@index([userId])
+}

@@ -1,56 +1,63 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../user/User';
+import { PrismaClient, Campaign as PrismaCampaign } from '@prisma/client';
 
-@Table({
-  tableName: 'campaigns',
-  timestamps: true,
-})
-export class Campaign extends Model<Campaign> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
+const prisma = new PrismaClient();
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
-  title!: string;
+export type CampaignCreate = Omit<PrismaCampaign, 'id' | 'createdAt' | 'updatedAt'>;
+export type CampaignUpdate = Partial<CampaignCreate>;
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: false,
-  })
-  description!: string;
+export const CampaignModel = {
+  create: async (data: CampaignCreate): Promise<PrismaCampaign> => {
+    return prisma.campaign.create({ data });
+  },
 
-  @Column({
-    type: DataType.FLOAT,
-    allowNull: false,
-  })
-  goalAmount!: number;
+  findById: async (id: string): Promise<PrismaCampaign | null> => {
+    return prisma.campaign.findUnique({
+      where: { id },
+      include: {
+        createdBy: true,
+        participants: true,
+        rewards: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.FLOAT,
-    defaultValue: 0,
-  })
-  currentAmount!: number;
+  findAll: async (page: number, limit: number) => {
+    const skip = (page - 1) * limit;
+    const [campaigns, total] = await Promise.all([
+      prisma.campaign.findMany({
+        skip,
+        take: limit,
+        include: {
+          participants: true,
+          rewards: true,
+          createdBy: {
+            select: {
+              id: true,
+              username: true
+            }
+          }
+        }
+      }),
+      prisma.campaign.count()
+    ]);
 
-  @ForeignKey(() => User)
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
-  creatorId!: number;
+    return { campaigns, total };
+  },
 
-  @Column({
-    type: DataType.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
-  })
-  isActive!: boolean;
+  update: async (id: string, data: CampaignUpdate): Promise<PrismaCampaign> => {
+    return prisma.campaign.update({
+      where: { id },
+      data,
+      include: {
+        participants: true,
+        rewards: true
+      }
+    });
+  },
 
-  @BelongsTo(() => User)
-  creator!: User;
-}
+  delete: async (id: string): Promise<PrismaCampaign> => {
+    return prisma.campaign.delete({ where: { id } });
+  }
+};
+
+export default CampaignModel;

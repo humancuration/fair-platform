@@ -1,4 +1,5 @@
-import { PrismaClient, Achievement, UserAchievement } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import type { Achievement, UserAchievement, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -11,17 +12,32 @@ export const AchievementModel = {
   },
 
   findById: async (id: string): Promise<Achievement | null> => {
-    return prisma.achievement.findUnique({ where: { id } });
+    return prisma.achievement.findUnique({
+      where: { id },
+      include: {
+        userAchievements: true,
+        users: true
+      }
+    });
   },
 
   findAll: async (): Promise<Achievement[]> => {
-    return prisma.achievement.findMany();
+    return prisma.achievement.findMany({
+      include: {
+        userAchievements: true,
+        users: true
+      }
+    });
   },
 
   update: async (id: string, data: AchievementUpdate): Promise<Achievement> => {
     return prisma.achievement.update({
       where: { id },
       data,
+      include: {
+        userAchievements: true,
+        users: true
+      }
     });
   },
 
@@ -32,9 +48,39 @@ export const AchievementModel = {
   getUserAchievements: async (achievementId: string): Promise<UserAchievement[]> => {
     return prisma.userAchievement.findMany({
       where: { achievementId },
-      include: { user: true },
+      include: {
+        user: true,
+        achievement: true
+      }
     });
   },
+
+  // Add new methods for achievement management
+  awardToUser: async (achievementId: string, userId: number): Promise<UserAchievement> => {
+    return prisma.userAchievement.create({
+      data: {
+        achievementId,
+        userId,
+        earnedAt: new Date()
+      },
+      include: {
+        user: true,
+        achievement: true
+      }
+    });
+  },
+
+  checkUserProgress: async (userId: number): Promise<Achievement[]> => {
+    return prisma.achievement.findMany({
+      where: {
+        userAchievements: {
+          none: {
+            userId
+          }
+        }
+      }
+    });
+  }
 };
 
 export default AchievementModel;

@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { Transaction, Product, User } from '../models';
-import { Op } from 'sequelize';
+import { PrismaClient } from '@prisma/client';
 import { redisClient } from '../../config/redis';
+
+const prisma = new PrismaClient();
 
 export const getMarketplaceAnalytics = async (req: Request, res: Response) => {
   try {
@@ -13,75 +14,97 @@ export const getMarketplaceAnalytics = async (req: Request, res: Response) => {
     // Get real-time viewers from Redis
     const realtimeViewers = await redisClient.get('marketplace:activeUsers') || '0';
 
-    // Get sales metrics
+    // Get sales metrics using Prisma
     const [dailySales, weeklySales, monthlySales, totalSales] = await Promise.all([
-      Transaction.sum('amount', { where: { createdAt: { [Op.gte]: startOfDay } } }),
-      Transaction.sum('amount', { where: { createdAt: { [Op.gte]: startOfWeek } } }),
-      Transaction.sum('amount', { where: { createdAt: { [Op.gte]: startOfMonth } } }),
-      Transaction.sum('amount')
+      prisma.transaction.aggregate({
+        where: { createdAt: { gte: startOfDay } },
+        _sum: { amount: true }
+      }),
+      prisma.transaction.aggregate({
+        where: { createdAt: { gte: startOfWeek } },
+        _sum: { amount: true }
+      }),
+      prisma.transaction.aggregate({
+        where: { createdAt: { gte: startOfMonth } },
+        _sum: { amount: true }
+      }),
+      prisma.transaction.aggregate({
+        _sum: { amount: true }
+      })
     ]);
 
     // Get top selling products
-    const topSellingProducts = await Product.findAll({
-      attributes: [
-        'id',
-        'name',
-        [sequelize.fn('COUNT', sequelize.col('Transactions.id')), 'sales'],
-        [sequelize.fn('SUM', sequelize.col('Transactions.amount')), 'revenue']
-      ],
-      include: [{
-        model: Transaction,
-        attributes: []
-      }],
-      group: ['Product.id'],
-      order: [[sequelize.fn('COUNT', sequelize.col('Transactions.id')), 'DESC']],
-      limit: 5
+    const topSellingProducts = await prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: { transactions: true }
+        },
+        transactions: {
+          select: {
+            amount: true
+          }
+        }
+      },
+      orderBy: {
+        transactions: {
+          _count: 'desc'
+        }
+      },
+      take: 5
     });
 
     // Calculate conversion rate
     const totalVisitors = parseInt(await redisClient.get('marketplace:totalVisitors') || '0');
-    const totalPurchases = await Transaction.count();
+    const totalPurchases = await prisma.transaction.count();
     const conversionRate = totalVisitors ? (totalPurchases / totalVisitors) * 100 : 0;
 
     // Get affiliate performance
-    const affiliatePerformance = await User.findAll({
-      attributes: [
-        'id',
-        'username',
-        [sequelize.fn('COUNT', sequelize.col('Transactions.id')), 'sales'],
-        [sequelize.fn('SUM', sequelize.col('Transactions.commission')), 'commission']
-      ],
-      include: [{
-        model: Transaction,
-        attributes: [],
-        where: { affiliateId: { [Op.not]: null } }
-      }],
-      group: ['User.id'],
-      order: [[sequelize.fn('SUM', sequelize.col('Transactions.commission')), 'DESC']],
-      limit: 10
+    const affiliatePerformance = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        _count: {
+          select: { transactions: true }
+        },
+        transactions: {
+          where: {
+            affiliateId: { not: null }
+          },
+          select: {
+            commission: true
+          }
+        }
+      },
+      orderBy: {
+        transactions: {
+          _count: 'desc'
+        }
+      },
+      take: 10
     });
 
     // Get popular categories
-    const popularCategories = await Product.findAll({
-      attributes: [
-        'category',
-        [sequelize.fn('COUNT', sequelize.col('Transactions.id')), 'count']
-      ],
-      include: [{
-        model: Transaction,
-        attributes: []
-      }],
-      group: ['Product.category'],
-      order: [[sequelize.fn('COUNT', sequelize.col('Transactions.id')), 'DESC']]
+    const popularCategories = await prisma.product.groupBy({
+      by: ['category'],
+      _count: {
+        transactions: true
+      },
+      orderBy: {
+        _count: {
+          transactions: 'desc'
+        }
+      }
     });
 
     res.json({
       metrics: {
-        daily: dailySales || 0,
-        weekly: weeklySales || 0,
-        monthly: monthlySales || 0,
-        total: totalSales || 0,
-        averageOrderValue: totalPurchases ? (totalSales / totalPurchases) : 0,
+        daily: dailySales._sum.amount || 0,
+        weekly: weeklySales._sum.amount || 0,
+        monthly: monthlySales._sum.amount || 0,
+        total: totalSales._sum.amount || 0,
+        averageOrderValue: totalPurchases ? (totalSales._sum.amount || 0) / totalPurchases : 0,
         topSellingProducts,
         conversionRate,
         affiliatePerformance

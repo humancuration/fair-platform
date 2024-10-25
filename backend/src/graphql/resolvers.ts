@@ -9,7 +9,6 @@ import { IResolvers } from '@graphql-tools/utils';
 import { prisma } from '../config/database';
 import { uploadToMinIO } from '../utils/minio';
 import { SurveyAnalyticsService } from '../modules/survey/surveyAnalyticsService';
-import { Emoji, UserEmoji } from '@prisma/client';
 
 const pubsub = new PubSub();
 const userService = new UserService();
@@ -167,7 +166,7 @@ const resolvers: IResolvers = {
           groupId,
           OR: [
             { isPublic: true },
-            { createdById: context.currentUser.userId } // Assuming userId is the correct property
+            { createdById: context.currentUser.id }
           ]
         }
       });
@@ -190,7 +189,7 @@ const resolvers: IResolvers = {
       }
 
       const userEmojis = await prisma.userEmoji.findMany({
-        where: { userId: context.currentUser.userId }, // Assuming userId is the correct property
+        where: { userId: context.currentUser.id },
         include: { emoji: true }
       });
       
@@ -262,7 +261,7 @@ const resolvers: IResolvers = {
         data: {
           name,
           url,
-          createdById: context.currentUser.userId, // Assuming userId is the correct property
+          createdById: context.currentUser.id,
           groupId,
           price,
           isPublic
@@ -274,12 +273,18 @@ const resolvers: IResolvers = {
       { emojiId, ...updates }: { emojiId: number; [key: string]: any }, 
       context: IContext
     ) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
       const emoji = await prisma.emoji.findUnique({
         where: { id: emojiId }
       });
 
       if (!emoji) throw new Error('Emoji not found');
-      if (emoji.createdById !== context.currentUser.userId) throw new Error('Unauthorized');
+      if (emoji.createdById !== context.currentUser.id) throw new Error('Unauthorized');
       
       return prisma.emoji.update({
         where: { id: emojiId },
@@ -288,12 +293,18 @@ const resolvers: IResolvers = {
     },
     
     deleteEmoji: async (_: unknown, { emojiId }: { emojiId: number }, context: IContext) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
       const emoji = await prisma.emoji.findUnique({
         where: { id: emojiId }
       });
 
       if (!emoji) throw new Error('Emoji not found');
-      if (emoji.createdById !== context.currentUser.userId) throw new Error('Unauthorized');
+      if (emoji.createdById !== context.currentUser.id) throw new Error('Unauthorized');
       
       await prisma.emoji.delete({
         where: { id: emojiId }
@@ -303,6 +314,12 @@ const resolvers: IResolvers = {
     },
     
     purchaseEmoji: async (_: unknown, { emojiId }: { emojiId: number }, context: IContext) => {
+      if (!context.currentUser) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
       const emoji = await prisma.emoji.findUnique({
         where: { id: emojiId }
       });
@@ -314,7 +331,7 @@ const resolvers: IResolvers = {
       
       await prisma.userEmoji.create({
         data: {
-          userId: context.currentUser.userId,
+          userId: context.currentUser.id,
           emojiId: emoji.id
         }
       });

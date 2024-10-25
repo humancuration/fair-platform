@@ -1,6 +1,5 @@
-import { Op } from 'sequelize';
 import crypto from 'crypto';
-import { AnalyticsEvent } from './AnalyticsEvent';
+import { prisma } from './AnalyticsEvent';
 import logger from '../../utils/logger';
 import { redisClient } from '../utils/redis';
 import { trace, context } from '@opentelemetry/api';
@@ -14,10 +13,12 @@ class AnalyticsService {
     
     return context.with(trace.setSpan(context.active(), span), async () => {
       try {
-        const event = await AnalyticsEvent.create({
-          userId,
-          eventType,
-          eventData,
+        const event = await prisma.analyticsEvent.create({
+          data: {
+            userId,
+            eventType,
+            eventData,
+          },
         });
         logger.info(`Event tracked: ${eventType} for user ${userId}`, { userId, eventType });
         return event;
@@ -43,7 +44,19 @@ class AnalyticsService {
           return JSON.parse(cachedData);
         }
 
-        const data = await AnalyticsEvent.getEventCountByType(startDate, endDate);
+        const data = await prisma.analyticsEvent.groupBy({
+          by: ['eventType'],
+          where: {
+            timestamp: {
+              gte: startDate,
+              lte: endDate,
+            },
+          },
+          _count: {
+            eventType: true,
+          },
+        });
+
         await redisClient.setex(cacheKey, 3600, JSON.stringify(data));
         return data;
       } catch (error) {
@@ -60,9 +73,9 @@ class AnalyticsService {
     const anonymizedId = crypto.createHash('sha256').update(userId).digest('hex');
 
     try {
-      const [updatedCount] = await AnalyticsEvent.update(
-        { userId: anonymizedId },
-        { where: { userId } }
+      const [updatedCount] = await prisma.analyticsEvent.update(
+        { where: { userId } },
+        { data: { userId: anonymizedId } }
       );
       logger.info(`User data anonymized for user ${userId}. Updated ${updatedCount} records.`);
       return updatedCount;
@@ -77,7 +90,7 @@ class AnalyticsService {
     cutoffDate.setDate(cutoffDate.getDate() - retentionPeriod);
 
     try {
-      const deletedCount = await AnalyticsEvent.destroy({
+      const deletedCount = await prisma.analyticsEvent.deleteMany({
         where: {
           timestamp: {
             [Op.lt]: cutoffDate,
