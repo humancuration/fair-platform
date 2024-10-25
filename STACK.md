@@ -11,6 +11,7 @@ Mobile friendly PWA and website
 - @apollo/server
 - Prisma
 - PostgreSQL
+- @tanstack/react-query
 - Socket.io
 - JWT
 - Keycloak

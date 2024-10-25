@@ -33,7 +33,7 @@ Fair Platform is not your average marketplace. We're talking next-level stuff he
 
 We're not messing around when it comes to tech. Check this out:
 
-- Frontend: React + TypeScript (because we like our code typed and our errors caught early)
+- Frontend: Remix + TypeScript (because we like our code typed and our errors caught early)
 - Backend: Node.js + Express (fast, flexible, and fun!)
 - AI Models: Python + TensorFlow (making machines learn, one tensor at a time)
 - Database: PostgreSQL (for when you need your data relational and reliable)
