@@ -1,6 +1,6 @@
 // backend/src/models/Dividend.ts
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { User } from '../../user/User';
+import { User } from '../../backend/src/modules/user/User';
 
 @Table({
   tableName: 'dividends',

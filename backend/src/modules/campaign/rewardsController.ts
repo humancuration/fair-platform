@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { Reward } from './Reward';
+import { Reward } from '../../../../backup/models/Reward';
 import { UserReward } from '../models/UserReward';
-import { Campaign } from './Campaign';
+import { Campaign } from '../../../../backup/models/Campaign';
 
 export const getAvailableRewards = async (_req: Request, res: Response) => {
   try {

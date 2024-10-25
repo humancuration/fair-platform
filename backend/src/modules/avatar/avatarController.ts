@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from './Avatar';
 import { Inventory } from '../inventory/Inventory';
 import { Item } from '../item/Item';
-import { Achievement } from '../achievement/Achievement';
+import { Achievement } from '../../../../backup/models/Achievement2';
 import { 
   processAvatarEmotion, 
   calculateNewMood, 

@@ -76,12 +76,14 @@ model AvatarCustomization {
 model AffiliateProgram {
   id             Int             @id @default(autoincrement())
   name           String          @unique
+  brandId        Int
   description    String?
   commissionRate Decimal         @db.Decimal(5, 2)
   isActive       Boolean         @default(true)
   affiliateLinks AffiliateLink[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
+  brand          Brand           @relation(fields: [brandId], references: [id])
 }
 
 model AffiliateLink {
@@ -94,9 +96,44 @@ model AffiliateLink {
   program   AffiliateProgram @relation(fields: [programId], references: [id])
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
-
+  clicks    ClickTracking[]
   @@index([userId])
   @@index([programId])
+}
+
+model Brand {
+  id               Int               @id @default(autoincrement())
+  userId           Int
+  name             String
+  description      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  user             User              @relation(fields: [userId], references: [id])
+  affiliatePrograms AffiliateProgram[]
+
+  @@index([userId])
+}
+
+model ClickTracking {
+  id             Int           @id @default(autoincrement())
+  affiliateLinkId Int
+  clickedAt      DateTime      @default(now())
+  ipAddress      String?
+  userAgent      String?
+  affiliateLink  AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Dividend {
+  id          Int      @id @default(autoincrement())
+  amount      Float
+  recipientId Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  recipient   User     @relation(fields: [recipientId], references: [id])
+
+  @@index([recipientId])
 }
 
 model Event {
@@ -691,6 +728,9 @@ model User {
   userEmojis           UserEmoji[]
   playlists            Playlist[]
   userAchievements     UserAchievement[]
+  brands              Brand[]
+  dividends           Dividend[]
+  avatar             Avatar?
 }
 
 model UserAchievement {
@@ -756,7 +796,7 @@ model AnalyticsEvent {
 
 model Avatar {
   id               String   @id @default(uuid())
-  userId           String   @unique
+  userId           Int      @unique
   baseImage        String
   accessories      Json     @default("[]") // string[]
   colors           Json     @default("{}") // Record<string, string>

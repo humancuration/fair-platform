@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 
 // Import all models
-import { Achievement } from './Achievement';
+import { Achievement } from './Achievement1';
 import { Event } from './Event';
 import { EventAttendee } from './EventAttendee';
 import { Grant } from './Grant';

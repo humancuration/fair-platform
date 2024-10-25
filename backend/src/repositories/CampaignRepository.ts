@@ -1,4 +1,4 @@
-import { Campaign } from '../modules/campaign/Campaign';
+import { Campaign } from '../../../backup/models/Campaign';
 import { Transaction } from 'sequelize';
 import logger from '../utils/logger';
 

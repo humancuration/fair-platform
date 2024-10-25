@@ -2,7 +2,7 @@
 
 import { Request, Response } from 'express';
 import AffiliateProgram from '@models/AffiliateProgram';
-import Brand from '@/modules/dashboard/affiliate/Brands';
+import Brand from '../../../../../backup/models/Brands';
 
 export const createAffiliateProgram = async (req: Request, res: Response) => {
   const { name, description, commissionRate } = req.body;

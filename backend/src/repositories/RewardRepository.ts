@@ -1,4 +1,4 @@
-import { Reward } from '../modules/campaign/Reward';
+import { Reward } from '../../../backup/models/Reward';
 import logger from '../utils/logger';
 
 export class RewardRepository {

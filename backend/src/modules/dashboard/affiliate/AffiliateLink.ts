@@ -1,7 +1,7 @@
 // models/AffiliateLink.ts
 
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import { AffiliateProgram } from './AffiliateProgram';
+import { AffiliateProgram } from '../../../../../backup/models/AffiliateProgram';
 import { User } from '../modules/user/User';
 
 @Table({

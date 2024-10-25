@@ -1,43 +1,94 @@
-import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
-import { AffiliateLink } from './AffiliateLink';
+// models/AffiliateProgram.ts
 
-@Table({
-  tableName: 'affiliate_programs',
-  timestamps: true,
-})
-export class AffiliateProgram extends Model<AffiliateProgram> {
-  @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  })
-  id!: number;
+import { PrismaClient } from '@prisma/client';
+import type { AffiliateProgram as PrismaAffiliateProgram } from '@prisma/client';
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    unique: true,
-  })
-  name!: string;
+const prisma = new PrismaClient();
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  description?: string;
+export type AffiliateProgramCreate = Omit<PrismaAffiliateProgram, 'id' | 'createdAt' | 'updatedAt'>;
+export type AffiliateProgramUpdate = Partial<AffiliateProgramCreate>;
 
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-    allowNull: false,
-  })
-  commissionRate!: number;
+export const AffiliateProgramModel = {
+  create: async (data: AffiliateProgramCreate): Promise<PrismaAffiliateProgram> => {
+    return prisma.affiliateProgram.create({
+      data,
+      include: {
+        brand: true,
+        affiliateLinks: true
+      }
+    });
+  },
 
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: true,
-  })
-  isActive!: boolean;
+  findById: async (id: number): Promise<PrismaAffiliateProgram | null> => {
+    return prisma.affiliateProgram.findUnique({
+      where: { id },
+      include: {
+        brand: true,
+        affiliateLinks: true
+      }
+    });
+  },
 
-  @HasMany(() => AffiliateLink)
-  affiliateLinks!: AffiliateLink[];
-}
+  findAll: async (): Promise<PrismaAffiliateProgram[]> => {
+    return prisma.affiliateProgram.findMany({
+      include: {
+        brand: true,
+        affiliateLinks: true
+      }
+    });
+  },
+
+  update: async (id: number, data: AffiliateProgramUpdate): Promise<PrismaAffiliateProgram> => {
+    return prisma.affiliateProgram.update({
+      where: { id },
+      data,
+      include: {
+        brand: true,
+        affiliateLinks: true
+      }
+    });
+  },
+
+  delete: async (id: number): Promise<PrismaAffiliateProgram> => {
+    return prisma.affiliateProgram.delete({
+      where: { id }
+    });
+  },
+
+  // Additional methods for program management
+  findByBrand: async (brandId: number): Promise<PrismaAffiliateProgram[]> => {
+    return prisma.affiliateProgram.findMany({
+      where: { brandId },
+      include: {
+        affiliateLinks: true
+      }
+    });
+  },
+
+  getStats: async (id: number) => {
+    const stats = await prisma.affiliateProgram.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            affiliateLinks: true
+          }
+        },
+        affiliateLinks: {
+          select: {
+            _count: {
+              select: {
+                clicks: true,
+                conversions: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return stats;
+  }
+};
+
+export default AffiliateProgramModel;

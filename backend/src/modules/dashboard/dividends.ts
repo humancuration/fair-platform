@@ -1,6 +1,6 @@
 // backend/src/routes/dividends.ts
 import { Router, Request, Response } from 'express';
-import Dividend from './affiliate/Dividend';
+import Dividend from '../../../../backup/models/Dividend';
 import User from '../user/User'; // Assuming User is a model in your project
 import auth from '../../middleware/auth';
 

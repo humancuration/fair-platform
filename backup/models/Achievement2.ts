@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../../config/database';
-import { User } from '../user/User';
+import { sequelize } from '../../backend/src/config/database';
+import { User } from '../../backend/src/modules/user/User';
 
 export class Achievement extends Model {
   public id!: string;

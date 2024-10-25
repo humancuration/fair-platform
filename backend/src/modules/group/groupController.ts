@@ -6,7 +6,7 @@ import { Challenge } from '../challenge/Challenge';
 import { Resource } from '../resource/Resource';
 import { Decision } from '../decision/Decision';
 import { Poll } from '../poll/Poll';
-import { Achievement } from '../achievement/Achievement';
+import { Achievement } from '../../../../backup/models/Achievement2';
 import { io } from '../../server';
 import { createDiscourseCategory } from '../../services/discourseService';
 import { createMoodleCourse } from '../../services/moodleService';

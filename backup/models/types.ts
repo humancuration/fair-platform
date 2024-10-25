@@ -1,5 +1,5 @@
 // This file helps avoid circular dependencies
-export type { Achievement } from './Achievement';
+export type { Achievement } from './Achievement1';
 export type { Event } from './Event';
 export type { EventAttendee } from './EventAttendee';
 export type { Inventory } from './Inventory';

@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { User } from '../modules/user/User';
-import { Achievement } from './Achievement';
+import { Achievement } from './Achievement1';
 
 @Table({
   tableName: 'user_achievements',

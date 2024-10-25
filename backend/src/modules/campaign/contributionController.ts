@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { Campaign } from '@/modules/campaign/Campaign';
-import _Contribution from '@/modules/campaign/Contribution';
+import { Campaign } from '../../../../backup/models/Campaign';
+import _Contribution from '../../../../backup/models/Contribution';
 import Stripe from 'stripe';
 
 // Initialize Stripe
