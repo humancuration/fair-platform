@@ -1,0 +1,47 @@
+type Product {
+  id: ID!
+  name: String!
+  description: String!
+  price: Float!
+  sellerId: ID!
+  category: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Company {
+  id: ID!
+  name: String!
+  industry: String!
+  description: String!
+  referralTerms: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  products: [Product!]!
+  searchProducts(
+    query: String
+    category: String
+    minPrice: Float
+    maxPrice: Float
+  ): [Product!]!
+  recommendations: [Product!]!
+}
+
+type Mutation {
+  createProduct(
+    name: String!
+    description: String!
+    price: Float!
+    category: String!
+  ): Product!
+  
+  createCompany(
+    name: String!
+    industry: String!
+    description: String!
+    referralTerms: String!
+  ): Company!
+}

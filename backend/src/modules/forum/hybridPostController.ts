@@ -1,104 +1,193 @@
-import { Request, Response } from 'express';
-import { HybridPost } from './hybridPostModel';
-import { User } from '../user/User';
+import { Request, Response, NextFunction } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { AppError } from '../../utils/errors';
+import { createLogger } from '../../utils/logger';
 
-export const getFeed = async (req: Request, res: Response) => {
+const prisma = new PrismaClient();
+const logger = createLogger('HybridPostController');
+
+interface CreateHybridPostDTO {
+  content: string;
+  isThread: boolean;
+  parentId?: number;
+  mentions?: string[];
+  hashtags?: string[];
+  attachments?: string[];
+  visibility?: 'public' | 'unlisted' | 'private' | 'direct';
+  sensitive?: boolean;
+  spoilerText?: string;
+}
+
+export const getFeed = async (req: Request, res: Response, next: NextFunction) => {
+  const page = Number(req.query.page) || 1;
+  const limit = 20;
+  const skip = (page - 1) * limit;
+
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = 20; // Posts per page
-    const offset = (page - 1) * limit;
+    const [posts, total] = await Promise.all([
+      prisma.hybridPost.findMany({
+        where: { parentId: null },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+          replies: {
+            take: 3,
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                },
+              },
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      prisma.hybridPost.count({
+        where: { parentId: null },
+      }),
+    ]);
 
-    const posts = await HybridPost.findAndCountAll({
-      where: { parentId: null }, // Only top-level posts
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']],
-      include: [
-        { model: User, attributes: ['id', 'username'] },
-        { model: HybridPost, as: 'replies', separate: true, limit: 3 } // Preview of replies
-      ]
-    });
-
-    res.json({
-      posts: posts.rows,
-      totalPages: Math.ceil(posts.count / limit),
-      currentPage: page
+    res.status(200).json({
+      data: posts,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        total,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching feed' });
+    logger.error('Error fetching feed:', error);
+    next(error);
   }
 };
 
-export const createPost = async (req: Request, res: Response) => {
-  try {
-    const { content, isThread, parentId, mentions, hashtags, attachments, visibility, sensitive, spoilerText } = req.body;
-    const userId = req.user.id;
+export const createPost = async (req: Request, res: Response, next: NextFunction) => {
+  const postData = req.body as CreateHybridPostDTO;
+  const userId = req.user?.id;
 
-    const post = await HybridPost.create({
-      content,
-      isThread,
-      parentId,
-      userId,
-      mentions,
-      hashtags,
-      attachments,
-      visibility,
-      sensitive,
-      spoilerText,
+  if (!userId) {
+    return next(new AppError('User not authenticated', 401));
+  }
+
+  try {
+    const post = await prisma.hybridPost.create({
+      data: {
+        ...postData,
+        user: {
+          connect: { id: userId },
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
     });
 
-    res.status(201).json(post);
+    logger.info(`Hybrid post created: ${post.id}`);
+    res.status(201).json({
+      message: 'Post created successfully',
+      data: post,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating post' });
+    logger.error('Error creating post:', error);
+    next(error);
   }
 };
 
-export const likePost = async (req: Request, res: Response) => {
+export const likePost = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return next(new AppError('User not authenticated', 401));
+  }
+
   try {
-    const postId = parseInt(req.params.id);
-    const post = await HybridPost.findByPk(postId);
+    const post = await prisma.hybridPost.update({
+      where: { id: Number(id) },
+      data: {
+        likesCount: {
+          increment: 1,
+        },
+      },
+    });
 
-    if (!post) {
-      return res.status(404).json({ message: 'Post not found' });
-    }
-
-    post.likesCount += 1;
-    await post.save();
-
-    res.json({ message: 'Post liked successfully' });
+    logger.info(`Post liked: ${id}`);
+    res.status(200).json({
+      message: 'Post liked successfully',
+      data: post,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error liking post' });
+    logger.error('Error liking post:', error);
+    next(error);
   }
 };
 
-export const repostPost = async (req: Request, res: Response) => {
+export const repostPost = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return next(new AppError('User not authenticated', 401));
+  }
+
   try {
-    const postId = parseInt(req.params.id);
-    const userId = req.user.id;
-    const originalPost = await HybridPost.findByPk(postId);
+    const originalPost = await prisma.hybridPost.findUnique({
+      where: { id: Number(id) },
+    });
 
     if (!originalPost) {
-      return res.status(404).json({ message: 'Post not found' });
+      return next(new AppError('Post not found', 404));
     }
 
-    const repost = await HybridPost.create({
-      content: originalPost.content,
-      userId,
-      parentId: originalPost.id,
-      isThread: false,
-      mentions: originalPost.mentions,
-      hashtags: originalPost.hashtags,
-      attachments: originalPost.attachments,
-      visibility: originalPost.visibility,
-      sensitive: originalPost.sensitive,
-      spoilerText: originalPost.spoilerText,
+    const [repost] = await prisma.$transaction([
+      prisma.hybridPost.create({
+        data: {
+          content: originalPost.content,
+          isThread: false,
+          parentId: originalPost.id,
+          mentions: originalPost.mentions,
+          hashtags: originalPost.hashtags,
+          attachments: originalPost.attachments,
+          visibility: originalPost.visibility,
+          sensitive: originalPost.sensitive,
+          spoilerText: originalPost.spoilerText,
+          user: {
+            connect: { id: userId },
+          },
+        },
+      }),
+      prisma.hybridPost.update({
+        where: { id: Number(id) },
+        data: {
+          repostsCount: {
+            increment: 1,
+          },
+        },
+      }),
+    ]);
+
+    logger.info(`Post reposted: ${id}`);
+    res.status(201).json({
+      message: 'Post reposted successfully',
+      data: repost,
     });
-
-    originalPost.repostsCount += 1;
-    await originalPost.save();
-
-    res.status(201).json(repost);
   } catch (error) {
-    res.status(500).json({ message: 'Error reposting' });
+    logger.error('Error reposting:', error);
+    next(error);
   }
 };

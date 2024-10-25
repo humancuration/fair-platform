@@ -13,8 +13,11 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ShareWithGroupModal from '../group/ShareWithGroupModal';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaMagic, FaShareAlt, FaPlus } from 'react-icons/fa';
+import { FaMagic, FaShareAlt, FaPlus, FaPlay } from 'react-icons/fa';
 import Confetti from 'react-confetti';
+import PlaylistQueue from './PlaylistQueue';
+import { usePlaylist } from '../../contexts/PlaylistContext';
+import WaveformVisualizer from '../music/visualizers/WaveformVisualizer';
 
 const EnchantedContainer = styled(motion.div)`
   background: linear-gradient(135deg, #6e48aa, #9d50bb);
@@ -56,6 +59,7 @@ const PlaylistDetailsPage: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const { state: playlistState, dispatch: playlistDispatch } = usePlaylist();
 
   useEffect(() => {
     if (!playlists.length) {
@@ -108,6 +112,21 @@ const PlaylistDetailsPage: React.FC = () => {
     items.splice(result.destination.index, 0, reorderedItem);
 
     dispatch(reorderMediaItems({ playlistId: currentPlaylist.id, mediaItems: items }));
+  };
+
+  // Add new function to handle playing the entire playlist
+  const handlePlayAll = () => {
+    if (currentPlaylist) {
+      playlistDispatch({ type: 'SET_PLAYLIST', payload: currentPlaylist });
+      playlistDispatch({ type: 'SET_TRACK_INDEX', payload: 0 });
+      playlistDispatch({ type: 'TOGGLE_PLAY' });
+    }
+  };
+
+  // Add function to handle adding to queue
+  const handleAddToQueue = (mediaItem: MediaItem) => {
+    playlistDispatch({ type: 'ADD_TO_QUEUE', payload: mediaItem });
+    toast.success('Added to queue!');
   };
 
   if (loading || !currentPlaylist) {
@@ -180,9 +199,55 @@ const PlaylistDetailsPage: React.FC = () => {
           </Droppable>
         </DragDropContext>
         
-        <WhimsicalButton onClick={handleShare}>
-          <FaShareAlt /> Share the Magic
-        </WhimsicalButton>
+        <motion.div className="flex gap-4 mb-6">
+          <WhimsicalButton onClick={handlePlayAll}>
+            <FaPlay /> Play All
+          </WhimsicalButton>
+          <WhimsicalButton onClick={handleShare}>
+            <FaShareAlt /> Share
+          </WhimsicalButton>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="playlist">
+                {(provided) => (
+                  <ul {...provided.droppableProps} ref={provided.innerRef}>
+                    <AnimatePresence>
+                      {currentPlaylist.mediaItems.map((item: any, index: number) => (
+                        <motion.li
+                          key={item.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ delay: index * 0.1 }}
+                        >
+                          <PlaylistItem mediaItem={item} index={index} />
+                        </motion.li>
+                      ))}
+                    </AnimatePresence>
+                    {provided.placeholder}
+                  </ul>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+          
+          <div className="md:col-span-1">
+            <PlaylistQueue />
+          </div>
+        </div>
+
+        {playlistState.currentPlaylist && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed bottom-0 left-0 right-0"
+          >
+            <WaveformVisualizer />
+          </motion.div>
+        )}
 
         <ShareWithGroupModal
           isOpen={isShareModalOpen}

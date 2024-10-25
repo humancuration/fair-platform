@@ -1,0 +1,67 @@
+type Minsite {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  title: String!
+  content: JSON!
+  template: String!
+  customCSS: String
+  seoMetadata: JSON
+  components: JSON!
+  isPublished: Boolean!
+  publishedSlug: String
+  versions: [JSON!]!
+  user: User!
+  affiliateLinks: [AffiliateLink!]!
+}
+
+type AffiliateLink {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  title: String!
+  url: String!
+  description: String
+  clicks: Int!
+  minsite: Minsite!
+  program: AffiliateProgram!
+}
+
+type AffiliateProgram {
+  id: ID!
+  name: String!
+  description: String
+  commission: Float!
+  links: [AffiliateLink!]!
+}
+
+input MinsiteInput {
+  title: String!
+  content: JSON!
+  template: String!
+  customCSS: String
+  seoMetadata: JSON
+  components: JSON!
+}
+
+type Query {
+  minsite(id: ID!): Minsite
+  minsiteBySlug(slug: String!): Minsite
+  userMinsites: [Minsite!]!
+  affiliateLinks(minsiteId: ID!): [AffiliateLink!]!
+}
+
+type Mutation {
+  createMinsite(input: MinsiteInput!): Minsite!
+  updateMinsite(id: ID!, input: MinsiteInput!): Minsite!
+  publishMinsite(id: ID!): Minsite!
+  deleteMinsite(id: ID!): Boolean!
+  
+  createAffiliateLink(
+    minsiteId: ID!
+    title: String!
+    url: String!
+    description: String
+    programId: ID!
+  ): AffiliateLink!
+}

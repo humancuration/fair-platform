@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { createAffiliateLink, getAffiliateLinks, trackAffiliateClick } from './affiliateController';
-import { authenticateJWT } from '../../middleware/auth';
-import { validateCreateAffiliateLink } from '../validators/affiliateLinkValidators';
-import { validate } from '../../middleware/validate';
+import { authenticateJWT } from '../../../middleware/auth';
+import { validateCreateAffiliateLink } from '../../../validators/affiliateLinkValidators';
+import { validate } from '../../../middleware/validate';
 
 const router = Router();
 

@@ -1,42 +1,93 @@
-import crypto from 'crypto';
-import { prisma } from './AnalyticsEvent';
-import logger from '../../utils/logger';
-import { redisClient } from '../utils/redis';
+import { Client } from '@opensearch-project/opensearch';
+import { Counter, Histogram } from 'prom-client';
+import { Server as SocketServer } from 'socket.io';
+import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { logger } from '../../utils/logger';
+import { redisClient } from '../../utils/redis';
 import { trace, context } from '@opentelemetry/api';
-import { WebSocket } from 'ws';
+import { AnalyticsEvent, AggregateOptions } from './types';
+import { AnalyticsEventSchema } from './types';
 
-class AnalyticsService {
-  private websockets: Map<string, WebSocket> = new Map();
+export class AnalyticsService {
+  private prisma: PrismaClient;
+  private opensearchClient: Client;
+  private io: SocketServer;
+  private readonly metricsPrefix = 'analytics_';
 
-  async trackEvent(userId: string | null, eventType: string, eventData: any) {
+  private eventCounter: Counter<string>;
+  private eventProcessingDuration: Histogram<string>;
+
+  constructor(prisma: PrismaClient, opensearchClient: Client, io: SocketServer) {
+    this.prisma = prisma;
+    this.opensearchClient = opensearchClient;
+    this.io = io;
+
+    this.eventCounter = new Counter({
+      name: this.metricsPrefix + 'events_total',
+      help: 'Total number of analytics events tracked',
+      labelNames: ['eventType']
+    });
+
+    this.eventProcessingDuration = new Histogram({
+      name: this.metricsPrefix + 'event_processing_duration_seconds',
+      help: 'Duration of event processing in seconds',
+      buckets: [0.1, 0.5, 1, 2, 5]
+    });
+  }
+
+  async trackEvent(event: Omit<AnalyticsEvent, 'id' | 'timestamp'>): Promise<AnalyticsEvent> {
     const span = trace.getTracer('analytics-service').startSpan('trackEvent');
-    
+    const timer = this.eventProcessingDuration.startTimer();
+
     return context.with(trace.setSpan(context.active(), span), async () => {
       try {
-        const event = await prisma.analyticsEvent.create({
-          data: {
-            userId,
-            eventType,
-            eventData,
-          },
+        const validatedEvent = AnalyticsEventSchema.parse({
+          ...event,
+          id: randomUUID(),
+          timestamp: new Date()
         });
-        logger.info(`Event tracked: ${eventType} for user ${userId}`, { userId, eventType });
-        return event;
+
+        const [dbEvent] = await Promise.all([
+          this.prisma.analyticsEvent.create({
+            data: validatedEvent
+          }),
+          this.opensearchClient.index({
+            index: 'analytics-events',
+            body: validatedEvent
+          })
+        ]);
+
+        this.eventCounter.inc({ eventType: event.eventType });
+        this.io.emit('analytics:event', validatedEvent);
+        await this.invalidateAggregateCache(event.eventType);
+
+        logger.info('Event tracked', { 
+          userId: event.userId,
+          eventType: event.eventType 
+        });
+
+        return dbEvent;
       } catch (error) {
-        logger.error(`Error tracking event: ${error}`, { userId, eventType, error });
+        logger.error('Error tracking event', { 
+          userId: event.userId,
+          eventType: event.eventType,
+          error 
+        });
         span.recordException(error as Error);
         throw new Error('Failed to track event');
       } finally {
         span.end();
+        timer();
       }
     });
   }
 
-  async getAggregateData(eventType: string, startDate: Date, endDate: Date) {
+  async getAggregateData(options: AggregateOptions) {
     const span = trace.getTracer('analytics-service').startSpan('getAggregateData');
     
     return context.with(trace.setSpan(context.active(), span), async () => {
-      const cacheKey = `aggregateData:${eventType}:${startDate.toISOString()}:${endDate.toISOString()}`;
+      const cacheKey = `aggregateData:${JSON.stringify(options)}`;
       
       try {
         const cachedData = await redisClient.get(cacheKey);
@@ -44,23 +95,40 @@ class AnalyticsService {
           return JSON.parse(cachedData);
         }
 
-        const data = await prisma.analyticsEvent.groupBy({
-          by: ['eventType'],
-          where: {
-            timestamp: {
-              gte: startDate,
-              lte: endDate,
+        const searchResponse = await this.opensearchClient.search({
+          index: 'analytics-events',
+          body: {
+            query: {
+              bool: {
+                must: [
+                  {
+                    range: {
+                      timestamp: {
+                        gte: options.startDate.toISOString(),
+                        lte: options.endDate.toISOString()
+                      }
+                    }
+                  },
+                  ...(options.filters ? [{ match: options.filters }] : [])
+                ]
+              }
             },
-          },
-          _count: {
-            eventType: true,
-          },
+            aggs: {
+              groupBy: {
+                terms: {
+                  field: options.groupBy || ['eventType']
+                }
+              }
+            }
+          }
         });
 
-        await redisClient.setex(cacheKey, 3600, JSON.stringify(data));
-        return data;
+        const results = searchResponse.body.aggregations.groupBy.buckets;
+        await redisClient.setex(cacheKey, 3600, JSON.stringify(results));
+        
+        return results;
       } catch (error) {
-        logger.error(`Error getting aggregate data: ${error}`);
+        logger.error('Error getting aggregate data', { error });
         span.recordException(error as Error);
         throw new Error('Failed to get aggregate data');
       } finally {
@@ -69,71 +137,19 @@ class AnalyticsService {
     });
   }
 
-  async anonymizeUserData(userId: string) {
-    const anonymizedId = crypto.createHash('sha256').update(userId).digest('hex');
-
-    try {
-      const [updatedCount] = await prisma.analyticsEvent.update(
-        { where: { userId } },
-        { data: { userId: anonymizedId } }
-      );
-      logger.info(`User data anonymized for user ${userId}. Updated ${updatedCount} records.`);
-      return updatedCount;
-    } catch (error) {
-      logger.error(`Error anonymizing user data: ${error}`);
-      throw new Error('Failed to anonymize user data');
+  private async invalidateAggregateCache(eventType: string): Promise<void> {
+    const keys = await redisClient.keys(`aggregateData:*${eventType}*`);
+    if (keys.length > 0) {
+      await redisClient.del(keys);
     }
-  }
-
-  async deleteOldData(retentionPeriod: number) {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - retentionPeriod);
-
-    try {
-      const deletedCount = await prisma.analyticsEvent.deleteMany({
-        where: {
-          timestamp: {
-            [Op.lt]: cutoffDate,
-          },
-        },
-      });
-      logger.info(`Deleted ${deletedCount} old analytics events`);
-      return deletedCount;
-    } catch (error) {
-      logger.error(`Error deleting old data: ${error}`);
-      throw new Error('Failed to delete old data');
-    }
-  }
-
-  async trackEventRealTime(userId: string | null, eventType: string, eventData: any) {
-    const span = trace.getTracer('analytics-service').startSpan('trackEventRealTime');
-    
-    return context.with(trace.setSpan(context.active(), span), async () => {
-      try {
-        const event = await this.trackEvent(userId, eventType, eventData);
-        
-        // Broadcast to real-time listeners
-        this.broadcastEvent(event);
-        
-        return event;
-      } catch (error) {
-        logger.error(`Error tracking real-time event: ${error}`);
-        span.recordException(error as Error);
-        throw error;
-      } finally {
-        span.end();
-      }
-    });
-  }
-
-  private broadcastEvent(event: any) {
-    const message = JSON.stringify(event);
-    this.websockets.forEach(ws => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(message);
-      }
-    });
   }
 }
 
-export default new AnalyticsService();
+// Initialize service with proper dependencies
+const analyticsService = new AnalyticsService(
+  new PrismaClient(),
+  new Client({ node: process.env.OPENSEARCH_URL }),
+  (global as any).io // Type assertion for global io
+);
+
+export default analyticsService;

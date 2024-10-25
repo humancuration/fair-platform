@@ -19,6 +19,7 @@ import MusicPlayerControls from './modules/music/MusicPlayerControls';
 import ErrorFallback from './components/ErrorFallback';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import theme from '../theme';
+import { UnifiedAudioProvider } from '@contexts/UnifiedAudioContext';
 
 // Eager-loaded components
 import CreateCampaignPage from './modules/campaign/CreateCampaignPage';

@@ -1,53 +1,171 @@
 // backend/src/routes/dividends.ts
-import { Router, Request, Response } from 'express';
-import Dividend from '../../../../backup/models/Dividend';
-import User from '../user/User'; // Assuming User is a model in your project
-import auth from '../../middleware/auth';
+import { Router, Request, Response, NextFunction } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { authenticateJWT } from '../../middleware/auth';
+import { AppError } from '../../utils/errors';
+import { createLogger } from '../../utils/logger';
 
+const prisma = new PrismaClient();
+const logger = createLogger('DividendsController');
 const router = Router();
 
 // Get all dividends (protected route)
-router.get('/', auth, async (req: Request, res: Response) => {
+router.get('/', authenticateJWT, async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return next(new AppError('User not authenticated', 401));
+  }
+
   try {
-    const dividends = await Dividend.findAll();
-    res.json(dividends);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    const dividends = await prisma.dividend.findMany({
+      where: {
+        recipientId: userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        recipient: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      data: dividends,
+    });
+  } catch (error) {
+    logger.error('Error fetching dividends:', error);
+    next(error);
   }
 });
 
-// Create a new dividend (protected route, assuming admin-only logic will be handled separately)
-router.post('/', auth, async (req: Request, res: Response) => {
+// Create a new dividend (admin only)
+router.post('/', authenticateJWT, async (req: Request, res: Response, next: NextFunction) => {
   const { amount, recipientId } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return next(new AppError('User not authenticated', 401));
+  }
+
   try {
-    const dividend = await Dividend.create({ amount, recipientId });
-    res.status(201).json(dividend);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    // Verify admin status
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (user?.role !== 'ADMIN') {
+      return next(new AppError('Unauthorized - Admin access required', 403));
+    }
+
+    const dividend = await prisma.dividend.create({
+      data: {
+        amount,
+        recipient: {
+          connect: { id: recipientId },
+        },
+      },
+      include: {
+        recipient: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    });
+
+    logger.info(`Dividend created for user ${recipientId}`);
+    res.status(201).json({
+      message: 'Dividend created successfully',
+      data: dividend,
+    });
+  } catch (error) {
+    logger.error('Error creating dividend:', error);
+    next(error);
   }
 });
 
 // Distribute dividends to all users (admin only)
-router.post('/distribute', auth, async (req: Request, res: Response) => {
-  // Ensure only admin can distribute dividends
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Forbidden' });
+router.post('/distribute', authenticateJWT, async (req: Request, res: Response, next: NextFunction) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return next(new AppError('User not authenticated', 401));
   }
 
   try {
-    const totalFunds = await calculateTotalDividends(); // Implement this function based on your logic
-    const users = await User.findAll();
-    const dividendPerUser = totalFunds / users.length;
+    // Verify admin status
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
 
-    for (const user of users) {
-      await Dividend.create({ amount: dividendPerUser, recipientId: user.id });
+    if (user?.role !== 'ADMIN') {
+      return next(new AppError('Unauthorized - Admin access required', 403));
     }
 
-    res.json({ message: 'Dividends distributed successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    // Calculate total funds available for distribution
+    const totalFunds = await calculateTotalDividends();
+
+    // Get all eligible users
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          not: 'ADMIN', // Exclude admins from distribution
+        },
+      },
+    });
+
+    const dividendPerUser = totalFunds / users.length;
+
+    // Create dividends for all users in a transaction
+    await prisma.$transaction(
+      users.map(user =>
+        prisma.dividend.create({
+          data: {
+            amount: dividendPerUser,
+            recipient: {
+              connect: { id: user.id },
+            },
+          },
+        })
+      )
+    );
+
+    logger.info(`Dividends distributed to ${users.length} users`);
+    res.status(200).json({
+      message: 'Dividends distributed successfully',
+      data: {
+        totalUsers: users.length,
+        totalDistributed: totalFunds,
+        amountPerUser: dividendPerUser,
+      },
+    });
+  } catch (error) {
+    logger.error('Error distributing dividends:', error);
+    next(error);
   }
 });
+
+// Helper function to calculate total dividends
+async function calculateTotalDividends(): Promise<number> {
+  // This is a placeholder implementation
+  // Replace with your actual business logic for calculating available funds
+  const result = await prisma.affiliateLink.aggregate({
+    _sum: {
+      clicks: true,
+    },
+  });
+
+  // Example: $0.1 per click
+  return (result._sum.clicks || 0) * 0.1;
+}
 
 export default router;

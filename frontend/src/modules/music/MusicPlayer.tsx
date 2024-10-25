@@ -1,253 +1,199 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Howl } from 'howler';
-import styled from 'styled-components';
-import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
-import LyricsDisplay from './LyricsDisplay';
-import { useError } from '../../contexts/ErrorContext';
-import { handleError } from '../../utils/errorHandler';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAudio } from '../../contexts/AudioContext';
+import { Howl, Howler } from 'howler';
+import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaRandom, FaRedoAlt } from 'react-icons/fa';
+import { useThree, useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 
-interface MusicPlayerProps {
-  trackId: string;
-  trackUrl: string;
-  onTrackEnd?: () => void;
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  url: string;
+  coverArt: string;
+  duration: number;
+  visualizerType: 'bars' | 'circles' | 'waves';
+  genre: string;
+  bpm: number;
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ trackId, trackUrl, onTrackEnd }) => {
-  const [streamUrl, setStreamUrl] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const [muted, setMuted] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const { setError } = useError();
+interface MusicPlayerProps {
+  playlist: Track[];
+  autoPlay?: boolean;
+  showVisualizer?: boolean;
+}
 
-  const soundRef = useRef<Howl | null>(null);
+const MusicPlayer: React.FC<MusicPlayerProps> = ({
+  playlist,
+  autoPlay = false,
+  showVisualizer = true
+}) => {
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const [progress, setProgress] = useState(0);
+  const [shuffle, setShuffle] = useState(false);
+  const [repeat, setRepeat] = useState<'none' | 'one' | 'all'>('none');
+  const [audioData, setAudioData] = useState<number[]>([]);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
-  const fetchStreamUrl = useCallback(async () => {
-    try {
-      const response = await fetch(`https://mirlo.space/api/tracks/${trackId}/stream`);
-      const data = await response.json();
-      setStreamUrl(data.streamUrl);
-    } catch (error) {
-      console.error('Error fetching stream URL:', error);
-      handleError(error);
-      setError('Failed to load the track. Please try again later.');
-    }
-  }, [trackId, setError]);
+  const { 
+    masterVolume, 
+    backgroundMusicVolume,
+    isMuted 
+  } = useAudio();
+
+  const currentTrack = playlist[currentTrackIndex];
+  const [sound, setSound] = useState<Howl | null>(null);
 
   useEffect(() => {
-    fetchStreamUrl();
-  }, [fetchStreamUrl]);
-
-  useEffect(() => {
-    if (streamUrl) {
-      soundRef.current = new Howl({
-        src: [streamUrl],
+    if (currentTrack) {
+      const newSound = new Howl({
+        src: [currentTrack.url],
         html5: true,
-        volume: volume,
+        volume: isMuted ? 0 : masterVolume * backgroundMusicVolume,
+        onend: handleTrackEnd,
         onload: () => {
-          setDuration(soundRef.current?.duration() || 0);
-          setLoading(false);
-        },
-        onend: () => {
-          setIsPlaying(false);
-          if (onTrackEnd) onTrackEnd();
-        },
-        onplay: () => setIsPlaying(true),
-        onpause: () => setIsPlaying(false),
-        onstop: () => setIsPlaying(false),
+          // Set up Web Audio API analyzer
+          const audioContext = Howler.ctx;
+          const analyserNode = audioContext.createAnalyser();
+          analyserNode.fftSize = 256;
+          Howler.masterGain.connect(analyserNode);
+          setAnalyser(analyserNode);
+        }
       });
+      setSound(newSound);
+
+      return () => {
+        newSound.unload();
+      };
     }
+  }, [currentTrack, masterVolume, backgroundMusicVolume, isMuted]);
 
-    return () => {
-      if (soundRef.current) {
-        soundRef.current.unload();
-      }
-    };
-  }, [streamUrl, volume, onTrackEnd]);
-
-  useEffect(() => {
-    const updateTime = () => {
-      if (soundRef.current) {
-        setCurrentTime(soundRef.current.seek());
-      }
-      if (isPlaying) {
-        requestAnimationFrame(updateTime);
-      }
-    };
-    if (isPlaying) {
-      updateTime();
-    }
-  }, [isPlaying]);
-
-  const togglePlayPause = useCallback(() => {
-    if (soundRef.current) {
-      if (isPlaying) {
-        soundRef.current.pause();
-      } else {
-        soundRef.current.play();
-      }
-    }
-  }, [isPlaying]);
-
-  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (soundRef.current) {
-      soundRef.current.volume(newVolume);
-    }
-    if (muted && newVolume > 0) {
-      setMuted(false);
-    }
-  }, [muted]);
-
-  const toggleMute = useCallback(() => {
-    if (soundRef.current) {
-      if (muted) {
-        soundRef.current.volume(volume);
-      } else {
-        soundRef.current.volume(0);
-      }
-      setMuted(!muted);
-    }
-  }, [muted, volume]);
-
-  const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const seekTime = parseFloat(e.target.value);
-    if (soundRef.current) {
-      soundRef.current.seek(seekTime);
-      setCurrentTime(seekTime);
-    }
-  }, []);
-
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const downloadForOffline = async () => {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        action: 'CACHE_NEW_TRACK',
-        trackUrl,
-      });
-      alert('Track downloaded for offline listening.');
+  const handleTrackEnd = () => {
+    if (repeat === 'one') {
+      sound?.play();
+    } else if (repeat === 'all' || currentTrackIndex < playlist.length - 1) {
+      playNext();
     }
   };
 
-  if (loading) {
-    return <LoadingMessage>Loading...</LoadingMessage>;
-  }
+  const togglePlay = () => {
+    if (sound) {
+      if (isPlaying) {
+        sound.pause();
+      } else {
+        sound.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const playNext = () => {
+    if (shuffle) {
+      const nextIndex = Math.floor(Math.random() * playlist.length);
+      setCurrentTrackIndex(nextIndex);
+    } else {
+      setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
+    }
+  };
+
+  const playPrevious = () => {
+    if (shuffle) {
+      const prevIndex = Math.floor(Math.random() * playlist.length);
+      setCurrentTrackIndex(prevIndex);
+    } else {
+      setCurrentTrackIndex((prev) => (prev - 1 + playlist.length) % playlist.length);
+    }
+  };
+
+  // Visualizer component using Three.js
+  const Visualizer = () => {
+    const { scene } = useThree();
+    const bars = React.useRef<THREE.Mesh[]>([]);
+
+    useFrame(() => {
+      if (analyser && isPlaying) {
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
+        
+        bars.current.forEach((bar, i) => {
+          const value = dataArray[i] / 255;
+          bar.scale.y = value * 3 + 0.1;
+        });
+      }
+    });
+
+    useEffect(() => {
+      // Create visualizer bars
+      const geometry = new THREE.BoxGeometry(0.1, 1, 0.1);
+      const material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+
+      for (let i = 0; i < 32; i++) {
+        const bar = new THREE.Mesh(geometry, material);
+        bar.position.x = i * 0.2 - 3;
+        scene.add(bar);
+        bars.current.push(bar);
+      }
+
+      return () => {
+        bars.current.forEach(bar => scene.remove(bar));
+      };
+    }, [scene]);
+
+    return null;
+  };
 
   return (
-    <PlayerContainer>
-      <Controls>
-        <ControlButton onClick={togglePlayPause}>
-          {isPlaying ? <FaPause /> : <FaPlay />}
-        </ControlButton>
-        <VolumeControl>
-          <MuteButton onClick={toggleMute}>
-            {muted ? <FaVolumeMute /> : <FaVolumeUp />}
-          </MuteButton>
-          <VolumeSlider
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={muted ? 0 : volume}
-            onChange={handleVolumeChange}
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed bottom-0 left-0 right-0 bg-black bg-opacity-90 text-white p-4"
+    >
+      <div className="container mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <motion.img
+            src={currentTrack.coverArt}
+            alt={currentTrack.title}
+            className="w-16 h-16 rounded"
+            animate={{ rotate: isPlaying ? 360 : 0 }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
-        </VolumeControl>
-      </Controls>
-      <ProgressContainer>
-        <TimeDisplay>{formatTime(currentTime)}</TimeDisplay>
-        <ProgressBar
-          type="range"
-          min="0"
-          max={duration}
-          value={currentTime}
-          onChange={handleSeek}
-        />
-        <TimeDisplay>{formatTime(duration)}</TimeDisplay>
-      </ProgressContainer>
-      <DownloadButton onClick={downloadForOffline}>Download for Offline</DownloadButton>
-      <LyricsDisplay trackId={trackId} currentTime={currentTime} />
-    </PlayerContainer>
+          <div>
+            <h3 className="font-bold">{currentTrack.title}</h3>
+            <p className="text-gray-400">{currentTrack.artist}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShuffle(!shuffle)}>
+            <FaRandom className={shuffle ? 'text-green-500' : 'text-white'} />
+          </button>
+          <button onClick={playPrevious}>
+            <FaStepBackward />
+          </button>
+          <button
+            onClick={togglePlay}
+            className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center"
+          >
+            {isPlaying ? <FaPause /> : <FaPlay />}
+          </button>
+          <button onClick={playNext}>
+            <FaStepForward />
+          </button>
+          <button onClick={() => setRepeat(repeat === 'none' ? 'one' : repeat === 'one' ? 'all' : 'none')}>
+            <FaRedoAlt className={repeat !== 'none' ? 'text-green-500' : 'text-white'} />
+          </button>
+        </div>
+
+        {showVisualizer && (
+          <div className="w-64 h-32">
+            <Visualizer />
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 };
-
-const PlayerContainer = styled.div`
-  background-color: #f0f0f0;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-`;
-
-const Controls = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-
-const ControlButton = styled.button`
-  background-color: transparent;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  margin-right: 15px;
-`;
-
-const VolumeControl = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const MuteButton = styled.button`
-  background-color: transparent;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  margin-right: 5px;
-`;
-
-const VolumeSlider = styled.input`
-  width: 80px;
-`;
-
-const ProgressContainer = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-`;
-const TimeDisplay = styled.span`
-  font-size: 14px;
-  margin: 0 10px;
-`;
-
-const ProgressBar = styled.input`
-  flex-grow: 1;
-`;
-
-const DownloadButton = styled.button`
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  &:hover {
-    background-color: #45a049;
-  }
-`;
-
-const LoadingMessage = styled.div`
-  font-size: 18px;
-  color: #666;
-  text-align: center;
-  padding: 20px;
-`;
 
 export default MusicPlayer;

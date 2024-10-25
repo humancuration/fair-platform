@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { FaMusic, FaUsers, FaMagic } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaMusic, FaUsers, FaMagic, FaPlay, FaHeart, FaShare } from 'react-icons/fa';
+import { usePlaylist } from '../../contexts/PlaylistContext';
+import { formatDuration, formatDate } from '../../utils/formatters';
 
 interface MediaItem {
   id: string;
@@ -19,6 +21,8 @@ interface Playlist {
   ownerId: string;
   groupId?: string;
   createdAt: string;
+  totalDuration: number;
+  playCount: number;
 }
 
 interface PlaylistCardProps {
@@ -31,11 +35,27 @@ const EnchantedCard = styled(motion.div)`
   padding: 20px;
   color: #fff;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.05)
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
   }
 `;
 
@@ -63,23 +83,102 @@ const MagicalLink = styled(Link)`
   }
 `;
 
+const PlaylistControls = styled(motion.div)`
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+`;
+
+const ControlButton = styled(motion.button)`
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+`;
+
+const PlaylistStats = styled(motion.div)`
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+`;
+
 const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
+  const { dispatch } = usePlaylist();
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dispatch({ type: 'SET_PLAYLIST', payload: playlist });
+    dispatch({ type: 'SET_TRACK_INDEX', payload: 0 });
+    dispatch({ type: 'TOGGLE_PLAY' });
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Implement sharing functionality
+    navigator.share?.({
+      title: playlist.name,
+      text: playlist.description,
+      url: `/playlists/${playlist.id}`,
+    }).catch(console.error);
+  };
+
   return (
     <EnchantedCard
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.98 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
     >
       <PlaylistTitle>
         <FaMusic /> {playlist.name}
       </PlaylistTitle>
       <p>{playlist.description}</p>
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      
+      <PlaylistStats
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <FaMagic /> Magical Items: {playlist.mediaItems.length}
-      </motion.p>
+        <span><FaMagic /> {playlist.mediaItems.length} tracks</span>
+        <span>{formatDuration(playlist.totalDuration)}</span>
+        <span>{playlist.playCount} plays</span>
+      </PlaylistStats>
+
+      <AnimatePresence>
+        {isHovered && (
+          <PlaylistControls
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <ControlButton onClick={handlePlay}>
+              <FaPlay />
+            </ControlButton>
+            <ControlButton>
+              <FaHeart />
+            </ControlButton>
+            <ControlButton onClick={handleShare}>
+              <FaShare />
+            </ControlButton>
+          </PlaylistControls>
+        )}
+      </AnimatePresence>
+
       {playlist.groupId && (
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
@@ -87,11 +186,12 @@ const PlaylistCard: React.FC<PlaylistCardProps> = ({ playlist }) => {
           transition={{ delay: 0.3 }}
           className="inline-block bg-purple-200 text-purple-800 px-2 py-1 rounded mt-2"
         >
-          <FaUsers /> Enchanted Group Playlist
+          <FaUsers /> Group Playlist
         </motion.span>
       )}
+
       <MagicalLink to={`/playlists/${playlist.id}`}>
-        Explore the Magic
+        Explore Playlist
       </MagicalLink>
     </EnchantedCard>
   );

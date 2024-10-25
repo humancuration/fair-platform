@@ -1,43 +1,56 @@
-import fs from 'fs';
+import { createRequestHandler } from '@remix-run/express';
+import { ServerBuild } from '@remix-run/node';
+import { renderToString } from 'react-dom/server';
+import { logger } from '../../utils/logger';
 import path from 'path';
-import ReactDOMServer from 'react-dom/server';
-import AffiliateLinksPage from '../../frontend/src/pages/AffiliateLinksPage';
-import logger from '../../utils/logger';
+import fs from 'fs/promises';
 
-interface StaticFiles {
-  html: string;
-  css: string;
-  js: string;
+interface StaticExportOptions {
+  build: ServerBuild;
+  remixRoot: string;
+  outputDir: string;
 }
 
-export const generateStaticFiles = async (): Promise<StaticFiles> => {
-  try {
-    // Generate HTML
-    const html = ReactDOMServer.renderToStaticMarkup(<AffiliateLinksPage />);
+export class StaticExportService {
+  async exportMinsite(slug: string, options: StaticExportOptions) {
+    try {
+      const { build, remixRoot, outputDir } = options;
+      
+      // Create request handler
+      const handler = createRequestHandler(build, process.env.NODE_ENV);
+      
+      // Simulate request to get Remix response
+      const request = new Request(`http://localhost/m/${slug}`);
+      const response = await handler(request);
+      
+      // Get HTML content
+      const html = await response.text();
+      
+      // Ensure output directory exists
+      const minsiteDir = path.join(outputDir, slug);
+      await fs.mkdir(minsiteDir, { recursive: true });
+      
+      // Write files
+      await Promise.all([
+        fs.writeFile(path.join(minsiteDir, 'index.html'), html),
+        this.copyAssets(remixRoot, minsiteDir),
+      ]);
+
+      logger.info(`Static export completed for minsite: ${slug}`);
+      return minsiteDir;
+    } catch (error) {
+      logger.error('Error in static export:', error);
+      throw error;
+    }
+  }
+
+  private async copyAssets(remixRoot: string, outputDir: string) {
+    const publicDir = path.join(remixRoot, 'public');
+    const buildDir = path.join(remixRoot, 'build');
     
-    // Read CSS and JS files
-    const css = await fs.promises.readFile(path.join(__dirname, '../../frontend/src/styles.css'), 'utf-8');
-    const js = await fs.promises.readFile(path.join(__dirname, '../../frontend/src/scripts.js'), 'utf-8');
-
-    logger.info('Static files generated successfully');
-    return { html, css, js };
-  } catch (error) {
-    logger.error('Error generating static files:', error);
-    throw new Error(`Failed to generate static files: ${error.message}`);
-  }
-};
-
-export const writeStaticFiles = async (outputDir: string, files: StaticFiles): Promise<void> => {
-  try {
-    await fs.promises.mkdir(outputDir, { recursive: true });
     await Promise.all([
-      fs.promises.writeFile(path.join(outputDir, 'index.html'), files.html),
-      fs.promises.writeFile(path.join(outputDir, 'styles.css'), files.css),
-      fs.promises.writeFile(path.join(outputDir, 'scripts.js'), files.js),
+      fs.cp(publicDir, outputDir, { recursive: true }),
+      fs.cp(buildDir, path.join(outputDir, 'build'), { recursive: true }),
     ]);
-    logger.info(`Static files written to ${outputDir}`);
-  } catch (error) {
-    logger.error('Error writing static files:', error);
-    throw new Error(`Failed to write static files: ${error.message}`);
   }
-};
+}

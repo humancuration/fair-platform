@@ -1,86 +1,192 @@
-import { Request, Response } from 'express';
-import { CommunityWishlist } from './CommunityWishlist';
-import { User } from '../user/User';
-import { Op } from 'sequelize';
+import { PrismaClient } from '@prisma/client';
+import { GraphQLError } from 'graphql';
+import { IContext } from '../../types/context';
 
-export const getCommunityWishlist = async (req: Request, res: Response) => {
-  try {
-    const communityWishlist = await CommunityWishlist.findAll({
-      order: [
-        ['highlighted', 'DESC'],
-        ['date', 'DESC']
-      ],
-      limit: 50,
-      include: [{ model: User, attributes: ['username', 'avatar'] }]
-    });
-    res.json(communityWishlist);
-  } catch (error) {
-    console.error('Error fetching community wishlist:', error);
-    res.status(500).json({ message: 'Server Error' });
-  }
-};
+const prisma = new PrismaClient();
 
-export const highlightItem = async (req: Request, res: Response) => {
-  const { productId } = req.body;
+export const communityWishlistResolvers = {
+  Query: {
+    getCommunityWishlist: async () => {
+      return prisma.communityWishlist.findMany({
+        orderBy: [
+          { highlighted: 'desc' },
+          { createdAt: 'desc' }
+        ],
+        take: 50,
+        include: {
+          user: {
+            select: {
+              username: true,
+              avatar: true
+            }
+          }
+        }
+      });
+    },
 
-  try {
-    await CommunityWishlist.update({ highlighted: false }, { where: {} });
-
-    const [updatedRowsCount, updatedItems] = await CommunityWishlist.update(
-      { highlighted: true },
-      { where: { productId }, returning: true }
-    );
-
-    if (updatedRowsCount === 0) {
-      return res.status(404).json({ message: 'Item not found' });
+    searchCommunityWishlist: async (_: any, { query }: { query: string }) => {
+      return prisma.communityWishlist.findMany({
+        where: {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { communityName: { contains: query, mode: 'insensitive' } }
+          ]
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              avatar: true
+            }
+          }
+        },
+        take: 20
+      });
     }
+  },
 
-    return res.json({ highlightedProductId: updatedItems[0].productId });
-  } catch (error) {
-    console.error('Error highlighting item:', error);
-    return res.status(500).json({ message: 'Server Error' });
+  Mutation: {
+    highlightCommunityItem: async (_: any, { productId }: { productId: string }, context: IContext) => {
+      if (!context.user) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      try {
+        // First, remove highlighting from all items
+        await prisma.communityWishlist.updateMany({
+          data: {
+            highlighted: false
+          }
+        });
+
+        // Then highlight the selected item
+        const updatedItem = await prisma.communityWishlist.update({
+          where: {
+            id: parseInt(productId)
+          },
+          data: {
+            highlighted: true
+          },
+          include: {
+            user: {
+              select: {
+                username: true,
+                avatar: true
+              }
+            }
+          }
+        });
+
+        return updatedItem;
+      } catch (error) {
+        throw new GraphQLError('Failed to highlight community wishlist item', {
+          extensions: { code: 'INTERNAL_SERVER_ERROR' },
+        });
+      }
+    },
+
+    addToCommunityWishlist: async (
+      _: any,
+      { input }: { input: {
+        productId: string;
+        name: string;
+        image: string;
+        price: number;
+        communityName: string;
+      }},
+      context: Context
+    ) => {
+      if (!context.user) {
+        throw new AuthenticationError('Not authenticated');
+      }
+
+      try {
+        const newItem = await prisma.communityWishlist.create({
+          data: {
+            userId: context.user.id,
+            productId: input.productId,
+            name: input.name,
+            image: input.image,
+            price: input.price,
+            communityName: input.communityName,
+          },
+          include: {
+            user: {
+              select: {
+                username: true,
+                avatar: true
+              }
+            }
+          }
+        });
+
+        return newItem;
+      } catch (error) {
+        console.error('Error adding to community wishlist:', error);
+        throw new Error('Failed to add item to community wishlist');
+      }
+    },
+
+    contributeToCommunityItem: async (
+      _: any,
+      { itemId, contribution }: { itemId: number; contribution: number },
+      context: Context
+    ) => {
+      if (!context.user) {
+        throw new AuthenticationError('Not authenticated');
+      }
+
+      const item = await prisma.communityWishlistItem.findUnique({
+        where: { id: itemId }
+      });
+
+      if (!item) {
+        throw new UserInputError('Community wishlist item not found');
+      }
+
+      return prisma.communityWishlistItem.update({
+        where: { id: itemId },
+        data: {
+          contributors: {
+            push: context.user.id
+          },
+          totalContributions: {
+            increment: contribution
+          }
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              avatar: true
+            }
+          }
+        }
+      });
+    }
   }
 };
 
-export const addToCommunityWishlist = async (req: Request, res: Response) => {
-  const { productId, name, image, price, communityName } = req.body;
-  const userId = (req.user as any).id;
-
-  try {
-    const newItem = await CommunityWishlist.create({
-      userId,
-      productId,
-      name,
-      image,
-      price,
-      communityName,
-    });
-
-    res.status(201).json(newItem);
-  } catch (error) {
-    console.error('Error adding item to community wishlist:', error);
-    res.status(500).json({ message: 'Server Error' });
+// Add these type definitions to your GraphQL schema
+export const communityWishlistTypeDefs = `
+  extend type Query {
+    getCommunityWishlist: [CommunityWishlist!]!
+    searchCommunityWishlist(query: String!): [CommunityWishlist!]!
   }
-};
 
-export const searchCommunityWishlist = async (req: Request, res: Response) => {
-  const { query } = req.query;
-
-  try {
-    const results = await CommunityWishlist.findAll({
-      where: {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${query}%` } },
-          { communityName: { [Op.iLike]: `%${query}%` } }
-        ]
-      },
-      include: [{ model: User, attributes: ['username', 'avatar'] }],
-      limit: 20
-    });
-
-    res.json(results);
-  } catch (error) {
-    console.error('Error searching community wishlist:', error);
-    res.status(500).json({ message: 'Server Error' });
+  extend type Mutation {
+    highlightCommunityItem(productId: ID!): CommunityWishlist!
+    addToCommunityWishlist(input: AddToCommunityWishlistInput!): CommunityWishlist!
+    contributeToCommunityItem(itemId: Int!, contribution: Float!): CommunityWishlistItem!
   }
-};
+
+  input AddToCommunityWishlistInput {
+    productId: String!
+    name: String!
+    image: String!
+    price: Float!
+    communityName: String!
+  }
+`;

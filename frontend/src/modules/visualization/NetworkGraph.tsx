@@ -1,92 +1,81 @@
 import React, { useEffect, useRef } from 'react';
-import { Network } from 'vis-network';
-import { DataSet } from 'vis-data';
+import { Network, DataSet, Node, Edge, Options } from 'vis-network/standalone';
+import { motion } from 'framer-motion';
 
-interface Node {
-  id: string;
+interface NetworkNode extends Node {
   label: string;
-  size?: number;
-  color?: string;
-  trustScore?: number;
+  group?: string;
+  title?: string;
 }
 
-interface Edge {
-  from: string;
-  to: string;
+interface NetworkEdge extends Edge {
   label?: string;
   width?: number;
-  bidirectional?: boolean;
+  color?: string;
 }
 
 interface NetworkGraphProps {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: NetworkNode[];
+  edges: NetworkEdge[];
+  options?: Options;
+  height?: string;
   onNodeClick?: (nodeId: string) => void;
+  onEdgeClick?: (edgeId: string) => void;
 }
 
-const NetworkGraph: React.FC<NetworkGraphProps> = ({ nodes, edges, onNodeClick }) => {
+const NetworkGraph: React.FC<NetworkGraphProps> = ({
+  nodes,
+  edges,
+  options = {},
+  height = '500px',
+  onNodeClick,
+  onEdgeClick
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<Network | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !nodes || !edges) return;
+    if (!containerRef.current) return;
 
-    const nodesDataSet = new DataSet(
-      nodes.map(node => ({
-        ...node,
-        value: node.size,
-        title: `Trust Score: ${(node.trustScore || 0).toFixed(2)}`,
-      }))
-    );
+    const nodesDataSet = new DataSet(nodes);
+    const edgesDataSet = new DataSet(edges);
 
-    const edgesDataSet = new DataSet(
-      edges.map(edge => ({
-        ...edge,
-        arrows: edge.bidirectional ? 'to, from' : 'to',
-        value: edge.width,
-      }))
-    );
-
-    const options = {
+    const defaultOptions: Options = {
       nodes: {
         shape: 'dot',
-        scaling: {
-          min: 10,
-          max: 30,
-        },
+        size: 16,
         font: {
           size: 12,
-          face: 'Arial',
+          color: '#ffffff'
         },
+        borderWidth: 2,
+        shadow: true
       },
       edges: {
-        width: 1,
+        width: 2,
+        color: { inherit: 'both' },
         smooth: {
-          type: 'continuous',
-        },
-        font: {
-          size: 8,
-          align: 'middle',
-        },
+          type: 'continuous'
+        }
       },
       physics: {
         stabilization: false,
         barnesHut: {
           gravitationalConstant: -80000,
           springConstant: 0.001,
-          springLength: 200,
-        },
+          springLength: 200
+        }
       },
       interaction: {
         hover: true,
-        tooltipDelay: 200,
-      },
+        tooltipDelay: 200
+      }
     };
 
     networkRef.current = new Network(
       containerRef.current,
       { nodes: nodesDataSet, edges: edgesDataSet },
-      options
+      { ...defaultOptions, ...options }
     );
 
     if (onNodeClick) {
@@ -97,18 +86,29 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ nodes, edges, onNodeClick }
       });
     }
 
+    if (onEdgeClick) {
+      networkRef.current.on('click', (params) => {
+        if (params.edges.length > 0) {
+          onEdgeClick(params.edges[0]);
+        }
+      });
+    }
+
     return () => {
       if (networkRef.current) {
         networkRef.current.destroy();
       }
     };
-  }, [nodes, edges, onNodeClick]);
+  }, [nodes, edges, options, onNodeClick, onEdgeClick]);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-[500px] bg-white rounded-lg border border-gray-200"
-    />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
+    >
+      <div ref={containerRef} style={{ height, width: '100%' }} />
+    </motion.div>
   );
 };
 

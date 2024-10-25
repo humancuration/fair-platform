@@ -1,20 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
-import { validationResult, ValidationChain } from 'express-validator';
-import { ValidationError } from '../utils/errors';
+import { AnyZodObject, ZodError } from 'zod';
+import { query } from 'express-validator';
 
-export const validate = (validations: ValidationChain[]) => {
+export const validateRequest = (schema: { body?: AnyZodObject; query?: AnyZodObject; params?: AnyZodObject }) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    // Run all validations
-    await Promise.all(validations.map(validation => validation.run(req)));
-
-    const errors = validationResult(req);
-    if (errors.isEmpty()) {
-      return next();
+    try {
+      if (schema.body) {
+        req.body = await schema.body.parseAsync(req.body);
+      }
+      if (schema.query) {
+        req.query = await schema.query.parseAsync(req.query);
+      }
+      if (schema.params) {
+        req.params = await schema.params.parseAsync(req.params);
+      }
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Validation failed',
+          errors: error.errors
+        });
+      }
+      next(error);
     }
-
-    throw new ValidationError(
-      errors.array().map(err => err.msg).join(', ')
-    );
   };
 };
 

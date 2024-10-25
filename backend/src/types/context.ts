@@ -1,6 +1,6 @@
-import { User } from '../../../backup/models/User';
+import { User } from '@prisma/client';
 
-export interface IContext {
-  currentUser?: User;
+export interface Context {
+  user?: User;
   token?: string;
 }

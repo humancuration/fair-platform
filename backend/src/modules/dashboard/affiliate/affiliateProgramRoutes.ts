@@ -1,7 +1,7 @@
 // routes/affiliateProgramRoutes.ts
 
 import express from 'express';
-import { createAffiliateProgram, getAffiliatePrograms } from '@/modules/affiliate/affiliateProgramController';
+import { createAffiliateProgram, getAffiliatePrograms } from './affiliateProgramController';
 import { authenticateJWT } from '@middleware/auth';
 
 const router = express.Router();
