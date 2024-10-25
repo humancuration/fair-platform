@@ -14,13 +14,41 @@ model Achievement {
   icon             String
   points           Int               @default(0)
   userAchievements UserAchievement[] @relation("AchievementToUser")
-  users            User[]            // Add this field
+  users            User[] // Add this field
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 }
 
+model AffiliateProgram {
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  brandId        Int
+  description    String?
+  commissionRate Decimal         @db.Decimal(5, 2)
+  isActive       Boolean         @default(true)
+  affiliateLinks AffiliateLink[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  brand          Brand           @relation(fields: [brandId], references: [id])
+}
 
-// Add AI-related models
+model AffiliateLink {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  programId Int
+  code      String           @unique
+  url       String
+  user      User             @relation(fields: [userId], references: [id])
+  program   AffiliateProgram @relation(fields: [programId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  clicks    ClickTracking[]
+  payouts   Payout[]
+
+  @@index([userId])
+  @@index([programId])
+}
+
 model AIJob {
   id          Int       @id @default(autoincrement())
   userId      Int
@@ -56,732 +84,6 @@ model AIModel {
   @@index([type])
 }
 
-// Add Avatar customization
-model AvatarCustomization {
-  id          Int      @id @default(autoincrement())
-  userId      Int      @unique  // Add @unique for one-to-one relation
-  baseImage   String
-  accessories Json     @default("[]")
-  colors      Json     @default("{}")
-  outfit      String?
-  mood        Mood     @default(NEUTRAL)
-  xp          Int      @default(0)
-  level       Int      @default(1)
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-
-model AffiliateProgram {
-  id             Int             @id @default(autoincrement())
-  name           String          @unique
-  brandId        Int
-  description    String?
-  commissionRate Decimal         @db.Decimal(5, 2)
-  isActive       Boolean         @default(true)
-  affiliateLinks AffiliateLink[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  brand          Brand           @relation(fields: [brandId], references: [id])
-}
-
-model AffiliateLink {
-  id        Int             @id @default(autoincrement())
-  userId    Int
-  programId Int
-  code      String          @unique
-  url       String
-  user      User            @relation(fields: [userId], references: [id])
-  program   AffiliateProgram @relation(fields: [programId], references: [id])
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  clicks    ClickTracking[]
-  @@index([userId])
-  @@index([programId])
-}
-
-model Brand {
-  id               Int               @id @default(autoincrement())
-  userId           Int
-  name             String
-  description      String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  user             User              @relation(fields: [userId], references: [id])
-  affiliatePrograms AffiliateProgram[]
-
-  @@index([userId])
-}
-
-model ClickTracking {
-  id             Int           @id @default(autoincrement())
-  affiliateLinkId Int
-  clickedAt      DateTime      @default(now())
-  ipAddress      String?
-  userAgent      String?
-  affiliateLink  AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-}
-
-model Dividend {
-  id          Int      @id @default(autoincrement())
-  amount      Float
-  recipientId Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  recipient   User     @relation(fields: [recipientId], references: [id])
-
-  @@index([recipientId])
-}
-
-model Event {
-  id                Int              @id @default(autoincrement())
-  groupId           Int
-  title            String
-  description      String?
-  startDate        DateTime
-  endDate          DateTime
-  location         String?
-  virtualMeetingUrl String?
-  maxAttendees     Int?
-  createdById      Int
-  status           EventStatus      @default(DRAFT)
-  group            Group            @relation(fields: [groupId], references: [id])
-  createdBy        User             @relation("CreatedEvents", fields: [createdById], references: [id]) // Changed relation name to match User model
-  attendees        EventAttendee[]
-  recurringEvent   RecurringEvent?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  @@index([startDate])
-  @@index([groupId])
-}
-
-enum EventStatus {
-  DRAFT
-  PUBLISHED
-  CANCELLED
-}
-
-model EventAttendee {
-  id        Int           @id @default(autoincrement())
-  eventId   Int
-  userId    Int
-  status    AttendeeStatus @default(PENDING)
-  event     Event         @relation(fields: [eventId], references: [id])
-  user      User          @relation(fields: [userId], references: [id])
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  @@unique([eventId, userId])
-}
-
-enum AttendeeStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-}
-
-model RecurringEvent {
-  id            Int       @id @default(autoincrement())
-  parentEventId Int       @unique
-  frequency     Frequency
-  interval      Int       @default(1)
-  endDate       DateTime?
-  customPattern Json?
-  parentEvent   Event     @relation(fields: [parentEventId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-enum Frequency {
-  DAILY
-  WEEKLY
-  MONTHLY
-}
-
-model Group {
-  id              Int      @id @default(autoincrement())
-  name        String
-  description String?
-  avatar      String?
-  isPrivate   Boolean       @default(false)
-  events      Event[]
-  petitions   Petition[]
-  projects    Project[]
-  resources   Resource[]
-  members     GroupMember[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  grants      Grant[]
-  playlists   Playlist[]
-  emojis      Emoji[]    @relation("GroupEmojis")
-}
-
-model GroupMember {
-  userId    Int
-  groupId   Int
-  role      GroupMemberRole @default(Observer)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  user      User            @relation("UserGroups", fields: [userId], references: [id])
-  group     Group           @relation(fields: [groupId], references: [id])
-
-  @@id([userId, groupId])
-}
-
-enum GroupMemberRole {
-  Observer
-  Contributor
-  CoreMember
-  Delegate
-}
-
-model Feedback {
-  id          String    @id @default(cuid())
-  type        String    // BUG, FEATURE, GENERAL
-  title       String
-  description String
-  priority    String?   // LOW, MEDIUM, HIGH
-  category    String?
-  status      String    @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, REJECTED
-  userId      Int       // Changed from String to Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  user        User      @relation(fields: [userId], references: [id])
-  comments    FeedbackComment[]
-}
-
-model FeedbackComment {
-  id          String    @id @default(cuid())
-  content     String
-  feedbackId  String
-  userId      Int       // Changed from String to Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  feedback    Feedback  @relation(fields: [feedbackId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
-}
-
-model UserBadge {
-  id          String    @id @default(cuid())
-  userId      Int       // Changed from String to Int
-  type        String
-  reason      String?
-  awardedById Int       // Changed from String to Int
-  createdAt   DateTime  @default(now())
-  
-  user        User      @relation("UserBadges", fields: [userId], references: [id])
-  awardedBy   User      @relation("AwardedBadges", fields: [awardedById], references: [id])
-}
-
-model File {
-  id          String    @id @default(cuid())
-  name        String
-  path        String
-  mimeType    String
-  size        Int
-  type        String    // AVATAR, EVENT_IMAGE, GROUP_IMAGE, DOCUMENT
-  visibility  String    @default("PRIVATE")
-  userId      Int       // Changed from String to Int to match User.id
-  relatedId   String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id])
-}
-
-model Report {
-  id            String    @id @default(cuid())
-  type          String    // EVENT, ANALYTICS, FINANCIAL
-  generatedById Int      // Changed from String to Int
-  filters       Json?
-  status        String    @default("PENDING")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  generatedBy   User      @relation(fields: [generatedById], references: [id])
-}
-
-model SupportTicket {
-  id          String    @id @default(cuid())
-  title       String
-  description String
-  category    String
-  priority    String
-  status      String    @default("OPEN")
-  userId      Int      // Changed from String to Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  user        User      @relation(fields: [userId], references: [id])
-  responses   TicketResponse[]
-}
-
-model TicketResponse {
-  id          String    @id @default(cuid())
-  content     String
-  ticketId    String
-  responderId Int      // Changed from String to Int
-  createdAt   DateTime  @default(now())
-  
-  ticket      SupportTicket @relation(fields: [ticketId], references: [id])
-  responder   User      @relation(fields: [responderId], references: [id])
-}
-
-model Petition {
-  id            Int       @id @default(autoincrement())
-  groupId       Int
-  title         String
-  description   String?
-  createdBy     Int
-  status        PetitionStatus @default(Open)
-  closingDate   DateTime?
-  requiredVotes Int       @default(0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  group         Group     @relation(fields: [groupId], references: [id])
-  creator       User      @relation("CreatedPetitions", fields: [createdBy], references: [id])
-  votes         Vote[]
-
-  @@index([status])
-  @@index([groupId])
-  @@index([createdBy])
-}
-
-enum PetitionStatus {
-  Open
-  Closed
-  Approved
-  Rejected
-}
-
-model Vote {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  petitionId Int
-  voteType   VoteType
-  comment    String?
-  weight     Int      @default(1)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id])
-  petition   Petition @relation(fields: [petitionId], references: [id])
-
-  @@unique([userId, petitionId])
-  @@index([voteType])
-}
-
-enum VoteType {
-  For
-  Against
-  Abstain
-}
-
-model Grant {
-  id              Int         @id @default(autoincrement())
-  applicantId     Int
-  groupId         Int?
-  title           String
-  projectDescription String
-  amountRequested Decimal     @db.Decimal(10, 2)
-  amountGranted   Decimal     @db.Decimal(10, 2) @default(0)
-  status          GrantStatus @default(pending)
-  completionDate  DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  applicant       User        @relation("UserGrants", fields: [applicantId], references: [id])
-  group           Group?      @relation(fields: [groupId], references: [id])
-}
-
-model UserEmoji {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  emojiId   Int
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  emoji     Emoji    @relation(fields: [emojiId], references: [id])
-}
-
-// Add Survey functionality
-model Survey {
-  id              String           @id @default(cuid())
-  title           String
-  description     String?
-  questions       Json
-  createdById     Int
-  status          SurveyStatus     @default(DRAFT)
-  responses       SurveyResponse[]
-  createdBy       User             @relation(fields: [createdById], references: [id])
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-}
-
-model SurveyResponse {
-  id        String   @id @default(cuid())
-  surveyId  String
-  userId    Int
-  responses Json
-  survey    Survey   @relation(fields: [surveyId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-model Notification {
-  id        Int              @id @default(autoincrement())
-  userId    Int
-  message   String
-  type      NotificationType
-  read      Boolean         @default(false)
-  metadata  Json?
-  link      String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  user      User            @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([type])
-  @@index([read])
-}
-
-// Additional enums
-
-enum FrequencyType {
-  daily
-  weekly
-  monthly
-}
-
-enum GrantStatus {
-  pending
-  approved
-  rejected
-  completed
-}
-
-enum NotificationType {
-  version_control
-  event
-  mention
-  group
-  achievement
-  other
-}
-
-model Campaign {
-  id                  String               @id @default(cuid())
-  title               String
-  description         String
-  startDate           DateTime
-  endDate             DateTime
-  status              CampaignStatus       @default(DRAFT)
-  createdById         Int
-  createdBy           User                 @relation(fields: [createdById], references: [id])
-  participants        CampaignParticipant[]
-  rewards             CampaignReward[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-
-  @@index([status])
-  @@index([startDate, endDate])
-}
-
-model CampaignParticipant {
-  id          String    @id @default(cuid())
-  campaignId  String
-  userId      Int
-  status      ParticipantStatus @default(ACTIVE)
-  progress    Json      @default("{}")
-  campaign    Campaign  @relation(fields: [campaignId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@unique([campaignId, userId])
-}
-
-model CampaignReward {
-  id          String    @id @default(cuid())
-  campaignId  String
-  userId      Int
-  type        RewardType
-  amount      Int
-  claimed     Boolean   @default(false)
-  claimedAt   DateTime?
-  campaign    Campaign  @relation(fields: [campaignId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Playlist {
-  id          Int       @id @default(autoincrement())
-  name        String
-  description String?
-  userId      Int
-  groupId     Int?
-  mediaItems  Json      @default("[]") // Array of media items with order
-  visibility  Visibility @default(PRIVATE)
-  user        User      @relation(fields: [userId], references: [id])
-  group       Group?    @relation(fields: [groupId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([groupId])
-}
-
-model UserSettings {
-  id                Int       @id @default(autoincrement())
-  userId            Int       @unique
-  theme             String    @default("light")
-  notifications     Json      @default("{}")
-  language          String    @default("en")
-  timezone          String    @default("UTC")
-  emailPreferences  Json      @default("{}")
-  privacySettings   Json      @default("{}")
-  user              User      @relation(fields: [userId], references: [id])
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-}
-
-model Project {
-  id          Int           @id @default(autoincrement())
-  groupId     Int
-  name        String
-  description String?
-  createdBy   Int
-  status      ProjectStatus @default(PLANNING)
-  startDate   DateTime?
-  dueDate     DateTime?
-  priority    Int           @default(0)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  group       Group         @relation(fields: [groupId], references: [id])
-  creator     User          @relation(fields: [createdBy], references: [id])
-
-  @@index([status])
-  @@index([groupId])
-  @@index([createdBy])
-}
-
-// Additional enums
-enum CampaignStatus {
-  DRAFT
-  ACTIVE
-  PAUSED
-  COMPLETED
-  CANCELLED
-}
-
-enum ParticipantStatus {
-  ACTIVE
-  SUSPENDED
-  COMPLETED
-  WITHDRAWN
-}
-
-
-
-enum ProjectStatus {
-  PLANNING
-  IN_PROGRESS
-  ON_HOLD
-  COMPLETED
-  CANCELLED
-}
-
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
-}
-
-enum ModelType {
-  INFERENCE
-  TRAINING
-  GENERAL
-}
-
-enum ModelStatus {
-  ACTIVE
-  MAINTENANCE
-  DEPRECATED
-}
-
-enum Mood {
-  HAPPY
-  SAD
-  EXCITED
-  ANGRY
-  NEUTRAL
-}
-
-
-model LinkedContent {
-  id          Int      @id @default(autoincrement())
-  type        LinkedContentType
-  relatedId   Int
-  title       String
-  description String?
-  createdById Int
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  createdBy   User     @relation(fields: [createdById], references: [id])
-
-  @@index([type, relatedId])
-}
-
-enum LinkedContentType {
-  DISCUSSION
-  LEARNING_MODULE
-  SURVEY
-  RESOURCE
-}
-
-model Resource {
-  id             Int           @id @default(autoincrement())
-  groupId        Int
-  userId         Int
-  type           ResourceType
-  name           String
-  description    String
-  available      Boolean       @default(true)
-  availableUntil DateTime?
-  metadata       Json?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  group          Group         @relation(fields: [groupId], references: [id])
-  user           User          @relation(fields: [userId], references: [id])
-
-  @@index([type])
-  @@index([groupId])
-  @@index([userId])
-}
-
-enum ResourceType {
-  Skill
-  Resource
-  Time
-  Tool
-  Other
-}
-
-enum RewardType {
-  POINTS
-  BADGE
-  ITEM
-  CURRENCY
-}
-
-
-enum SurveyStatus {
-  DRAFT
-  ACTIVE
-  CLOSED
-}
-
-model User {
-  id                 Int                 @id @default(autoincrement())
-  email               String            @unique
-  username            String            @unique
-  password            String
-  firstName           String?
-  lastName            String?
-  role                Role               @default(USER)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  events              Event[]           @relation("CreatedEvents")
-  eventAttendees      EventAttendee[]
-  affiliateLinks      AffiliateLink[]
-  notifications       Notification[]
-  createdCampaigns    Campaign[]
-  campaignParticipations CampaignParticipant[]
-  campaignRewards     CampaignReward[]
-  settings             UserSettings?
-  feedback             Feedback[]
-  feedbackComments     FeedbackComment[]
-  badges               UserBadge[]         @relation("UserBadges")
-  awardedBadges        UserBadge[]         @relation("AwardedBadges")
-  files                File[]
-  generatedReports     Report[]
-  supportTickets       SupportTicket[]
-  ticketResponses      TicketResponse[]
-  createdPetitions    Petition[]        @relation("CreatedPetitions")
-  aiJobs               AIJob[]
-  avatarCustomization AvatarCustomization?
-  surveyResponses     SurveyResponse[]
-  createdSurveys      Survey[]
-  linkedContents       LinkedContent[]
-  achievements    Achievement[]
-  votes           Vote[]
-  projects        Project[]
-  resources       Resource[]
-  groupMemberships    GroupMember[]    @relation("UserGroups")
-  userRewards          UserReward[]
-  grants               Grant[]            @relation("UserGrants")
-  userEmojis           UserEmoji[]
-  playlists            Playlist[]
-  userAchievements     UserAchievement[]
-  brands              Brand[]
-  dividends           Dividend[]
-  avatar             Avatar?
-}
-
-model UserAchievement {
-  id            Int         @id @default(autoincrement())
-  userId        Int
-  achievementId String
-  earnedAt      DateTime    @default(now())
-  user          User        @relation(fields: [userId], references: [id])
-  achievement   Achievement @relation("AchievementToUser", fields: [achievementId], references: [id])
-
-  @@unique([userId, achievementId])
-}
-
-enum Visibility {
-  PRIVATE
-  PUBLIC
-  SHARED
-}
-
-model UserReward {
-  id            Int      @id @default(autoincrement())
-  userId        Int      // Changed from String to Int
-  totalPoints   Int      @default(0)
-  rewardsEarned Int[]
-  user          User     @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-}
-
-// Add missing JobStatus enum
-enum JobStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-  CANCELLED
-}
-
-// Add missing Emoji model
-model Emoji {
-  id        Int         @id @default(autoincrement())
-  name      String
-  code      String
-  groups    Group[]     @relation("GroupEmojis")
-  users     UserEmoji[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-}
-
-// Add these models to the existing schema.prisma file
-
 model AnalyticsEvent {
   id        Int      @id @default(autoincrement())
   userId    String?
@@ -812,10 +114,1031 @@ model Avatar {
   happiness        Int      @default(100)
   customizations   Json     @default("{}")
   achievements     Json     @default("[]") // string[]
-  stats           Json     @default("{\"strength\":1,\"agility\":1,\"intelligence\":1,\"charisma\":1}")
-  lastDailyReward DateTime @default(now())
-  streakCount     Int      @default(0)
-  user            User     @relation(fields: [userId], references: [id])
+  stats            Json     @default("{\"strength\":1,\"agility\":1,\"intelligence\":1,\"charisma\":1}")
+  lastDailyReward  DateTime @default(now())
+  streakCount      Int      @default(0)
+  user             User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+model AvatarCustomization {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique // Add @unique for one-to-one relation
+  baseImage   String
+  accessories Json     @default("[]")
+  colors      Json     @default("{}")
+  outfit      String?
+  mood        Mood     @default(NEUTRAL)
+  xp          Int      @default(0)
+  level       Int      @default(1)
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Brand {
+  id                Int                @id @default(autoincrement())
+  userId            Int
+  name              String
+  description       String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  user              User               @relation(fields: [userId], references: [id])
+  affiliatePrograms AffiliateProgram[]
+
+  @@index([userId])
+}
+
+model Bundle {
+  id              String          @id @default(uuid())
+  name            String
+  description     String
+  totalPrice      Float
+  discountedPrice Float
+  validFrom       DateTime
+  validUntil      DateTime
+  limitedQuantity Int?
+  soldCount       Int             @default(0)
+  imageUrl        String?
+  featured        Boolean         @default(false)
+  createdById     Int // Changed from String to Int
+  createdBy       User            @relation(fields: [createdById], references: [id])
+  products        BundleProduct[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model BundleProduct {
+  bundleId           String
+  productId          String
+  quantity           Int     @default(1)
+  discountPercentage Float   @default(0)
+  bundle             Bundle  @relation(fields: [bundleId], references: [id])
+  product            Product @relation(fields: [productId], references: [id])
+
+  @@id([bundleId, productId])
+}
+
+model Campaign {
+  id           String                @id @default(cuid())
+  title        String
+  description  String
+  startDate    DateTime
+  endDate      DateTime
+  status       CampaignStatus        @default(DRAFT)
+  createdById  Int
+  createdBy    User                  @relation(fields: [createdById], references: [id])
+  participants CampaignParticipant[]
+  rewards      CampaignReward[]
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model CampaignParticipant {
+  id         String            @id @default(cuid())
+  campaignId String
+  userId     Int
+  status     ParticipantStatus @default(ACTIVE)
+  progress   Json              @default("{}")
+  campaign   Campaign          @relation(fields: [campaignId], references: [id])
+  user       User              @relation(fields: [userId], references: [id])
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([campaignId, userId])
+}
+
+model CampaignReward {
+  id         String     @id @default(cuid())
+  campaignId String
+  userId     Int
+  type       RewardType
+  amount     Int
+  claimed    Boolean    @default(false)
+  claimedAt  DateTime?
+  campaign   Campaign   @relation(fields: [campaignId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model ClickTracking {
+  id              Int           @id @default(autoincrement())
+  affiliateLinkId Int
+  clickedAt       DateTime      @default(now())
+  ipAddress       String?
+  userAgent       String?
+  affiliateLink   AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model CommunityWishlist {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  communityName String
+  productId     String
+  name          String
+  image         String
+  price         Float
+  highlighted   Boolean  @default(false)
+  date          DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CommunityWishlistItem {
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  name               String
+  description        String?
+  image              String?
+  price              Float
+  contributors       Int[]    @default([])
+  totalContributions Float    @default(0)
+  user               User     @relation(fields: [userId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Company {
+  id              Int      @id @default(autoincrement())
+  name            String
+  industry        String
+  description     String
+  referralTerms   String
+  generosityScore Float?   @default(0)
+  website         String?
+  logo            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model DataCollective {
+  id                  Int            @id @default(autoincrement())
+  name                String
+  dataSharingPolicies Json
+  sustainabilityGoals String[]
+  resourceAllocation  Json
+  groups              Group[]        @relation("DataCollectiveGroups")
+  members             User[]         @relation("DataCollectiveMembers")
+  dataStreams         DataStream[]
+  impactMetrics       ImpactMetric[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}
+
+model DataStream {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  direction         DataStreamDirection
+  dataSchema        Json
+  processingMetrics Json
+  dataCollectiveId  Int
+  dataCollective    DataCollective      @relation(fields: [dataCollectiveId], references: [id])
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model Dividend {
+  id          Int      @id @default(autoincrement())
+  amount      Float
+  recipientId Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  recipient   User     @relation(fields: [recipientId], references: [id])
+
+  @@index([recipientId])
+}
+
+model Emoji {
+  id        Int         @id @default(autoincrement())
+  name      String
+  code      String
+  groups    Group[]     @relation("GroupEmojis")
+  users     UserEmoji[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Event {
+  id                Int             @id @default(autoincrement())
+  groupId           Int
+  title             String
+  description       String?
+  startDate         DateTime
+  endDate           DateTime
+  location          String?
+  virtualMeetingUrl String?
+  maxAttendees      Int?
+  createdById       Int
+  status            EventStatus     @default(DRAFT)
+  group             Group           @relation(fields: [groupId], references: [id])
+  createdBy         User            @relation("CreatedEvents", fields: [createdById], references: [id]) // Changed relation name to match User model
+  attendees         EventAttendee[]
+  recurringEvent    RecurringEvent?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([startDate])
+  @@index([groupId])
+}
+
+model EventAttendee {
+  id        Int            @id @default(autoincrement())
+  eventId   Int
+  userId    Int
+  status    AttendeeStatus @default(PENDING)
+  event     Event          @relation(fields: [eventId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([eventId, userId])
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  type        String // BUG, FEATURE, GENERAL
+  title       String
+  description String
+  priority    String? // LOW, MEDIUM, HIGH
+  category    String?
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, REJECTED
+  userId      Int // Changed from String to Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User              @relation(fields: [userId], references: [id])
+  comments FeedbackComment[]
+}
+
+model FeedbackComment {
+  id         String   @id @default(cuid())
+  content    String
+  feedbackId String
+  userId     Int // Changed from String to Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  feedback Feedback @relation(fields: [feedbackId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model File {
+  id         String   @id @default(cuid())
+  name       String
+  path       String
+  mimeType   String
+  size       Int
+  type       String // AVATAR, EVENT_IMAGE, GROUP_IMAGE, DOCUMENT
+  visibility String   @default("PRIVATE")
+  userId     Int // Changed from String to Int to match User.id
+  relatedId  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model FlashSale {
+  id          String             @id @default(uuid())
+  name        String
+  description String
+  startTime   DateTime
+  endTime     DateTime
+  status      FlashSaleStatus
+  featured    Boolean            @default(false)
+  createdById Int // Changed from String to Int
+  createdBy   User               @relation(fields: [createdById], references: [id])
+  products    FlashSaleProduct[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model FlashSaleProduct {
+  flashSaleId String
+  productId   String
+  salePrice   Float
+  quantity    Int
+  soldCount   Int       @default(0)
+  flashSale   FlashSale @relation(fields: [flashSaleId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@id([flashSaleId, productId])
+}
+
+model Forum {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  posts       Post[]
+}
+
+model Group {
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String?
+  avatar          String?
+  isPrivate       Boolean          @default(false)
+  events          Event[]
+  petitions       Petition[]
+  projects        Project[]
+  resources       Resource[]
+  members         GroupMember[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  grants          Grant[]
+  playlists       Playlist[]
+  emojis          Emoji[]          @relation("GroupEmojis")
+  dataCollectives DataCollective[] @relation("DataCollectiveGroups")
+  groupType       GroupType?       @relation(fields: [groupTypeId], references: [id])
+  groupTypeId     Int?
+}
+
+model GroupMember {
+  userId    Int
+  groupId   Int
+  role      GroupMemberRole @default(Observer)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation("UserGroups", fields: [userId], references: [id])
+  group     Group           @relation(fields: [groupId], references: [id])
+
+  @@id([userId, groupId])
+}
+
+model GroupType {
+  id               Int                       @id @default(autoincrement())
+  name             String                    @unique
+  description      String
+  levelOfFormality GroupTypeLevelOfFormality
+  scope            GroupTypeScope
+  groups           Group[]
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+}
+
+model Grant {
+  id                 Int         @id @default(autoincrement())
+  applicantId        Int
+  groupId            Int?
+  title              String
+  projectDescription String
+  amountRequested    Decimal     @db.Decimal(10, 2)
+  amountGranted      Decimal     @default(0) @db.Decimal(10, 2)
+  status             GrantStatus @default(pending)
+  completionDate     DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  applicant          User        @relation("UserGrants", fields: [applicantId], references: [id])
+  group              Group?      @relation(fields: [groupId], references: [id])
+}
+
+model HybridPost {
+  id           Int                   @id @default(autoincrement())
+  content      String
+  isThread     Boolean               @default(false)
+  parentId     Int?
+  userId       Int
+  parent       HybridPost?           @relation("HybridPostParent", fields: [parentId], references: [id])
+  replies      HybridPost[]          @relation("HybridPostParent")
+  mentions     String[]              @default([])
+  hashtags     String[]              @default([])
+  attachments  String[]              @default([])
+  likesCount   Int                   @default(0)
+  repostsCount Int                   @default(0)
+  visibility   HybridPostVisibility?
+  sensitive    Boolean               @default(false)
+  spoilerText  String?
+  user         User                  @relation(fields: [userId], references: [id])
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+}
+
+model ImpactMetric {
+  id               Int                  @id @default(autoincrement())
+  name             String
+  value            Float
+  unit             String
+  category         ImpactMetricCategory
+  context          Json?
+  dataCollectiveId Int
+  dataCollective   DataCollective       @relation(fields: [dataCollectiveId], references: [id])
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model Inventory {
+  id        String   @id @default(uuid())
+  userId    Int // Changed from String to Int
+  itemId    String
+  quantity  Int      @default(1)
+  user      User     @relation(fields: [userId], references: [id])
+  item      Item     @relation(fields: [itemId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id          String      @id @default(uuid())
+  name        String
+  type        String
+  rarity      String      @default("common")
+  description String?
+  imageUrl    String?
+  inventory   Inventory[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Link {
+  id         Int      @id @default(autoincrement())
+  linkPageId Int
+  title      String
+  url        String   @unique
+  order      Int      @default(0)
+  icon       String?
+  analytics  Json     @default("{}")
+  isActive   Boolean  @default(true)
+  linkPage   LinkPage @relation(fields: [linkPageId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model LinkedContent {
+  id          String            @id @default(cuid())
+  userId      Int
+  title       String
+  description String?
+  type        LinkedContentType
+  url         String?
+  metadata    Json              @default("{}")
+  user        User              @relation(fields: [userId], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([type])
+}
+
+model LinkPage {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  title         String
+  slug          String   @unique
+  theme         String   @default("default")
+  customization Json     @default("{}")
+  isPublic      Boolean  @default(true)
+  user          User     @relation(fields: [userId], references: [id])
+  links         Link[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  metadata  Json?
+  link      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([read])
+}
+
+model Payout {
+  id              Int           @id @default(autoincrement())
+  affiliateLinkId Int
+  amount          Float
+  status          PayoutStatus
+  transactionId   String?
+  creatorId       Int
+  affiliateLink   AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
+  creator         User          @relation(fields: [creatorId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Petition {
+  id            Int            @id @default(autoincrement())
+  groupId       Int
+  title         String
+  description   String?
+  createdBy     Int
+  status        PetitionStatus @default(Open)
+  closingDate   DateTime?
+  requiredVotes Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  group         Group          @relation(fields: [groupId], references: [id])
+  creator       User           @relation("CreatedPetitions", fields: [createdBy], references: [id])
+  votes         Vote[]
+
+  @@index([status])
+  @@index([groupId])
+  @@index([createdBy])
+}
+
+model Playlist {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  userId      Int
+  groupId     Int?
+  mediaItems  Json       @default("[]") // Array of media items with order
+  visibility  Visibility @default(PRIVATE)
+  user        User       @relation(fields: [userId], references: [id])
+  group       Group?     @relation(fields: [groupId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([groupId])
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  userId    Int
+  forumId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  forum     Forum    @relation(fields: [forumId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id                String             @id @default(uuid())
+  name              String
+  description       String
+  price             Float
+  category          String
+  imageUrl          String?
+  bundleProducts    BundleProduct[]
+  flashSaleProducts FlashSaleProduct[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  groupId     Int
+  name        String
+  description String?
+  createdBy   Int
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  dueDate     DateTime?
+  priority    Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  group       Group         @relation(fields: [groupId], references: [id])
+  creator     User          @relation(fields: [createdBy], references: [id])
+
+  @@index([status])
+  @@index([groupId])
+  @@index([createdBy])
+}
+
+model RecurringEvent {
+  id            Int       @id @default(autoincrement())
+  parentEventId Int       @unique
+  frequency     Frequency
+  interval      Int       @default(1)
+  endDate       DateTime?
+  customPattern Json?
+  parentEvent   Event     @relation(fields: [parentEventId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Report {
+  id            String   @id @default(cuid())
+  type          String // EVENT, ANALYTICS, FINANCIAL
+  generatedById Int // Changed from String to Int
+  filters       Json?
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  generatedBy User @relation(fields: [generatedById], references: [id])
+}
+
+model Resource {
+  id             Int          @id @default(autoincrement())
+  groupId        Int
+  userId         Int
+  type           ResourceType
+  name           String
+  description    String
+  available      Boolean      @default(true)
+  availableUntil DateTime?
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  group          Group        @relation(fields: [groupId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
+
+  @@index([type])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model SearchHistory {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  query       String
+  resultCount Int      @default(0)
+  filters     Json?
+  hasResults  Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SupportTicket {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  priority    String
+  status      String   @default("OPEN")
+  userId      Int // Changed from String to Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User             @relation(fields: [userId], references: [id])
+  responses TicketResponse[]
+}
+
+model Survey {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  questions   Json
+  createdById Int
+  status      SurveyStatus     @default(DRAFT)
+  responses   SurveyResponse[]
+  createdBy   User             @relation(fields: [createdById], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model SurveyResponse {
+  id        String   @id @default(cuid())
+  surveyId  String
+  userId    Int
+  responses Json
+  survey    Survey   @relation(fields: [surveyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TicketResponse {
+  id          String   @id @default(cuid())
+  content     String
+  ticketId    String
+  responderId Int // Changed from String to Int
+  createdAt   DateTime @default(now())
+
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id])
+  responder User          @relation(fields: [responderId], references: [id])
+}
+
+model User {
+  id                     Int                     @id @default(autoincrement())
+  email                  String                  @unique
+  username               String                  @unique
+  password               String
+  firstName              String?
+  lastName               String?
+  role                   Role                    @default(USER)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  events                 Event[]                 @relation("CreatedEvents")
+  eventAttendees         EventAttendee[]
+  affiliateLinks         AffiliateLink[]
+  notifications          Notification[]
+  createdCampaigns       Campaign[]
+  campaignParticipations CampaignParticipant[]
+  campaignRewards        CampaignReward[]
+  settings               UserSettings?
+  feedback               Feedback[]
+  feedbackComments       FeedbackComment[]
+  badges                 UserBadge[]             @relation("UserBadges")
+  awardedBadges          UserBadge[]             @relation("AwardedBadges")
+  files                  File[]
+  generatedReports       Report[]
+  supportTickets         SupportTicket[]
+  ticketResponses        TicketResponse[]
+  createdPetitions       Petition[]              @relation("CreatedPetitions")
+  aiJobs                 AIJob[]
+  avatarCustomization    AvatarCustomization?
+  surveyResponses        SurveyResponse[]
+  createdSurveys         Survey[]
+  linkedContents         LinkedContent[]
+  achievements           Achievement[]
+  votes                  Vote[]
+  projects               Project[]
+  resources              Resource[]
+  groupMemberships       GroupMember[]           @relation("UserGroups")
+  userRewards            UserReward[]
+  grants                 Grant[]                 @relation("UserGrants")
+  userEmojis             UserEmoji[]
+  playlists              Playlist[]
+  userAchievements       UserAchievement[]
+  brands                 Brand[]
+  dividends              Dividend[]
+  avatar                 Avatar?
+  bundles                Bundle[]
+  communityWishlists     CommunityWishlist[]
+  communityWishlistItems CommunityWishlistItem[]
+  flashSales             FlashSale[]
+  hybridPosts            HybridPost[]
+  inventory              Inventory[]
+  linkPages              LinkPage[]
+  payouts                Payout[]
+  posts                  Post[]
+  searchHistory          SearchHistory[]
+  dataCollectives        DataCollective[]        @relation("DataCollectiveMembers")
+}
+
+model UserAchievement {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  achievementId String
+  earnedAt      DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id])
+  achievement   Achievement @relation("AchievementToUser", fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+}
+
+model UserBadge {
+  id          String   @id @default(cuid())
+  userId      Int // Changed from String to Int
+  type        String
+  reason      String?
+  awardedById Int // Changed from String to Int
+  createdAt   DateTime @default(now())
+
+  user      User @relation("UserBadges", fields: [userId], references: [id])
+  awardedBy User @relation("AwardedBadges", fields: [awardedById], references: [id])
+}
+
+model UserEmoji {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  emojiId   Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  emoji     Emoji    @relation(fields: [emojiId], references: [id])
+}
+
+model UserReward {
+  id            Int   @id @default(autoincrement())
+  userId        Int // Changed from String to Int
+  totalPoints   Int   @default(0)
+  rewardsEarned Int[]
+  user          User  @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model UserSettings {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  theme            String   @default("light")
+  notifications    Json     @default("{}")
+  language         String   @default("en")
+  timezone         String   @default("UTC")
+  emailPreferences Json     @default("{}")
+  privacySettings  Json     @default("{}")
+  user             User     @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Vote {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  petitionId Int
+  voteType   VoteType
+  comment    String?
+  weight     Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id])
+  petition   Petition @relation(fields: [petitionId], references: [id])
+
+  @@unique([userId, petitionId])
+  @@index([voteType])
+}
+
+enum AttendeeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum DataStreamDirection {
+  INBOUND
+  OUTBOUND
+  BIDIRECTIONAL
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum FlashSaleStatus {
+  upcoming
+  active
+  ended
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum FrequencyType {
+  daily
+  weekly
+  monthly
+}
+
+enum GrantStatus {
+  pending
+  approved
+  rejected
+  completed
+}
+
+enum GroupMemberRole {
+  Observer
+  Contributor
+  CoreMember
+  Delegate
+}
+
+enum GroupTypeLevelOfFormality {
+  Informal
+  Formal
+}
+
+enum GroupTypeScope {
+  Local
+  Regional
+  Global
+}
+
+enum HybridPostVisibility {
+  public
+  unlisted
+  private
+  direct
+}
+
+enum ImpactMetricCategory {
+  ENVIRONMENTAL
+  SOCIAL
+  EFFICIENCY
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum LinkedContentType {
+  DISCUSSION
+  LEARNING_MODULE
+  SURVEY
+  RESOURCE
+}
+
+enum ModelStatus {
+  ACTIVE
+  MAINTENANCE
+  DEPRECATED
+}
+
+enum ModelType {
+  INFERENCE
+  TRAINING
+  GENERAL
+}
+
+enum Mood {
+  HAPPY
+  SAD
+  EXCITED
+  ANGRY
+  NEUTRAL
+}
+
+enum NotificationType {
+  version_control
+  event
+  mention
+  group
+  achievement
+  other
+}
+
+enum ParticipantStatus {
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  WITHDRAWN
+}
+
+enum PayoutStatus {
+  pending
+  completed
+  failed
+}
+
+enum PetitionStatus {
+  Open
+  Closed
+  Approved
+  Rejected
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum ResourceType {
+  Skill
+  Resource
+  Time
+  Tool
+  Other
+}
+
+enum RewardType {
+  POINTS
+  BADGE
+  ITEM
+  CURRENCY
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum SurveyStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+  SHARED
+}
+
+enum VoteType {
+  For
+  Against
+  Abstain
 }
