@@ -1,5 +1,6 @@
 import React from 'react';
-import { Draggable } from 'react-beautiful-dnd';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface MediaItem {
   id: string;
@@ -13,7 +14,25 @@ interface PlaylistItemProps {
   index: number;
 }
 
-const PlaylistItem: React.FC<PlaylistItemProps> = ({ mediaItem, index }) => {
+const PlaylistItem: React.FC<PlaylistItemProps> = ({ mediaItem }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: mediaItem.id
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : undefined,
+    zIndex: isDragging ? 999 : undefined,
+  };
+
   const renderMedia = () => {
     switch (mediaItem.type) {
       case 'music':
@@ -36,20 +55,17 @@ const PlaylistItem: React.FC<PlaylistItemProps> = ({ mediaItem, index }) => {
   };
 
   return (
-    <Draggable draggableId={mediaItem.id} index={index}>
-      {(provided) => (
-        <li
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className="border p-4 rounded bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
-        >
-          <h3 className="text-lg font-semibold mb-2">{mediaItem.title}</h3>
-          {renderMedia()}
-          <p className="mt-2 text-sm text-gray-600">Type: {mediaItem.type}</p>
-        </li>
-      )}
-    </Draggable>
+    <li
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="border p-4 rounded bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+    >
+      <h3 className="text-lg font-semibold mb-2">{mediaItem.title}</h3>
+      {renderMedia()}
+      <p className="mt-2 text-sm text-gray-600">Type: {mediaItem.type}</p>
+    </li>
   );
 };
 

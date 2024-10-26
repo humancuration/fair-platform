@@ -1,33 +1,26 @@
+export type MediaItemType = "video" | "social" | "music" | "podcast";
+
 export interface MediaItem {
   id: string;
-  type: 'music' | 'video' | 'social' | 'podcast';
   title: string;
   url: string;
-  artwork?: string;
+  type: MediaItemType;
+  duration: number;
+  thumbnail?: string;
   artist?: string;
-  duration?: number;
-  waveformData?: number[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Playlist {
   id: string;
-  name: string;
-  description: string;
+  title: string;
+  description?: string;
   mediaItems: MediaItem[];
   ownerId: string;
-  groupId?: string;
-  createdAt: string;
-  artwork?: string;
+  createdAt: Date;
+  updatedAt: Date;
   isPublic: boolean;
-  tags: string[];
-  totalDuration: number;
-  playCount: number;
-  collaborators?: string[];
-  mood?: {
-    energy: number;
-    danceability: number;
-    valence: number;
-  };
 }
 
 export interface PlaylistStats {
@@ -47,4 +40,26 @@ export interface PlaylistStats {
     desktop: number;
     tablet: number;
   };
+}
+
+export interface PlaylistContextState {
+  currentPlaylist: Playlist | null;
+  currentTrackIndex: number;
+  isPlaying: boolean;
+  queue: MediaItem[];
+}
+
+export type PlaylistAction = 
+  | { type: 'SET_PLAYLIST'; payload: Playlist }
+  | { type: 'SET_TRACK_INDEX'; payload: number }
+  | { type: 'TOGGLE_PLAY' }
+  | { type: 'ADD_TO_QUEUE'; payload: MediaItem }
+  | { type: 'REMOVE_FROM_QUEUE'; payload: number }
+  | { type: 'CLEAR_QUEUE' };
+
+export interface CreatePlaylistData {
+  title: string;
+  description?: string;
+  isPublic?: boolean;
+  mediaItems?: string[];
 }

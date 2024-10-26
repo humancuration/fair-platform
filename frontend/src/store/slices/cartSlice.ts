@@ -1,5 +1,7 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface CartItem {
   id: string;
@@ -15,131 +17,79 @@ export interface CartItem {
   stock: number;
 }
 
-export interface CartState {
-  items: CartItem[];
-  total: number;
-  loading: boolean;
-  error: string | null;
-  checkoutStatus: 'idle' | 'processing' | 'success' | 'error';
-}
-
-const initialState: CartState = {
-  items: [],
-  total: 0,
-  loading: false,
-  error: null,
-  checkoutStatus: 'idle',
+// React Query hooks
+export const useCartQuery = () => {
+  return useQuery({
+    queryKey: ['cart'],
+    queryFn: async () => {
+      const { data } = await axios.get('/api/cart');
+      return data;
+    }
+  });
 };
 
-// Async thunks
-export const fetchCart = createAsyncThunk(
-  'cart/fetchCart',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get('/api/cart');
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch cart');
+export const useAddToCartMutation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (item: Omit<CartItem, 'quantity'>) => {
+      const { data } = await axios.post('/api/cart/items', item);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     }
-  }
-);
+  });
+};
 
-export const addItemToCart = createAsyncThunk(
-  'cart/addItem',
-  async (item: Omit<CartItem, 'quantity'>, { rejectWithValue }) => {
-    try {
-      const response = await axios.post('/api/cart/items', item);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to add item');
-    }
-  }
-);
-
-export const removeItemFromCart = createAsyncThunk(
-  'cart/removeItem',
-  async (itemId: string, { rejectWithValue }) => {
-    try {
+export const useRemoveFromCartMutation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (itemId: string) => {
       await axios.delete(`/api/cart/items/${itemId}`);
       return itemId;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to remove item');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     }
-  }
-);
+  });
+};
 
+// Redux slice for UI state
 const cartSlice = createSlice({
   name: 'cart',
-  initialState,
-  reducers: {
-    updateQuantity(state, action: PayloadAction<{ id: string; quantity: number }>) {
-      const item = state.items.find(item => item.id === action.payload.id);
-      if (item && action.payload.quantity <= item.stock) {
-        item.quantity = action.payload.quantity;
-        state.total = calculateTotal(state.items);
-      }
-    },
-    clearCart(state) {
-      state.items = [];
-      state.total = 0;
-      state.checkoutStatus = 'idle';
-    },
-    setCheckoutStatus(state, action: PayloadAction<CartState['checkoutStatus']>) {
-      state.checkoutStatus = action.payload;
-    },
+  initialState: {
+    isCartOpen: false,
+    checkoutStep: 0,
+    selectedPaymentMethod: null as string | null,
   },
-  extraReducers: (builder) => {
-    builder
-      // Fetch Cart
-      .addCase(fetchCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload.items;
-        state.total = calculateTotal(action.payload.items);
-      })
-      .addCase(fetchCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Add Item
-      .addCase(addItemToCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addItemToCart.fulfilled, (state, action) => {
-        const existingItem = state.items.find(item => item.id === action.payload.id);
-        if (existingItem) {
-          existingItem.quantity += 1;
-        } else {
-          state.items.push({ ...action.payload, quantity: 1 });
-        }
-        state.total = calculateTotal(state.items);
-        state.loading = false;
-      })
-      .addCase(addItemToCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-      // Remove Item
-      .addCase(removeItemFromCart.fulfilled, (state, action) => {
-        state.items = state.items.filter(item => item.id !== action.payload);
-        state.total = calculateTotal(state.items);
-      });
+  reducers: {
+    toggleCart: (state) => {
+      state.isCartOpen = !state.isCartOpen;
+    },
+    setCheckoutStep: (state, action: PayloadAction<number>) => {
+      state.checkoutStep = action.payload;
+    },
+    setPaymentMethod: (state, action: PayloadAction<string>) => {
+      state.selectedPaymentMethod = action.payload;
+    },
   },
 });
 
-// Helper function to calculate total
-const calculateTotal = (items: CartItem[]): number => {
-  return items.reduce((total, item) => {
-    const price = item.discount 
-      ? item.price * (1 - item.discount / 100)
-      : item.price;
-    return total + (price * item.quantity);
-  }, 0);
+export const {
+  toggleCart,
+  setCheckoutStep,
+  setPaymentMethod,
+} = cartSlice.actions;
+
+export default cartSlice.reducer;
+
+// Framer Motion animations for cart items
+export const cartItemVariants = {
+  hidden: { opacity: 0, x: 20 },
+  visible: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -20 }
 };
 
-export const { updateQuantity, clearCart, setCheckoutStatus } = cartSlice.actions;
-export default cartSlice.reducer;
+export const CartItemAnimation = motion.div;

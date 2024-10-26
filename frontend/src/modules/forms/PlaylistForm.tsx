@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { FaMagic, FaSparkles } from 'react-icons/fa';
+import { FaMagic, FaMusic } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import type { CreatePlaylistData } from '../../types/playlist';
 
 interface PlaylistFormProps {
-  onSubmit: (data: { name: string; description: string; groupId?: string }) => void;
+  onSubmit: (data: CreatePlaylistData) => void;
   loading: boolean;
+  error?: string;
+  initialData?: Partial<CreatePlaylistData>;
 }
 
 const EnchantedForm = styled(motion.form)`
@@ -66,18 +69,38 @@ const SpellcastButton = styled(motion.button)`
   }
 `;
 
-const PlaylistForm: React.FC<PlaylistFormProps> = ({ onSubmit, loading }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [groupId, setGroupId] = useState<string>('');
+const Label = styled.label`
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 500;
+`;
+
+const PlaylistForm: React.FC<PlaylistFormProps> = ({ 
+  onSubmit, 
+  loading, 
+  error,
+  initialData 
+}) => {
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [isPublic, setIsPublic] = useState(initialData?.isPublic || false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !description) {
-      toast.error('🧙‍♂️ Oops! Your magical incantation is incomplete. Please fill in all required fields.');
+    if (!title.trim()) {
+      toast.error('🎵 Please enter a title for your playlist!');
       return;
     }
-    onSubmit({ name, description, groupId: groupId || undefined });
+    
+    onSubmit({ 
+      title: title.trim(), 
+      description: description.trim(),
+      isPublic,
+      mediaItems: [] // Initialize with empty array
+    });
   };
 
   return (
@@ -92,47 +115,54 @@ const PlaylistForm: React.FC<PlaylistFormProps> = ({ onSubmit, loading }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <label>
-          <FaSparkles /> Playlist Name
-        </label>
+        <Label>
+          <FaMusic /> Playlist Title
+        </Label>
         <MagicalInput
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           required
-          placeholder="Enter a magical name"
+          placeholder="Enter a magical playlist title"
+          disabled={loading}
         />
       </motion.div>
+
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <label>
-          <FaSparkles /> Description
-        </label>
+        <Label>
+          <FaMusic /> Description
+        </Label>
         <EnchantedTextarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          required
           placeholder="Describe your enchanted playlist"
+          disabled={loading}
         />
       </motion.div>
+
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.4 }}
+        className="flex items-center mb-4"
       >
-        <label>
-          <FaSparkles /> Group (Optional)
-        </label>
-        <MagicalInput
-          type="text"
-          value={groupId}
-          onChange={(e) => setGroupId(e.target.value)}
-          placeholder="Enter group ID if casting a group spell"
+        <input
+          type="checkbox"
+          id="isPublic"
+          checked={isPublic}
+          onChange={(e) => setIsPublic(e.target.checked)}
+          className="mr-2"
+          disabled={loading}
         />
+        <Label htmlFor="isPublic">
+          Make this playlist public
+        </Label>
       </motion.div>
+
       <SpellcastButton
         type="submit"
         disabled={loading}
@@ -140,8 +170,18 @@ const PlaylistForm: React.FC<PlaylistFormProps> = ({ onSubmit, loading }) => {
         whileTap={{ scale: 0.95 }}
       >
         <FaMagic />
-        {loading ? 'Casting Spell...' : 'Create Magical Playlist'}
+        {loading ? 'Creating Playlist...' : 'Create Magical Playlist'}
       </SpellcastButton>
+
+      {error && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-red-300 mt-4"
+        >
+          {error}
+        </motion.p>
+      )}
     </EnchantedForm>
   );
 };

@@ -1,4 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 interface SalesMetrics {
@@ -23,71 +24,99 @@ interface SalesMetrics {
 }
 
 interface AnalyticsState {
-  metrics: SalesMetrics;
-  loading: boolean;
-  error: string | null;
-  realtimeViewers: number;
-  popularCategories: Array<{
-    category: string;
-    count: number;
-  }>;
+  dateRange: 'day' | 'week' | 'month' | 'year';
+  selectedMetrics: string[];
+  viewMode: 'chart' | 'table';
+  comparisonMode: boolean;
 }
 
-const initialState: AnalyticsState = {
-  metrics: {
-    daily: 0,
-    weekly: 0,
-    monthly: 0,
-    total: 0,
-    averageOrderValue: 0,
-    topSellingProducts: [],
-    conversionRate: 0,
-    affiliatePerformance: [],
-  },
-  loading: false,
-  error: null,
-  realtimeViewers: 0,
-  popularCategories: [],
+// React Query hooks
+export const useAnalytics = (dateRange: string) => {
+  return useQuery({
+    queryKey: ['analytics', dateRange],
+    queryFn: async () => {
+      const { data } = await axios.get('/api/marketplace/analytics', {
+        params: { dateRange }
+      });
+      return data as SalesMetrics;
+    },
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
 };
 
-export const fetchAnalytics = createAsyncThunk(
-  'marketplaceAnalytics/fetch',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get('/api/marketplace/analytics');
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message);
-    }
-  }
-);
+export const useRealtimeMetrics = () => {
+  return useQuery({
+    queryKey: ['realtime-metrics'],
+    queryFn: async () => {
+      const { data } = await axios.get('/api/marketplace/analytics/realtime');
+      return data;
+    },
+    refetchInterval: 30000, // Refetch every 30 seconds for realtime data
+  });
+};
 
+// Redux slice for UI state
 const marketplaceAnalyticsSlice = createSlice({
   name: 'marketplaceAnalytics',
-  initialState,
+  initialState: {
+    dateRange: 'month' as const,
+    selectedMetrics: ['sales', 'revenue', 'conversion'],
+    viewMode: 'chart' as const,
+    comparisonMode: false,
+  } as AnalyticsState,
   reducers: {
-    updateRealtimeViewers(state, action) {
-      state.realtimeViewers = action.payload;
+    setDateRange: (state, action: PayloadAction<AnalyticsState['dateRange']>) => {
+      state.dateRange = action.payload;
     },
-    updatePopularCategories(state, action) {
-      state.popularCategories = action.payload;
+    toggleMetric: (state, action: PayloadAction<string>) => {
+      const index = state.selectedMetrics.indexOf(action.payload);
+      if (index === -1) {
+        state.selectedMetrics.push(action.payload);
+      } else {
+        state.selectedMetrics.splice(index, 1);
+      }
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchAnalytics.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchAnalytics.fulfilled, (state, action) => {
-        state.metrics = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchAnalytics.rejected, (state, action) => {
-        state.error = action.payload as string;
-        state.loading = false;
-      });
+    setViewMode: (state, action: PayloadAction<AnalyticsState['viewMode']>) => {
+      state.viewMode = action.payload;
+    },
+    toggleComparisonMode: (state) => {
+      state.comparisonMode = !state.comparisonMode;
+    },
   },
 });
 
-export const { updateRealtimeViewers, updatePopularCategories } = marketplaceAnalyticsSlice.actions;
+export const {
+  setDateRange,
+  toggleMetric,
+  setViewMode,
+  toggleComparisonMode,
+} = marketplaceAnalyticsSlice.actions;
+
 export default marketplaceAnalyticsSlice.reducer;
+
+// Chart configuration helpers
+export const getChartConfig = (metrics: SalesMetrics, selectedMetrics: string[]) => {
+  return {
+    data: {
+      labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+      datasets: selectedMetrics.map(metric => ({
+        label: metric,
+        data: metrics[metric as keyof SalesMetrics],
+        fill: false,
+        tension: 0.4,
+      })),
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        intersect: false,
+        mode: 'index',
+      },
+      plugins: {
+        legend: {
+          position: 'top' as const,
+        },
+      },
+    },
+  };
+};

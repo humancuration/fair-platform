@@ -2,24 +2,27 @@
 
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { store } from './store';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ErrorBoundary } from 'react-error-boundary';
-import ProtectedRoute from './components/ProtectedRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import ProtectedRoute from './components/ProtectedRoute';
+// Providers
+import { StateProvider } from './store/store';
 import { ModalProvider } from './providers/ModalProvider';
 import { MusicPlayerProvider } from './contexts/MusicPlayerContext';
 import { ErrorProvider } from './contexts/ErrorContext';
 import { UserProvider } from './modules/user/UserContext';
+import { UnifiedAudioProvider } from './contexts/UnifiedAudioContext';
+
+// Components
 import MusicPlayerControls from './modules/music/MusicPlayerControls';
 import ErrorFallback from './components/ErrorFallback';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import theme from '../theme';
-import { UnifiedAudioProvider } from '@contexts/UnifiedAudioContext';
 
 // Eager-loaded components
 import CreateCampaignPage from './modules/campaign/CreateCampaignPage';
@@ -57,8 +60,19 @@ const PlaylistListPage = lazy(() => import('./modules/playlist/PlaylistListPage'
 const PlaylistDetailsPage = lazy(() => import('./modules/playlist/PlaylistDetailsPage'));
 const Social = lazy(() => import('./modules/forum/social'));
 
-const queryClient = new QueryClient();
+// Initialize QueryClient with default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 30 * 60 * 1000,   // 30 minutes (renamed from cacheTime)
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
+// Route configuration
 const routes = [
   { path: '/', element: <Home /> },
   { path: '/login', element: <Login /> },
@@ -103,38 +117,49 @@ const routes = [
 
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
+    <StateProvider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <ModalProvider>
-            <ErrorBoundary FallbackComponent={ErrorFallback}>
-              <ErrorProvider>
-                <UserProvider>
-                  <Router>
+            <ErrorProvider>
+              <UserProvider>
+                <Router>
+                  <UnifiedAudioProvider>
                     <MusicPlayerProvider>
                       <Suspense fallback={<LoadingSpinner />}>
                         <Routes>
                           {routes.map((route, index) => (
                             <Route key={index} path={route.path} element={route.element}>
-                              {route.children && route.children.map((childRoute, childIndex) => (
+                              {route.children?.map((childRoute, childIndex) => (
                                 <Route key={childIndex} path={childRoute.path} element={childRoute.element} />
                               ))}
                             </Route>
                           ))}
                         </Routes>
                       </Suspense>
-                      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+                      <ToastContainer 
+                        position="top-right" 
+                        autoClose={5000} 
+                        hideProgressBar={false}
+                        newestOnTop
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="light"
+                      />
                       <MusicPlayerControls />
                     </MusicPlayerProvider>
-                  </Router>
-                </UserProvider>
-              </ErrorProvider>
-            </ErrorBoundary>
+                  </UnifiedAudioProvider>
+                </Router>
+              </UserProvider>
+            </ErrorProvider>
           </ModalProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </Provider>
+    </StateProvider>
   );
 };
 

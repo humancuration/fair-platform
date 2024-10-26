@@ -40,6 +40,7 @@ Mobile friendly PWA and website
 - Howler.js
 - vis-network
 - d3.js
+- @dnd-kit/core
 
 ## Development Tools
 - Git

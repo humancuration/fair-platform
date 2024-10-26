@@ -1,100 +1,169 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store/store';
-import { addMediaItem, fetchPlaylists, reorderMediaItems } from '../../store/slices/playlistsSlice';
-import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import Layout from '../../components/Layout';
-import MediaItemForm from '../components/MediaItemForm';
-import PlaylistItem from '../components/PlaylistItem';
-import Button from '../../components/common/Button';
-import { toast } from 'react-toastify';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ShareWithGroupModal from '../group/ShareWithGroupModal';
-import styled from 'styled-components';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { styled } from '@mui/material/styles';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaMagic, FaShareAlt, FaPlus, FaPlay } from 'react-icons/fa';
-import Confetti from 'react-confetti';
+import { toast } from 'react-toastify';
+
+// Components
+import Layout from '../../components/Layout';
+import MediaItemForm from '../../modules/forms/MediaItemForm';
+import SortablePlaylistItem from '../../components/SortablePlaylistItem';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ShareWithGroupModal from '../group/ShareWithGroupModal';
 import PlaylistQueue from './PlaylistQueue';
-import { usePlaylist } from '../../contexts/PlaylistContext';
 import WaveformVisualizer from '../music/visualizers/WaveformVisualizer';
 
-const EnchantedContainer = styled(motion.div)`
-  background: linear-gradient(135deg, #6e48aa, #9d50bb);
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  color: #fff;
-`;
+// Contexts and Types
+import { usePlaylist } from '../../contexts/PlaylistContext';
+import { useGlobalState } from '../../store/store';
+import type { MediaItem, MediaItemType, Playlist } from '../../types/playlist';
 
-const MagicalTitle = styled(motion.h1)`
-  font-size: 3rem;
-  text-align: center;
-  margin-bottom: 20px;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-`;
+const EnchantedContainer = styled(motion.div)(({ theme }) => ({
+  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  borderRadius: theme.shape.borderRadius * 2,
+  padding: theme.spacing(4),
+  boxShadow: theme.shadows[10],
+  color: theme.palette.common.white,
+}));
 
-const WhimsicalButton = styled(Button)`
-  background: linear-gradient(45deg, #ff6b6b, #feca57);
-  border: none;
-  border-radius: 25px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+const MagicalTitle = styled(motion.h1)(({ theme }) => ({
+  fontSize: '3rem',
+  textAlign: 'center',
+  marginBottom: theme.spacing(2),
+  textShadow: '0 0 10px rgba(255, 255, 255, 0.5)',
+}));
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  }
-`;
+const WhimsicalButton = styled(motion.button)(({ theme }) => ({
+  background: `linear-gradient(45deg, ${theme.palette.error.main}, ${theme.palette.warning.main})`,
+  border: 'none',
+  borderRadius: 25,
+  padding: '10px 20px',
+  fontSize: '1rem',
+  color: theme.palette.common.white,
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  boxShadow: theme.shadows[3],
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: theme.shadows[5],
+  },
+}));
 
 const PlaylistDetailsPage: React.FC = () => {
   const { playlistId } = useParams<{ playlistId: string }>();
-  const dispatch = useDispatch();
-  const { playlists, loading, error } = useSelector((state: RootState) => state.playlists);
-  const [currentPlaylist, setCurrentPlaylist] = useState<any>(null);
+  const { state, dispatch } = useGlobalState();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isAddingMedia, setIsAddingMedia] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const { state: playlistState, dispatch: playlistDispatch } = usePlaylist();
 
-  useEffect(() => {
-    if (!playlists.length) {
-      dispatch(fetchPlaylists());
-    } else {
-      const pl = playlists.find((pl) => pl.id === playlistId);
-      setCurrentPlaylist(pl);
-    }
-  }, [dispatch, playlists, playlistId]);
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
+  // Fetch playlist data
+  const { data: playlist, isLoading } = useQuery({
+    queryKey: ['playlist', playlistId],
+    queryFn: async () => {
+      const response = await fetch(`/api/playlists/${playlistId}`, {
+        headers: {
+          Authorization: `Bearer ${state.user.token}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch playlist');
+      return response.json();
+    },
+  });
 
-  useEffect(() => {
-    if (playlists.length) {
-      const pl = playlists.find((pl) => pl.id === playlistId);
-      setCurrentPlaylist(pl);
-    }
-  }, [playlists, playlistId]);
+  // Mutation for reordering items
+  const reorderMutation = useMutation({
+    mutationFn: async ({ playlistId, mediaItems }: { playlistId: string; mediaItems: MediaItem[] }) => {
+      const response = await fetch(`/api/playlists/${playlistId}/reorder`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${state.user.token}`,
+        },
+        body: JSON.stringify({ mediaItems }),
+      });
+      if (!response.ok) throw new Error('Failed to reorder items');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Playlist order updated successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update playlist order');
+    },
+  });
 
-  const handleAddMedia = async (mediaItem: { type: string; title: string; url: string }) => {
-    setIsAddingMedia(true);
-    try {
-      await dispatch(addMediaItem({ playlistId: currentPlaylist.id, mediaItem })).unwrap();
+  // Mutation for adding media items
+  const addMediaMutation = useMutation({
+    mutationFn: async ({ playlistId, mediaItem }: { playlistId: string; mediaItem: Partial<MediaItem> }) => {
+      const response = await fetch(`/api/playlists/${playlistId}/media`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${state.user.token}`,
+        },
+        body: JSON.stringify(mediaItem),
+      });
+      if (!response.ok) throw new Error('Failed to add media item');
+      return response.json();
+    },
+    onSuccess: () => {
       toast.success('✨ Magical new item added to your playlist! ✨');
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
-    } catch (err: any) {
-      toast.error('Oh no! The magic fizzled. Please try again.');
-    } finally {
-      setIsAddingMedia(false);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to add media item');
+    },
+  });
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && playlist) {
+      const oldIndex = playlist.mediaItems.findIndex((item: MediaItem) => item.id === active.id);
+      const newIndex = playlist.mediaItems.findIndex((item: MediaItem) => item.id === over.id);
+
+      const newItems = arrayMove(playlist.mediaItems, oldIndex, newIndex) as MediaItem[];
+      reorderMutation.mutate({ playlistId: playlist.id, mediaItems: newItems });
     }
+  };
+
+  const handleAddMedia = async (mediaItem: { type: string; title: string; url: string }) => {
+    if (!playlist) return;
+    addMediaMutation.mutate({ 
+      playlistId: playlist.id, 
+      mediaItem: {
+        ...mediaItem,
+        type: mediaItem.type as MediaItemType,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+    });
   };
 
   const handleShare = () => {
@@ -102,34 +171,20 @@ const PlaylistDetailsPage: React.FC = () => {
     setIsShareModalOpen(true);
   };
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) {
-      return;
-    }
-
-    const items = Array.from(currentPlaylist.mediaItems);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    dispatch(reorderMediaItems({ playlistId: currentPlaylist.id, mediaItems: items }));
-  };
-
-  // Add new function to handle playing the entire playlist
   const handlePlayAll = () => {
-    if (currentPlaylist) {
-      playlistDispatch({ type: 'SET_PLAYLIST', payload: currentPlaylist });
+    if (playlist) {
+      playlistDispatch({ type: 'SET_PLAYLIST', payload: playlist });
       playlistDispatch({ type: 'SET_TRACK_INDEX', payload: 0 });
       playlistDispatch({ type: 'TOGGLE_PLAY' });
     }
   };
 
-  // Add function to handle adding to queue
   const handleAddToQueue = (mediaItem: MediaItem) => {
     playlistDispatch({ type: 'ADD_TO_QUEUE', payload: mediaItem });
     toast.success('Added to queue!');
   };
 
-  if (loading || !currentPlaylist) {
+  if (isLoading || !playlist) {
     return (
       <Layout>
         <EnchantedContainer
@@ -151,87 +206,56 @@ const PlaylistDetailsPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {showConfetti && <Confetti recycle={false} numberOfPieces={200} />}
+        {showConfetti && <div className="confetti-overlay" />}
+
         <MagicalTitle
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}
         >
-          {currentPlaylist.name}
+          {playlist.title}
         </MagicalTitle>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          {currentPlaylist.description}
-        </motion.p>
-        
-        <MediaItemForm onSubmit={handleAddMedia} isLoading={isAddingMedia} />
-        
-        <motion.h2
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          Magical Media Items
-        </motion.h2>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="playlist">
-            {(provided) => (
-              <ul {...provided.droppableProps} ref={provided.innerRef}>
+
+        <MediaItemForm 
+          onSubmit={(mediaItem: { type: string; title: string; url: string }) => {
+            void handleAddMedia({
+              ...mediaItem,
+              type: mediaItem.type as MediaItemType
+            });
+          }}
+          isLoading={addMediaMutation.isPending} 
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+              modifiers={[restrictToVerticalAxis]}
+            >
+              <SortableContext
+                items={playlist.mediaItems.map((item: MediaItem) => item.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <AnimatePresence>
-                  {currentPlaylist.mediaItems.map((item: any, index: number) => (
-                    <motion.li
+                  {playlist.mediaItems.map((item: MediaItem, index: number) => (
+                    <motion.div
                       key={item.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <PlaylistItem mediaItem={item} index={index} />
-                    </motion.li>
+                      <SortablePlaylistItem 
+                        item={item} 
+                        onAddToQueue={handleAddToQueue}
+                      />
+                    </motion.div>
                   ))}
                 </AnimatePresence>
-                {provided.placeholder}
-              </ul>
-            )}
-          </Droppable>
-        </DragDropContext>
-        
-        <motion.div className="flex gap-4 mb-6">
-          <WhimsicalButton onClick={handlePlayAll}>
-            <FaPlay /> Play All
-          </WhimsicalButton>
-          <WhimsicalButton onClick={handleShare}>
-            <FaShareAlt /> Share
-          </WhimsicalButton>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="playlist">
-                {(provided) => (
-                  <ul {...provided.droppableProps} ref={provided.innerRef}>
-                    <AnimatePresence>
-                      {currentPlaylist.mediaItems.map((item: any, index: number) => (
-                        <motion.li
-                          key={item.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <PlaylistItem mediaItem={item} index={index} />
-                        </motion.li>
-                      ))}
-                    </AnimatePresence>
-                    {provided.placeholder}
-                  </ul>
-                )}
-              </Droppable>
-            </DragDropContext>
+              </SortableContext>
+            </DndContext>
           </div>
           
           <div className="md:col-span-1">
@@ -252,7 +276,7 @@ const PlaylistDetailsPage: React.FC = () => {
         <ShareWithGroupModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          playlistId={currentPlaylist.id}
+          playlistId={playlist.id}
         />
       </EnchantedContainer>
     </Layout>
