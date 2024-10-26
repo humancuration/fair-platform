@@ -1,1 +1,36 @@
- 
+{
+  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "target": "ES2022",
+    "strict": true,
+    "allowJs": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/*"],
+      "@components/*": ["./app/components/*"],
+      "@utils/*": ["./app/utils/*"],
+      "@services/*": ["./app/services/*"],
+      "@hooks/*": ["./app/hooks/*"],
+      "@contexts/*": ["./app/contexts/*"],
+      "@types/*": ["./app/types/*"],
+      "@styles/*": ["./app/styles/*"]
+    },
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node", "jest", "@testing-library/jest-dom"],
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "exclude": ["node_modules"]
+}
