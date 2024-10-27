@@ -1,43 +1,47 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import logger from '../utils/logger';
+import { prisma } from '../lib/prisma';
 
 interface AuthRequest extends Request {
   user?: {
     id: string;
-    permissions: string[];
+    email: string;
+    role: string;
   };
 }
 
-class AuthError extends Error {
-  status: number;
-  constructor(message: string, status: number) {
-    super(message);
-    this.status = status;
+export async function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      userId: string;
+    };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, role: true }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
   }
 }
 
-export const authenticateJWT = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    return next(new AuthError('No token provided', 401));
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string; permissions: string[] };
-    req.user = decoded;
+export async function requireRole(roles: string[]) {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
     next();
-  } catch (err) {
-    logger.error(`JWT verification failed: ${err}`);
-    next(new AuthError('Invalid token', 401));
-  }
-};
-
-export const authorizeVersionControl = (req: AuthRequest, res: Response, next: NextFunction) => {
-  if (req.user && req.user.permissions.includes('version-control')) {
-    next();
-  } else {
-    next(new AuthError('Access denied. Version control permission required.', 403));
-  }
-};
+  };
+}

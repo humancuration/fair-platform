@@ -33,35 +33,21 @@ model AffiliateProgram {
 }
 
 model AffiliateLink {
-  id            String           @id @default(cuid())
-  title         String
-  url           String
-  code          String           @unique
-  description   String?
-  clicks        Int              @default(0)
-  
-  // User relation
-  userId        Int
-  user          User             @relation(fields: [userId], references: [id])
-  
-  // Program relation
-  programId     String
-  program       AffiliateProgram @relation(fields: [programId], references: [id])
-  
-  // Optional Minsite relation
-  minsiteId     String?
-  minsite       Minsite?         @relation(fields: [minsiteId], references: [id])
-  
-  // Tracking and payouts
-  clickTracking ClickTracking[]
-  payouts       Payout[]
-  
-  // Timestamps
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id             String   @id @default(cuid())
+  minsiteId      String
+  minsite        Minsite  @relation(fields: [minsiteId], references: [id])
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  url            String
+  customAlias    String?
+  clicks         Int      @default(0)
+  conversions    Int      @default(0)
+  revenue        Float    @default(0)
+  commissionRate Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([userId])
-  @@index([programId])
   @@index([minsiteId])
 }
 
@@ -98,6 +84,21 @@ model AIModel {
 
   @@index([status])
   @@index([type])
+}
+
+model Analytics {
+  id          String   @id @default(cuid())
+  minsiteId   String
+  minsite     Minsite  @relation(fields: [minsiteId], references: [id])
+  date        DateTime
+  views       Int      @default(0)
+  visitors    Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0)
+  data        Json?    // For additional metrics
+
+  @@index([minsiteId])
+  @@index([date])
 }
 
 model AnalyticsEvent {
@@ -669,20 +670,37 @@ model Minsite {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   title         String
-  content       Json
+  content       Json      // Using Json instead of String @db.Text for structured content
   template      String
-  customCSS     String?
+  customCSS     String?   @db.Text
   seoMetadata   Json?
   components    Json
+  settings      Json?
   isPublished   Boolean   @default(false)
+  publishedUrl  String?
   publishedSlug String?   @unique
-  versions      Json[]
-  user          User      @relation(fields: [userId], references: [id])
   userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  versions      MinsiteVersion[]
   affiliateLinks AffiliateLink[]
+  uploads       Upload[]
+  analytics     Analytics[]
 
   @@index([userId])
   @@index([publishedSlug])
+}
+
+model MinsiteVersion {
+  id        String   @id @default(cuid())
+  minsiteId String
+  content   Json
+  title     String
+  template  String?
+  customCSS String?  @db.Text
+  createdAt DateTime @default(now())
+  minsite   Minsite  @relation(fields: [minsiteId], references: [id], onDelete: Cascade)
+
+  @@index([minsiteId])
 }
 
 model Notification {
@@ -955,6 +973,20 @@ model SurveyResponse {
   updatedAt DateTime @updatedAt
 }
 
+model Template {
+  id          String   @id @default(cuid())
+  name        String
+  preview     String
+  content     Json
+  isPublic    Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
 model TicketResponse {
   id          String   @id @default(cuid())
   content     String
@@ -965,6 +997,24 @@ model TicketResponse {
   ticket    SupportTicket @relation(fields: [ticketId], references: [id])
   responder User          @relation(fields: [responderId], references: [id])
 }
+
+model Upload {
+  id          String   @id @default(cuid())
+  filename    String
+  contentType String
+  path        String
+  size        Int
+  minsiteId   String
+  minsite     Minsite  @relation(fields: [minsiteId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([minsiteId])
+}
+
 
 model User {
   id                     Int                     @id @default(autoincrement())
