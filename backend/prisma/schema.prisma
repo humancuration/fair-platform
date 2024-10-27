@@ -819,6 +819,43 @@ model SearchHistory {
   updatedAt   DateTime @updatedAt
 }
 
+model Shift {
+  id            String     @id @default(cuid())
+  groupId       String
+  group         Group      @relation(fields: [groupId], references: [id])
+  date          DateTime
+  startTime     String
+  endTime       String
+  role          String
+  assignedUserId String?
+  assignedUser   User?     @relation(fields: [assignedUserId], references: [id])
+  originalSwaps ShiftSwap[] @relation("OriginalShift")
+  desiredSwaps  ShiftSwap[] @relation("DesiredShift")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([groupId])
+  @@index([assignedUserId])
+}
+
+model ShiftSwap {
+  id            String   @id @default(cuid())
+  requesterId   String
+  requester     User     @relation("SwapRequester", fields: [requesterId], references: [id])
+  groupId       String
+  group         Group    @relation(fields: [groupId], references: [id])
+  originalShiftId String
+  originalShift Shift    @relation("OriginalShift", fields: [originalShiftId], references: [id])
+  desiredShiftId String
+  desiredShift  Shift    @relation("DesiredShift", fields: [desiredShiftId], references: [id])
+  status        String   @default("pending") // pending, approved, rejected
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([groupId])
+  @@index([requesterId])
+}
+
 model SupportTicket {
   id          String   @id @default(cuid())
   title       String

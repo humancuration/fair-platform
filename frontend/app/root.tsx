@@ -28,6 +28,7 @@ import theme from './styles/theme';
 import toastStyles from 'react-toastify/dist/ReactToastify.css';
 import tailwindStyles from './styles/tailwind.css';
 import globalStyles from './styles/global.css';
+import avatarStyles from "~/styles/avatar.css";
 
 // Initialize QueryClient with default options
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ export function links() {
     { rel: 'stylesheet', href: tailwindStyles },
     { rel: 'stylesheet', href: toastStyles },
     { rel: 'stylesheet', href: globalStyles },
+    { rel: 'stylesheet', href: avatarStyles },
   ];
 }
 
