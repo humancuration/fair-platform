@@ -86,6 +86,21 @@ model AIModel {
   @@index([type])
 }
 
+model AIResearcher {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  capabilities  String[]
+  specialization String[]
+  architecture  Json
+  ethics        Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  projects      ResearchProject[]
+  contributions Contribution[]
+}
+
 model Analytics {
   id          String   @id @default(cuid())
   minsiteId   String
@@ -320,6 +335,20 @@ model Company {
   updatedAt       DateTime @updatedAt
 }
 
+model ComputeResource {
+  id            String   @id @default(cuid())
+  type          String
+  specs         Json
+  availability  Json
+  pricing       Json
+  utilization   Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  projects      ResearchProject[]
+  jobs          ComputeJob[]
+}
+
 model DataCollective {
   id                  Int            @id @default(autoincrement())
   name                String
@@ -332,6 +361,21 @@ model DataCollective {
   impactMetrics       ImpactMetric[]
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
+}
+
+model Dataset {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  type          String
+  schema        Json
+  storage       Json
+  access        Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  projects      ResearchProject[]
+  analyses      Analysis[]
 }
 
 model DataStream {
@@ -863,6 +907,55 @@ model Repository {
   updatedAt     DateTime  @updatedAt
 
   @@index([ownerId])
+}
+
+model ResearchProject {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String
+  stage       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Resources
+  computeResources ComputeResource[]
+  datasets        Dataset[]
+  patents         Patent[]
+  
+  // Team
+  team           TeamMember[]
+  collaborators  Collaborator[]
+  
+  // Research Outputs
+  papers         Paper[]
+  protocols      Protocol[]
+  
+  // Governance
+  votes          Vote[]
+  funding        Funding[]
+}
+
+model ResearchSession {
+  id        String   @id @default(cuid())
+  toolId    String
+  userId    String
+  config    Json
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ResearchTool {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  capabilities  String[]
+  requirements  Json
+  integrations  String[]
+  ethics        Ethics?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Resource {
