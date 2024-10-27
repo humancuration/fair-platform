@@ -1,16 +1,21 @@
 import { Form } from '@remix-run/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes } from 'react-icons/fa';
-import { FormInput, FormTextArea } from '~/components/forms/FormElements';
+import { FormInput, FormTextArea, FormSelect } from '~/components/forms/FormElements';
 import { cn } from '~/utils';
 import { Button } from '~/components/common/Button';
 
-interface AddWishlistItemModalProps {
+interface AddCommunityWishlistItemModalProps {
   isOpen: boolean;
   onClose: () => void;
+  categories: Array<{ id: string; name: string }>;
 }
 
-export function AddWishlistItemModal({ isOpen, onClose }: AddWishlistItemModalProps) {
+export function AddCommunityWishlistItemModal({ 
+  isOpen, 
+  onClose,
+  categories 
+}: AddCommunityWishlistItemModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -36,7 +41,6 @@ export function AddWishlistItemModal({ isOpen, onClose }: AddWishlistItemModalPr
                 "p-6 shadow-xl"
               )}
             >
-              {/* Close Button */}
               <button
                 onClick={onClose}
                 className="absolute right-4 top-4 text-gray-400 hover:text-gray-500"
@@ -45,24 +49,31 @@ export function AddWishlistItemModal({ isOpen, onClose }: AddWishlistItemModalPr
                 <FaTimes className="h-5 w-5" />
               </button>
 
-              <h2 className="text-2xl font-bold mb-6">Add Wishlist Item</h2>
+              <h2 className="text-2xl font-bold mb-6">Add Community Project</h2>
 
               <Form method="post" className="space-y-4">
-                <input type="hidden" name="intent" value="addItem" />
+                <input type="hidden" name="intent" value="addCommunityItem" />
                 
+                <FormSelect
+                  label="Category"
+                  name="category"
+                  required
+                  options={categories}
+                />
+
                 <FormInput
-                  label="Item Name"
+                  label="Project Name"
                   name="name"
                   required
                   autoFocus
-                  placeholder="Enter item name"
+                  placeholder="Enter project name"
                 />
 
                 <FormTextArea
                   label="Description"
                   name="description"
                   required
-                  placeholder="Describe your wishlist item"
+                  placeholder="Describe your community project"
                   rows={3}
                 />
 
@@ -74,23 +85,32 @@ export function AddWishlistItemModal({ isOpen, onClose }: AddWishlistItemModalPr
                 />
 
                 <FormInput
-                  label="Target Amount (optional)"
+                  label="Target Amount"
                   name="targetAmount"
                   type="number"
                   min="0"
                   step="0.01"
+                  required
                   placeholder="0.00"
+                />
+
+                <FormInput
+                  label="Timeline (days)"
+                  name="timeline"
+                  type="number"
+                  min="1"
+                  placeholder="30"
                 />
 
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    id="isPublic"
-                    name="isPublic"
+                    id="allowContributions"
+                    name="allowContributions"
                     className="rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                   />
-                  <label htmlFor="isPublic" className="text-sm">
-                    Make this item public
+                  <label htmlFor="allowContributions" className="text-sm">
+                    Allow community contributions and collaboration
                   </label>
                 </div>
 
@@ -103,7 +123,7 @@ export function AddWishlistItemModal({ isOpen, onClose }: AddWishlistItemModalPr
                     Cancel
                   </Button>
                   <Button type="submit" variant="primary">
-                    Add Item
+                    Create Project
                   </Button>
                 </div>
               </Form>

@@ -349,6 +349,19 @@ model ComputeResource {
   jobs          ComputeJob[]
 }
 
+model Contribution {
+  id            String      @id @default(cuid())
+  amount        Float
+  createdAt     DateTime    @default(now())
+  itemId        String
+  userId        String
+  item          WishlistItem @relation(fields: [itemId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@index([itemId])
+  @@index([userId])
+}
+
 model DataCollective {
   id                  Int            @id @default(autoincrement())
   name                String
@@ -1259,16 +1272,20 @@ model Wishlist {
 }
 
 model WishlistItem {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  price       Decimal?
-  url         String?
-  image       String?
-  wishlistId  Int
-  wishlist    Wishlist @relation(fields: [wishlistId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String      @id @default(cuid())
+  name          String
+  description   String
+  imageUrl      String?
+  targetAmount  Float?
+  currentAmount Float       @default(0)
+  isPublic      Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  contributors  Contribution[]
+
+  @@index([userId])
 }
 
 enum AttendeeStatus {
