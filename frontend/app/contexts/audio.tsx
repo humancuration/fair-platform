@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import type { Track, SoundEffect } from '~/services/audio.server';
+import type { Track, SoundEffect } from '~/services/audio.client';
 
 interface AudioContextType {
   masterVolume: number;

@@ -1,7 +1,7 @@
 import type { Group } from '@prisma/client';
 import { GroupRepository } from './groupRepository';
 import { GroupCreateInput } from '../../../../backup/models/groupModel';
-import { logger } from '~/utils/logger';
+import { logger } from '~/utils/logger.client';
 import { GroupServiceResponse, GroupSettings } from './types';
 import { PubSub } from 'graphql-subscriptions';
 import { OpenSearchClient } from '~/lib/opensearch';

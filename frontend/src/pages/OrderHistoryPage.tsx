@@ -3,7 +3,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import OrderItem from '../components/OrderItem';
 import api from '../api/api';
-import { handleError } from '../utils/errorHandler';
+import { handleError } from '../../app/utils/error-handler-client';
 
 interface Order {
   id: string;

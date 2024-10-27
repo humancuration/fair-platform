@@ -1,7 +1,7 @@
 import { prisma } from '../../lib/prisma';
 import type { Group, GroupMember, Prisma } from '@prisma/client';
 import { Redis } from 'ioredis';
-import { logger } from '~/utils/logger';
+import { logger } from '~/utils/logger.client';
 
 const redis = new Redis(process.env.REDIS_URL);
 const CACHE_TTL = 3600; // 1 hour

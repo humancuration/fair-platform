@@ -7,7 +7,7 @@ import TextInput from '../components/forms/TextInput';
 import Checkbox from '../components/forms/Checkbox';
 import Button from '../components/common/Button';
 import { signUp } from '../services/authService';
-import { handleError } from '../utils/errorHandler';
+import { handleError } from '../../app/utils/error-handler-client';
 
 interface SignupValues {
   name: string;

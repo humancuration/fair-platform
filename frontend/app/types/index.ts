@@ -1,3 +1,7 @@
+// This should be the source of truth for shared types
+// Keep the comprehensive type definitions here
+// Other type files should only contain domain-specific types
+
 // User related types
 export interface User {
   id: string;
@@ -247,4 +251,3 @@ export interface ActionData {
   success?: boolean;
   fields?: Record<string, string>;
 }
-

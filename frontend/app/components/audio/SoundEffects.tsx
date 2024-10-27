@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Howl } from 'howler';
 import { useAudio } from '~/contexts/audio';
-import type { SoundEffect } from '~/services/audio.server';
+import type { SoundEffect } from '~/services/audio.client';
 
 interface SoundEffectsProps {
   effects: SoundEffect[];

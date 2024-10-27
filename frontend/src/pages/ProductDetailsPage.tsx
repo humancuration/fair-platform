@@ -4,7 +4,7 @@ import Layout from '../components/Layout';
 import ProductCard from '../modules/marketplace/ProductCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import api from '../api/api';
-import { handleError } from '../utils/errorHandler';
+import { handleError } from '../../app/utils/error-handler-client';
 import ShareWithGroupModal from '../modules/group/ShareWithGroupModal';
 
 const ProductDetailsPage: React.FC = () => {

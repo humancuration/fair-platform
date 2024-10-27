@@ -203,18 +203,24 @@ model Campaign {
   id           String                @id @default(cuid())
   title        String
   description  String
+  goal         Float                 // Added for fundraising amount
+  amountRaised Float                 @default(0) // Added to track progress
   startDate    DateTime
   endDate      DateTime
   status       CampaignStatus        @default(DRAFT)
+  category     String                // Added for campaign categorization
+  image        String?               // Added for campaign image
   createdById  Int
   createdBy    User                  @relation(fields: [createdById], references: [id])
   participants CampaignParticipant[]
   rewards      CampaignReward[]
+  donations    Donation[]            // Added relation to track donations
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 
   @@index([status])
   @@index([startDate, endDate])
+  @@index([category])               // Added index for category searches
 }
 
 model CampaignParticipant {
@@ -254,6 +260,21 @@ model ClickTracking {
   affiliateLink   AffiliateLink @relation(fields: [affiliateLinkId], references: [id])
   createdAt       DateTime       @default(now())
   updatedAt       DateTime      @updatedAt
+}
+
+model Commit {
+  id           String     @id @default(cuid())
+  message      String
+  oid          String     @unique
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id])
+  authorId     Int
+  author       User       @relation(fields: [authorId], references: [id])
+  parentOids   String[]
+  createdAt    DateTime   @default(now())
+
+  @@index([repositoryId])
+  @@index([authorId])
 }
 
 model CommunityWishlist {
@@ -335,6 +356,22 @@ model Dividend {
   @@index([recipientId])
 }
 
+model Donation {
+  id         String   @id @default(cuid())
+  amount     Float
+  campaignId String
+  donorId    Int
+  message    String?
+  isAnonymous Boolean  @default(false)
+  campaign   Campaign @relation(fields: [campaignId], references: [id])
+  donor      User     @relation(fields: [donorId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([campaignId])
+  @@index([donorId])
+}
+
 model Emoji {
   id        Int         @id @default(autoincrement())
   name      String
@@ -412,6 +449,7 @@ model FeedbackComment {
 model File {
   id         String   @id @default(cuid())
   name       String
+  content    Bytes
   path       String
   mimeType   String
   size       Int
@@ -419,9 +457,14 @@ model File {
   visibility String   @default("PRIVATE")
   userId     Int // Changed from String to Int to match User.id
   relatedId  String?
+  repositoryId String
+  repository   Repository @relation(fields: [repositoryId], references: [id])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([repositoryId, path])
+  @@index([repositoryId])
 }
 
 model FlashSale {
@@ -785,6 +828,23 @@ model Report {
   updatedAt     DateTime @updatedAt
 
   generatedBy User @relation(fields: [generatedById], references: [id])
+}
+
+model Repository {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  isPrivate     Boolean   @default(false)
+  lfsEnabled    Boolean   @default(false)
+  defaultBranch String    @default("main")
+  ownerId       Int
+  owner         User      @relation(fields: [ownerId], references: [id])
+  commits       Commit[]
+  files         File[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([ownerId])
 }
 
 model Resource {

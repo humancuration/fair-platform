@@ -1,9 +1,9 @@
 import type { Group } from '@prisma/client';
-import { GroupRepository } from './GroupRepository';
+import { GroupRepository } from './group-repository.server';
 import type { GroupCreateInput, GroupServiceResponse, GroupSettings } from '~/types/group';
 import { PubSub } from 'graphql-subscriptions';
 import { OpenSearchClient } from '~/utils/opensearch.server';
-import { logger } from '~/utils/logger';
+import { logger } from '~/utils/logger.client';
 
 const pubsub = new PubSub();
 const searchClient = new OpenSearchClient();

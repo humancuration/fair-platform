@@ -18,7 +18,7 @@ import { RepositoryDetails } from './components/RepositoryDetails';
 import { RepositorySettings } from './components/RepositorySettings';
 import FileUploader from './FileUploader';
 import { useToast } from '../../hooks/useToast';
-import logger from '../../utils/logger';
+import logger from '../../../app/utils/logger.client';
 
 // Loader function for fetching repositories
 export async function loader() {

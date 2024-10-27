@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useToast } from '../../../hooks/useToast';
-import logger from '../../../utils/logger';
+import logger from '../../../../app/utils/logger.client';
 import * as operations from '../repositoryOperations';
 
 export const useVersionControl = () => {

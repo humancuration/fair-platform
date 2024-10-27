@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useSnackbar, VariantType } from 'notistack';
-import logger from '../utils/logger';
+import logger from '../../app/utils/logger.client';
 
 interface ToastOptions {
   variant?: VariantType;

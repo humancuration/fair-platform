@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useToast } from '../../../hooks/useToast';
-import logger from '../../../utils/logger';
+import logger from '../../../../app/utils/logger.client';
 import { Repository } from '../types';
 
 interface UseRepoWebSocketProps {

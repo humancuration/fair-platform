@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api/api';
-import { handleError } from '../utils/errorHandler';
+import { handleError } from '../../app/utils/error-handler-client';
 import { toast } from 'react-toastify';
 import TextInput from '../components/TextInput';
 import Button from '../components/common/Button';

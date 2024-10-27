@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Howl } from 'howler';
 import { useAudio } from '~/contexts/audio';
-import type { Track } from '~/services/audio.server';
+import type { Track } from '~/services/audio.client';
 
 interface BackgroundMusicProps {
   tracks: Track[];
