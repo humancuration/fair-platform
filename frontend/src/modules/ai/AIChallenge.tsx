@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { FaTrophy, FaClock, FaUsers } from 'react-icons/fa';
 import api from '@/utils/api';
 

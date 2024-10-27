@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
 import { FaRobot, FaBrain, FaChartLine, FaUsers } from 'react-icons/fa';
-import api from '@/utils/api';
+import { prisma } from "~/db.server";
 
 interface AIProject {
   id: string;
@@ -14,13 +15,29 @@ interface AIProject {
   techStack: string[];
 }
 
-const AICommunityHub: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  
-  const { data: projects } = useQuery('aiProjects', () => 
-    api.get('/ai/community/projects').then(res => res.data)
-  );
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const category = url.searchParams.get("category") || "all";
 
+  const projects = await prisma.aiProject.findMany({
+    where: category !== "all" ? { category } : undefined,
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      collaborators: true,
+      upvotes: true,
+      techStack: true
+    }
+  });
+
+  return json({ projects });
+}
+
+export default function AICommunityHub() {
+  const { projects } = useLoaderData<typeof loader>();
+  
   const categories = [
     { id: 'all', name: 'All Projects', icon: FaRobot },
     { id: 'nlp', name: 'Natural Language', icon: FaBrain },
@@ -38,11 +55,15 @@ const AICommunityHub: React.FC = () => {
             key={category.id}
             whileHover={{ scale: 1.05 }}
             className={`p-4 rounded-lg cursor-pointer ${
-              selectedCategory === category.id 
+              category.id === new URLSearchParams(window.location.search).get("category")
                 ? 'bg-purple-600 text-white'
                 : 'bg-white border'
             }`}
-            onClick={() => setSelectedCategory(category.id)}
+            onClick={() => {
+              const searchParams = new URLSearchParams(window.location.search);
+              searchParams.set("category", category.id);
+              window.location.search = searchParams.toString();
+            }}
           >
             <category.icon className="text-2xl mb-2" />
             <h3 className="font-semibold">{category.name}</h3>
@@ -51,8 +72,7 @@ const AICommunityHub: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {projects?.filter(p => selectedCategory === 'all' || p.category === selectedCategory)
-          .map((project: AIProject) => (
+        {projects.map((project) => (
           <motion.div
             key={project.id}
             initial={{ opacity: 0 }}
@@ -77,6 +97,4 @@ const AICommunityHub: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default AICommunityHub;
+}

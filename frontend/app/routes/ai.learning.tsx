@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import type { LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData, useSearchParams, Form } from "@remix-run/react";
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
 import { FaGraduationCap, FaBook, FaVideo, FaCode } from 'react-icons/fa';
-import api from '@/utils/api';
+import { prisma } from "~/db.server";
 
 interface Resource {
   id: string;
@@ -15,13 +16,31 @@ interface Resource {
   tags: string[];
 }
 
-const AILearningHub: React.FC = () => {
-  const [selectedType, setSelectedType] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const type = url.searchParams.get("type") || "all";
+  const query = url.searchParams.get("q") || "";
 
-  const { data: resources } = useQuery('aiResources', () =>
-    api.get('/ai/learning-resources').then(res => res.data)
-  );
+  const resources = await prisma.resource.findMany({
+    where: {
+      AND: [
+        type !== "all" ? { type } : {},
+        query ? {
+          OR: [
+            { title: { contains: query, mode: 'insensitive' } },
+            { tags: { hasSome: [query] } }
+          ]
+        } : {}
+      ]
+    }
+  });
+
+  return json({ resources });
+}
+
+export default function AILearningHub() {
+  const { resources } = useLoaderData<typeof loader>();
+  const [searchParams] = useSearchParams();
 
   const resourceTypes = [
     { id: 'all', name: 'All Resources', icon: FaGraduationCap },
@@ -34,40 +53,44 @@ const AILearningHub: React.FC = () => {
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-bold mb-8">AI Learning Hub</h1>
 
-      <div className="mb-8">
+      <Form method="get" className="mb-8">
         <input
           type="text"
+          name="q"
+          defaultValue={searchParams.get("q") || ""}
           placeholder="Search resources..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full p-3 border rounded-lg"
         />
-      </div>
+      </Form>
 
       <div className="flex gap-4 mb-8 overflow-x-auto">
         {resourceTypes.map(type => (
-          <motion.button
-            key={type.id}
-            whileHover={{ scale: 1.05 }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-              selectedType === type.id
-                ? 'bg-purple-600 text-white'
-                : 'bg-white border'
-            }`}
-            onClick={() => setSelectedType(type.id)}
-          >
-            <type.icon />
-            <span>{type.name}</span>
-          </motion.button>
+          <Form key={type.id} method="get">
+            <input 
+              type="hidden" 
+              name="q" 
+              value={searchParams.get("q") || ""} 
+            />
+            <motion.button
+              type="submit"
+              name="type"
+              value={type.id}
+              whileHover={{ scale: 1.05 }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                searchParams.get("type") === type.id
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white border'
+              }`}
+            >
+              <type.icon />
+              <span>{type.name}</span>
+            </motion.button>
+          </Form>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {resources?.filter(r => 
-          (selectedType === 'all' || r.type === selectedType) &&
-          (r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           r.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
-        ).map((resource: Resource) => (
+        {resources.map((resource) => (
           <motion.div
             key={resource.id}
             whileHover={{ y: -5 }}
@@ -102,6 +125,4 @@ const AILearningHub: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default AILearningHub;
+}

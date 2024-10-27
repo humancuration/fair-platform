@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation } from '@apollo/client';
+import { gql } from '@apollo/client';
 import { FaServer, FaMemory, FaMicrochip, FaNetworkWired, FaExchangeAlt, FaChartLine } from 'react-icons/fa';
-import api from '../../api/api';
 import { toast } from 'react-toastify';
 import ResourceUsageGraph from '../visualization/ResourceUsageGraph';
 import GPUMarketplaceWidget from '../marketplace/GPUMarketplaceWidget';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
 
 interface ComputeResource {
   id: string;
@@ -64,11 +66,41 @@ const AIResourceAllocation: React.FC<{ aiId: string }> = ({ aiId }) => {
     taskType: 'inference',
   });
 
-  // Fetch available resources
-  const { data: resources } = useQuery(
-    ['computeResources', aiId],
-    () => api.get('/ai/compute-resources').then(res => res.data)
-  );
+  // Add GraphQL queries/mutations
+  const GET_COMPUTE_RESOURCES = gql`
+    query GetComputeResources($aiId: ID!) {
+      computeResources(aiId: $aiId) {
+        id
+        type
+        specs {
+          model
+          cores
+          memory
+          bandwidth
+          performance
+        }
+        utilization
+        cost
+        provider {
+          id
+          name
+          reputation
+          location
+        }
+        availability {
+          start
+          end
+          timeZone
+        }
+        status
+      }
+    }
+  `;
+
+  // Update component to use Apollo Client instead of react-query
+  const { data: resources } = useQuery(GET_COMPUTE_RESOURCES, {
+    variables: { aiId }
+  });
 
   // Fetch current allocations
   const { data: allocations } = useQuery(

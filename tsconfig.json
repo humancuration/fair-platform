@@ -13,18 +13,21 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"],
-      "@components/*": ["./app/components/*"],
-      "@utils/*": ["./app/utils/*"],
-      "@services/*": ["./app/services/*"],
-      "@hooks/*": ["./app/hooks/*"],
-      "@contexts/*": ["./app/contexts/*"],
-      "@types/*": ["./app/types/*"],
-      "@styles/*": ["./app/styles/*"]
+      "~/*": ["./frontend/app/*"],
+      "@app/*": ["./frontend/app/*"],
+      "@components/*": ["./frontend/app/components/*"],
+      "@utils/*": ["./frontend/app/utils/*"],
+      "@services/*": ["./frontend/app/services/*"],
+      "@hooks/*": ["./frontend/app/hooks/*"],
+      "@contexts/*": ["./frontend/app/contexts/*"],
+      "@types/*": ["./frontend/app/types/*"],
+      "@styles/*": ["./frontend/app/styles/*"],
+      "@lib/*": ["./frontend/app/lib/*"],
+      "@assets/*": ["./frontend/app/assets/*"],
+      "@backend/*": ["./backend/src/*"]
     },
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["node", "jest", "@testing-library/jest-dom"],
     "incremental": true,
     "plugins": [
       {
@@ -32,5 +35,5 @@
       }
     ]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["**/node_modules", "**/build", "**/dist"]
 }

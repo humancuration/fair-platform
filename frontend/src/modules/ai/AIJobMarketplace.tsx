@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useToast } from '../hooks/useToast';
+import { useQuery, useMutation } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { toast } from 'react-toastify';
 import Button from '../../components/common/Button';
 import Spinner from './common/Spinner';
 
@@ -15,6 +16,30 @@ interface AIJob {
   userEstimatedDifficulty: number;
 }
 
+const GET_AI_JOBS = gql`
+  query GetAIJobs($model: String!) {
+    aiJobs(model: $model) {
+      id
+      title
+      description
+      complexity
+      potentialImpact
+      estimatedDuration
+      urgency
+      userEstimatedDifficulty
+    }
+  }
+`;
+
+const ACCEPT_JOB = gql`
+  mutation AcceptJob($id: ID!, $model: String!) {
+    acceptAIJob(id: $id, model: $model) {
+      id
+      status
+    }
+  }
+`;
+
 const AIJobMarketplace: React.FC = () => {
   const [jobs, setJobs] = useState<AIJob[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>('default');
@@ -22,49 +47,30 @@ const AIJobMarketplace: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const toast = useToast();
 
+  const { data, loading: queryLoading } = useQuery(GET_AI_JOBS, {
+    variables: { model: selectedModel }
+  });
+
+  const [acceptJobMutation] = useMutation(ACCEPT_JOB);
+
   useEffect(() => {
-    fetchJobs();
-  }, [selectedModel]);
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('/api/ai-jobs', {
-        params: { model: selectedModel }
-      });
-      setJobs(response.data);
-    } catch (error) {
-      console.error('Failed to fetch AI jobs', error);
-      toast.error('Failed to fetch AI jobs. Please try again.');
-    } finally {
-      setLoading(false);
+    if (data) {
+      setJobs(data.aiJobs);
     }
-  };
-
-  const acceptJob = async (id: string) => {
-    try {
-      await axios.post(`/api/accept-job/${id}`, { model: selectedModel });
-      toast.success('Job accepted successfully!');
-      fetchJobs();
-    } catch (error) {
-      console.error('Failed to accept job', error);
-      toast.error('Failed to accept job. Please try again.');
-    }
-  };
+  }, [data]);
 
   const submitNewJob = async () => {
     try {
       await axios.post('/api/ai-jobs', newJob);
       toast.success('Job submitted successfully!');
       setNewJob({});
-      fetchJobs();
     } catch (error) {
       console.error('Failed to submit job', error);
       toast.error('Failed to submit job. Please try again.');
     }
   };
 
-  if (loading) {
+  if (loading || queryLoading) {
     return <Spinner />;
   }
 
@@ -131,7 +137,7 @@ const AIJobMarketplace: React.FC = () => {
             <p>Estimated Duration: {job.estimatedDuration}</p>
             <p>Urgency: {job.urgency}</p>
             <p>User Estimated Difficulty: {job.userEstimatedDifficulty}/10</p>
-            <Button onClick={() => acceptJob(job.id)} className="mt-2">Accept Job</Button>
+            <Button onClick={() => acceptJobMutation({ variables: { id: job.id, model: selectedModel } })} className="mt-2">Accept Job</Button>
           </div>
         ))}
       </div>

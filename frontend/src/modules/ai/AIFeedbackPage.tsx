@@ -1,14 +1,21 @@
 // frontend/src/pages/AIFeedbackPage.tsx
 
 import React, { useState } from 'react';
+import { useMutation } from '@apollo/client';
+import { gql } from '@apollo/client';
 import api from '@/utils/api';
 import { AxiosResponse } from 'axios';
+import type { Recommendation } from '../../types';
 
-interface Recommendation {
-  id: number;
-  name: string;
-  commissionRate: number;
-}
+const GET_RECOMMENDATIONS = gql`
+  mutation GetRecommendations($profile: String!) {
+    getRecommendations(profile: $profile) {
+      id
+      name
+      commissionRate
+    }
+  }
+`;
 
 const AIFeedbackPage: React.FC = () => {
   const [profile, setProfile] = useState('');
@@ -16,12 +23,16 @@ const AIFeedbackPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [getRecommendations, { loading: mutationLoading, error: mutationError, data: mutationData }] = useMutation(GET_RECOMMENDATIONS);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const response: AxiosResponse<Recommendation[]> = await api.post('/recommendations/recommend', { profile });
-      setRecommendations(response.data);
+      await getRecommendations({ variables: { profile } });
+      if (mutationData) {
+        setRecommendations(mutationData.getRecommendations);
+      }
     } catch (error) {
       console.error('Error fetching recommendations', error);
       setError('Failed to load recommendations. Please try again later.');
