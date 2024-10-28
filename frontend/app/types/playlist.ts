@@ -15,21 +15,62 @@ export interface Track {
 
 export interface Playlist {
   id: string;
-  title: string;
+  name: string;
   description?: string;
+  visibility: 'public' | 'private' | 'collaborative';
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  groupId?: string;
+  mediaItems: MediaItem[];
+  stats: PlaylistStats;
+  settings: PlaylistSettings;
+  contributors: Contributor[];
+  title: string;
   tracks: Track[];
   isCollaborative: boolean;
   hasAICuration: boolean;
   isEducational: boolean;
-  createdAt: string;
-  updatedAt: string;
-  creatorId: string;
+  creatorId: string
+}
+
+
+
+export interface PlaylistStats {
+  playCount: number;
+  totalDuration: number;
+  uniqueListeners: number;
+  shareCount: number;
+  likes: number;
+  shares: number;
+  listenerHistory: Array<{
+    date: string;
+    count: number;
+  }>;
+}
+
+export interface PlaylistSettings {
+  isPlaying: boolean;
+  shuffleEnabled: boolean;
+  repeatEnabled: boolean;
 }
 
 export interface Contributor {
   id: string;
-  name: string;
-  avatar: string;
-  role: 'creator' | 'collaborator' | 'curator';
-  contributions: number;
+  userId: string;
+  playlistId: string;
+  role: 'owner' | 'editor' | 'viewer';
+  isActive: boolean;
+  user: {
+    name: string;
+    avatar: string;
+  };
+}
+
+export interface MediaItem {
+  id: string;
+  type: 'music' | 'video' | 'podcast';
+  title: string;
+  url: string;
+  duration: number;
 }

@@ -1,5 +1,6 @@
 import { prisma } from "~/db.server";
 import type { Playlist, Track, Contributor } from "~/types/playlist";
+import { db } from "~/utils/db.server";
 
 export async function getPlaylistData(playlistId: string) {
   const playlist = await prisma.playlist.findUnique({
@@ -52,6 +53,69 @@ export async function togglePlayState(playlistId: string) {
       isPlaying: {
         set: (settings) => !settings.isPlaying,
       },
+    },
+  });
+}
+
+export async function getPlaylistStats(playlistId: string) {
+  return db.playlist.findUnique({
+    where: { id: playlistId },
+    select: {
+      playCount: true,
+      totalDuration: true,
+      uniqueListeners: true,
+      shareCount: true,
+      listenerHistory: {
+        orderBy: { date: 'asc' },
+        select: {
+          date: true,
+          count: true,
+        },
+      },
+    },
+  });
+}
+
+export async function getCollaborators(playlistId: string) {
+  return db.playlistCollaborator.findMany({
+    where: { playlistId },
+    include: {
+      user: true,
+    },
+  });
+}
+
+export async function getActivityHistory(playlistId: string) {
+  return db.playlistActivity.findMany({
+    where: { playlistId },
+    orderBy: { timestamp: 'desc' },
+    include: {
+      user: true,
+      track: true,
+    },
+  });
+}
+
+export async function removeCollaborator(playlistId: string, userId: string) {
+  return db.playlistCollaborator.delete({
+    where: {
+      playlistId_userId: {
+        playlistId,
+        userId,
+      },
+    },
+  });
+}
+
+export async function togglePlaylistAccess(playlistId: string) {
+  const playlist = await db.playlist.findUnique({
+    where: { id: playlistId },
+  });
+
+  return db.playlist.update({
+    where: { id: playlistId },
+    data: {
+      isPublic: !playlist?.isPublic,
     },
   });
 }
