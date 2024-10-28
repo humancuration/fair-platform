@@ -267,6 +267,19 @@ model CampaignReward {
   updatedAt  DateTime   @updatedAt
 }
 
+model ChangeHistory {
+  id          String      @id @default(cuid())
+  entityId    String
+  entityType  String
+  changes     Json
+  userId      String
+  timestamp   DateTime    @default(now())
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([entityId])
+  @@index([userId])
+}
+
 model ClickTracking {
   id              String         @id @default(cuid())
   affiliateLinkId String

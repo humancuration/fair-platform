@@ -14,12 +14,11 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ToastContainer } from 'react-toastify';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { StateProvider } from './store/store';
 import { ModalProvider } from './providers/ModalProvider';
-import { MusicPlayerProvider } from './contexts/music';
+import { MusicProvider } from './contexts/music';
 import { ErrorProvider } from './contexts/ErrorContext';
-import { UserProvider } from './modules/user/UserContext';
-import { UnifiedAudioProvider } from './contexts/audio';
+import { UserProvider } from './contexts/UserContext';
+import { AudioProvider } from './contexts/AudioContext';
 
 import MusicPlayerControls from './components/music/MusicPlayerControls';
 import ErrorFallback from './components/common/ErrorFallback';
@@ -42,12 +41,19 @@ const queryClient = new QueryClient({
   },
 });
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  // Get initial state from cookies/session
+  const session = await getSession(request.headers.get("Cookie"));
+  
   return json({
-    ENV: {
-      API_BASE_URL: process.env.API_BASE_URL,
-      // Add other env variables that should be available client-side
-    }
+    theme: {
+      darkMode: session.get("darkMode") ?? false,
+    },
+    user: {
+      preferences: {
+        language: session.get("language") ?? "en",
+      },
+    },
   });
 };
 
@@ -69,7 +75,7 @@ export function meta() {
 }
 
 export default function App() {
-  const { ENV } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
 
   return (
     <html lang="en">
@@ -77,46 +83,39 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className={data.theme.darkMode ? "dark" : ""}>
         <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <StateProvider>
-            <QueryClientProvider client={queryClient}>
-              <ThemeProvider theme={theme}>
-                <CssBaseline />
-                <ModalProvider>
-                  <ErrorProvider>
-                    <UserProvider>
-                      <UnifiedAudioProvider>
-                        <MusicPlayerProvider>
-                          <Outlet />
-                          <ToastContainer 
-                            position="top-right" 
-                            autoClose={5000} 
-                            hideProgressBar={false}
-                            newestOnTop
-                            closeOnClick
-                            rtl={false}
-                            pauseOnFocusLoss
-                            draggable
-                            pauseOnHover
-                            theme="light"
-                          />
-                          <MusicPlayerControls />
-                        </MusicPlayerProvider>
-                      </UnifiedAudioProvider>
-                    </UserProvider>
-                  </ErrorProvider>
-                </ModalProvider>
-              </ThemeProvider>
-            </QueryClientProvider>
-          </StateProvider>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <ModalProvider>
+                <ErrorProvider>
+                  <UserProvider>
+                    <AudioProvider>
+                      <MusicProvider>
+                        <Outlet />
+                        <ToastContainer 
+                          position="top-right" 
+                          autoClose={5000} 
+                          hideProgressBar={false}
+                          newestOnTop
+                          closeOnClick
+                          rtl={false}
+                          pauseOnFocusLoss
+                          draggable
+                          pauseOnHover
+                          theme="light"
+                        />
+                        <MusicPlayerControls />
+                      </MusicProvider>
+                    </AudioProvider>
+                  </UserProvider>
+                </ErrorProvider>
+              </ModalProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
         </ErrorBoundary>
         <ScrollRestoration />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(ENV)}`,
-          }}
-        />
         <Scripts />
         <LiveReload />
       </body>

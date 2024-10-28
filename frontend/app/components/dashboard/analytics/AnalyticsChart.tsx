@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import { motion } from 'framer-motion';
 
@@ -15,7 +15,11 @@ interface AnalyticsChartProps {
   height?: number;
 }
 
-export default function AnalyticsChart({ data, type, height = 300 }: AnalyticsChartProps) {
+const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ 
+  data, 
+  type = 'line', 
+  height = 300 
+}) => {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
 
@@ -54,6 +58,10 @@ export default function AnalyticsChart({ data, type, height = 300 }: AnalyticsCh
           legend: {
             display: false,
           },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+          },
         },
         scales: {
           y: {
@@ -61,12 +69,22 @@ export default function AnalyticsChart({ data, type, height = 300 }: AnalyticsCh
             grid: {
               color: 'rgba(156, 163, 175, 0.1)',
             },
+            ticks: {
+              color: 'rgba(156, 163, 175, 0.8)',
+            },
           },
           x: {
             grid: {
               display: false,
             },
+            ticks: {
+              color: 'rgba(156, 163, 175, 0.8)',
+            },
           },
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index',
         },
       },
     });
@@ -87,4 +105,6 @@ export default function AnalyticsChart({ data, type, height = 300 }: AnalyticsCh
       <canvas ref={chartRef} />
     </motion.div>
   );
-}
+};
+
+export default AnalyticsChart;

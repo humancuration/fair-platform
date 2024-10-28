@@ -1,23 +1,24 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Canvas } from '@react-three/fiber';
-import { useMusic } from '~/contexts/music';
-import { Visualizer2D } from './visualizers/Visualizer2D';
+import { useUnifiedMusic } from '~/contexts/UnifiedMusicContext';
 import { Visualizer3D } from './visualizers/Visualizer3D';
-import { PlayerControls } from './PlayerControls';
+import { Visualizer2D } from './visualizers/Visualizer2D';
+import MusicPlayerControls from './MusicPlayerControls';
+import { EducationalOverlay } from './EducationalOverlay';
+import { CollaborativeTools } from './CollaborativeTools';
+import { useTheme } from '@mui/material';
 
-export default function EnhancedMusicPlayer() {
+export function EnhancedMusicPlayer() {
+  const theme = useTheme();
   const {
     currentTrack,
     is3D,
     getAnalyserData,
-    currentSound,
-    toggleView
-  } = useMusic();
+    isCollaborativeMode,
+    isPlaying
+  } = useUnifiedMusic();
 
-  if (!currentTrack) {
-    return null;
-  }
+  if (!currentTrack) return null;
 
   return (
     <motion.div
@@ -29,40 +30,49 @@ export default function EnhancedMusicPlayer() {
     >
       <div className="relative h-[200px]">
         {is3D ? (
-          <Canvas camera={{ position: [0, 2, 5], fov: 75 }}>
-            <Visualizer3D getAnalyserData={getAnalyserData} />
-          </Canvas>
+          <Visualizer3D getAnalyserData={getAnalyserData} />
         ) : (
-          <Visualizer2D
+          <Visualizer2D 
             getAnalyserData={getAnalyserData}
+            theme={theme}
           />
         )}
-        
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-          <PlayerControls
-            is3D={is3D}
-            onToggleView={toggleView}
-            currentSound={currentSound}
+
+        {currentTrack.educationalContent && (
+          <EducationalOverlay 
+            content={currentTrack.educationalContent}
+            isPlaying={isPlaying}
           />
-        </div>
+        )}
+
+        {isCollaborativeMode && (
+          <CollaborativeTools 
+            trackId={currentTrack.id}
+            bpm={currentTrack.bpm}
+          />
+        )}
+
+        <MusicPlayerControls />
       </div>
 
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <motion.img
-              src={currentTrack.coverArt}
-              alt={currentTrack.title}
-              className="w-16 h-16 rounded object-cover"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            />
-            <div>
-              <h3 className="font-bold">{currentTrack.title}</h3>
-              <p className="text-gray-400">{currentTrack.artist}</p>
-            </div>
+      <div className="p-4 flex items-center justify-between">
+        <motion.div 
+          className="flex items-center gap-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+        >
+          <motion.img
+            src={currentTrack.coverArt}
+            alt={currentTrack.title}
+            className="w-16 h-16 rounded-lg object-cover"
+            animate={{ rotate: isPlaying ? 360 : 0 }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          />
+          <div>
+            <h3 className="font-bold">{currentTrack.title}</h3>
+            <p className="text-gray-400">{currentTrack.artist}</p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );
