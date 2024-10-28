@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef } from 'react';
+import { useLoaderData, useFetcher } from '@remix-run/react';
+import { motion } from 'framer-motion';
 import { 
   FaChartLine, FaBrain, FaUsers, FaLightbulb,
-  FaComments, FaHeart, FaNetworkWired 
+  FaComments, FaHeart, FaNetworkWired, FaGlobe 
 } from 'react-icons/fa';
-import ForceGraph2D from 'react-force-graph-2d';
-import { useWebSocket } from '@/hooks/useWebSocket';
+import type { NetworkNode, NetworkLink } from '~/types/network';
+import { NetworkGraph } from '~/components/visualization/NetworkGraph';
 
 interface SocialAnalyticsProps {
   communityId: string;
@@ -17,82 +18,76 @@ interface SocialAnalyticsProps {
   };
 }
 
-interface SocialMetrics {
-  posts: {
-    total: number;
-    trending: { id: string; title: string; engagement: number }[];
-    sentiment: { positive: number; neutral: number; negative: number };
-  };
-  interactions: {
-    comments: number;
-    reactions: number;
-    shares: number;
-    connections: {
-      nodes: Array<{
-        id: string;
-        name: string;
-        influence: number;
-        activity: number;
-        group: string;
-      }>;
-      links: Array<{
-        source: string;
-        target: string;
-        strength: number;
-        type: 'comment' | 'reaction' | 'share' | 'collaboration';
-      }>;
-    };
-  };
-  topics: Array<{
-    name: string;
-    volume: number;
-    sentiment: number;
-    trend: 'rising' | 'stable' | 'falling';
-  }>;
-}
+export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+  const metrics = await getCollectiveMetrics(params.communityId);
+  return json({ metrics });
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const nodeId = formData.get('nodeId');
+  
+  if (nodeId) {
+    await updateNodeActivity(nodeId as string);
+    return json({ success: true });
+  }
+  
+  return json({ success: false });
+};
 
 export const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
   communityId,
   features
 }) => {
-  const graphRef = useRef();
-  const [metrics, setMetrics] = useState<SocialMetrics | null>(null);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  
-  const socket = useWebSocket(`/api/communities/${communityId}/analytics`);
+  const { metrics } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+  const [selectedTopic, setSelectedTopic] = React.useState<string | null>(null);
 
-  useEffect(() => {
-    if (socket && features.realTime) {
-      socket.on('metrics', (data: SocialMetrics) => {
-        setMetrics(data);
-        
-        // Update network visualization
-        if (graphRef.current) {
-          graphRef.current.refresh();
-        }
-      });
+  const handleNodeClick = (nodeId: string) => {
+    if (features.networking) {
+      fetcher.submit(
+        { nodeId },
+        { method: 'post' }
+      );
     }
-  }, [socket, features.realTime]);
+  };
 
   return (
     <motion.div 
-      className="social-analytics grid grid-cols-2 gap-6 p-6"
+      className="social-analytics grid grid-cols-1 md:grid-cols-2 gap-6 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Community Pulse */}
-      <div className="bg-white rounded-lg shadow-lg p-4">
-        <h3 className="text-lg font-semibold flex items-center mb-4">
-          <FaHeart className="mr-2 text-red-500" /> Community Pulse
+      {/* Collective Impact */}
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h3 className="text-xl font-semibold flex items-center mb-4">
+          <FaGlobe className="mr-2 text-green-500" />
+          Collective Impact
         </h3>
-        
+
         <div className="grid grid-cols-3 gap-4 mb-6">
-          {metrics?.posts.sentiment && Object.entries(metrics.posts.sentiment).map(([type, value]) => (
-            <div key={type} className="text-center p-3 bg-gray-50 rounded">
-              <div className="text-2xl font-bold">{(value * 100).toFixed(1)}%</div>
-              <div className="text-sm text-gray-500 capitalize">{type}</div>
-            </div>
-          ))}
+          {metrics?.learning.impactMetrics && (
+            <>
+              <div className="text-center p-4 bg-green-50 rounded">
+                <div className="text-2xl font-bold text-green-600">
+                  {metrics.learning.impactMetrics.peopleReached}
+                </div>
+                <div className="text-sm text-gray-600">People Reached</div>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded">
+                <div className="text-2xl font-bold text-blue-600">
+                  {metrics.learning.impactMetrics.communitiesSupported}
+                </div>
+                <div className="text-sm text-gray-600">Communities Supported</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded">
+                <div className="text-2xl font-bold text-purple-600">
+                  {metrics.learning.impactMetrics.projectsLaunched}
+                </div>
+                <div className="text-sm text-gray-600">Projects Launched</div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -130,46 +125,23 @@ export const SocialAnalytics: React.FC<SocialAnalyticsProps> = ({
         </h3>
         
         <div className="h-[500px] bg-gray-50 rounded">
-          <ForceGraph2D
-            ref={graphRef}
-            graphData={metrics?.interactions.connections}
-            nodeAutoColorBy="group"
-            nodeRelSize={node => 6 + node.influence * 2}
-            linkWidth={link => link.strength}
-            linkColor={link => {
-              switch(link.type) {
-                case "collaboration": return "#4f46e5";
-                case "comment": return "#059669";
-                case "reaction": return "#dc2626";
-                case "share": return "#eab308";
-                default: return "#6b7280";
-              }
-            }}
-            nodeCanvasObject={(node, ctx, globalScale) => {
-              // Quantum-inspired node visualization
-              const size = 6 + node.influence * 2;
-              
-              // Base glow
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, size, 0, 2 * Math.PI);
-              ctx.fillStyle = node.color;
-              ctx.fill();
-
-              // Activity ripple
-              if (node.activity > 0.5) {
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, size * (1 + node.activity), 0, 2 * Math.PI);
-                ctx.strokeStyle = `${node.color}44`;
-                ctx.stroke();
-              }
-            }}
-            onNodeClick={node => {
-              if (features.networking) {
-                node.activity = 1;
-                setTimeout(() => {
-                  node.activity = 0;
-                  graphRef.current?.refresh();
-                }, 1000);
+          <NetworkGraph
+            nodes={metrics?.interactions.connections.nodes}
+            edges={metrics?.interactions.connections.links}
+            onNodeClick={handleNodeClick}
+            selectedNode={selectedTopic}
+            config={{
+              nodeSize: (node) => 6 + node.influence * 2,
+              nodeColor: (node) => node.group,
+              edgeWidth: (edge) => edge.strength,
+              edgeColor: (edge) => {
+                switch(edge.type) {
+                  case "collaboration": return "#4f46e5";
+                  case "comment": return "#059669";
+                  case "reaction": return "#dc2626";
+                  case "share": return "#eab308";
+                  default: return "#6b7280";
+                }
               }
             }}
           />
