@@ -13,6 +13,22 @@ interface Resource {
   author: string;
   rating: number;
   tags: string[];
+  collaborativeFeatures: {
+    studyGroups: boolean;
+    peerReviews: boolean;
+    mentorshipAvailable: boolean;
+  };
+  accessibilityOptions: {
+    translations: string[];
+    offlineAccess: boolean;
+    lowBandwidthVersion: boolean;
+    screenReaderOptimized: boolean;
+  };
+  communityContributions: {
+    contributors: string[];
+    improvements: string[];
+    relatedProjects: string[];
+  };
 }
 
 const AILearningHub: React.FC = () => {

@@ -1,6 +1,6 @@
 # STACK.MD
 
-Mobile friendly PWA and website
+Mobile friendly PWA and website, rich with visuals and audio features, with accessibility at the forefront of design
 
 # Dependencies
 
@@ -21,6 +21,7 @@ Mobile friendly PWA and website
 - Winston
 - Jest
 - Envoy
+- Zod
 
 ## Frontend
 - TypeScript
@@ -41,6 +42,7 @@ Mobile friendly PWA and website
 - vis-network
 - d3.js
 - @dnd-kit/core
+- Zod
 
 ## Development Tools
 - Git

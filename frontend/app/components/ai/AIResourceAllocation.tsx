@@ -33,6 +33,20 @@ interface ComputeResource {
     timeZone: string;
   };
   status: 'available' | 'reserved' | 'in-use';
+  fairnessMetrics: {
+    accessibilityScore: number;
+    communityBenefit: number;
+    resourceEfficiency: number;
+  };
+  communityPool: {
+    sharedResources: number;
+    contributorCount: number;
+    priorityQueue: {
+      educationalProjects: number;
+      communityInitiatives: number;
+      researchCollaborations: number;
+    };
+  };
 }
 
 interface ResourceAllocation {

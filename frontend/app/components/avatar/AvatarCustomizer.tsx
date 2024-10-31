@@ -13,6 +13,17 @@ import { AvatarComponentErrorBoundary } from "./shared/AvatarComponentErrorBound
 interface AvatarCustomizerProps {
   avatar: Avatar;
   inventory: Inventory;
+  // Add new props
+  communityContributions: {
+    sharedAssets: number;
+    mentorshipHours: number;
+    resourcesDonated: number;
+  };
+  collaborativeProjects: {
+    active: number;
+    completed: number;
+    impact: string[];
+  };
 }
 
 function AvatarCustomizerContent({ avatar, inventory }: AvatarCustomizerProps) {

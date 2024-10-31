@@ -443,6 +443,61 @@ model Donation {
   @@index([donorId])
 }
 
+model EcoAnalytics {
+  id               Int      @id @default(autoincrement())
+  groupId          Int
+  date             DateTime @default(now())
+  emissionsReduced Float
+  savings          Float
+  resourcesShared  Int
+  carbonOffset     Float
+  communitySavings Float
+  group            Group    @relation(fields: [groupId], references: [id])
+
+  @@index([groupId])
+  @@index([date])
+}
+
+model EcoTip {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String       @db.Text
+  category    EcoCategory
+  impact      String?      @db.Text
+  imageUrl    String?
+  authorId    Int
+  likes       Int         @default(0)
+  author      User        @relation(fields: [authorId], references: [id])
+  likedBy     EcoTipLike[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([authorId])
+  @@index([category])
+}
+
+model EcoTipLike {
+  id        Int      @id @default(autoincrement())
+  tipId     Int
+  userId    Int
+  tip       EcoTip   @relation(fields: [tipId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([tipId, userId])
+  @@index([userId])
+}
+
+model EcoImpact {
+  id                Int     @id @default(autoincrement())
+  groupId          Int     @unique
+  education        Float   @default(0)
+  infrastructure   Float   @default(0)
+  research         Float   @default(0)
+  communityProjects Float   @default(0)
+  group            Group   @relation(fields: [groupId], references: [id])
+}
+
 model Emoji {
   id        Int         @id @default(autoincrement())
   name      String
@@ -593,6 +648,8 @@ model Group {
   dataCollectives DataCollective[] @relation("DataCollectiveGroups")
   groupType       GroupType?       @relation(fields: [groupTypeId], references: [id])
   groupTypeId     Int?
+  ecoAnalytics EcoAnalytics[]
+  ecoImpact    EcoImpact?
 }
 
 model GroupMember {
@@ -1194,6 +1251,8 @@ model User {
   wishlists              Wishlist[]
   analyticsEvents        AnalyticsEvent[]
   retentionPolicy        Json?    // Stores the RetentionPolicy configuration
+  ecoTips      EcoTip[]
+  ecoTipLikes  EcoTipLike[]
 
   @@map("users")
 }
@@ -1319,6 +1378,14 @@ enum DataStreamDirection {
   INBOUND
   OUTBOUND
   BIDIRECTIONAL
+}
+
+enum EcoCategory {
+  ENERGY
+  WASTE
+  TRANSPORT
+  FOOD
+  COMMUNITY
 }
 
 enum EventStatus {
@@ -1493,4 +1560,3 @@ enum VoteType {
   Against
   Abstain
 }
-

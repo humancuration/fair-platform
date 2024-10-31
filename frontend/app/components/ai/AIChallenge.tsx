@@ -15,6 +15,18 @@ interface Challenge {
     points: number;
     badges: string[];
   };
+  // Add new fields
+  resourceRequirements: {
+    minCompute: number;
+    preferredCompute: number;
+  };
+  collaborationType: 'individual' | 'team' | 'mentor-mentee';
+  communityBenefits: string[];
+  availableResources: {
+    computeCredits: number;
+    mentorship: boolean;
+    learningMaterials: string[];
+  };
 }
 
 const AIChallenge: React.FC = () => {
