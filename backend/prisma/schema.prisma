@@ -322,17 +322,36 @@ model CommunityWishlist {
 }
 
 model CommunityWishlistItem {
-  id                 Int      @id @default(autoincrement())
-  userId             Int
-  name               String
-  description        String?
-  image              String?
-  price              Float
-  contributors       Int[]    @default([])
-  totalContributions Float    @default(0)
-  user               User     @relation(fields: [userId], references: [id])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  imageUrl    String?
+  targetAmount Float
+  currentAmount Float   @default(0)
+  timeline    Int?
+  allowContributions Boolean @default(true)
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  highlights  CommunityItemHighlight[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdById])
+  @@index([category])
+}
+
+model CommunityItemHighlight {
+  id        String   @id @default(cuid())
+  itemId    String
+  userId    String
+  item      CommunityWishlistItem @relation(fields: [itemId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([itemId, userId])
+  @@index([itemId])
+  @@index([userId])
 }
 
 model Company {
@@ -746,6 +765,13 @@ model Item {
   inventory   Inventory[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+}
+
+model KeyValueStore {
+  key       String   @id
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Link {
@@ -1344,18 +1370,17 @@ model Wishlist {
 }
 
 model WishlistItem {
-  id            String      @id @default(cuid())
-  name          String
-  description   String
-  imageUrl      String?
-  targetAmount  Float?
-  currentAmount Float       @default(0)
-  isPublic      Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  contributors  Contribution[]
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  imageUrl    String?
+  targetAmount Float?
+  currentAmount Float   @default(0)
+  isPublic    Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([userId])
 }

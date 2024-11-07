@@ -10,6 +10,7 @@ import { setupApolloServer } from './graphql/setupApolloServer';
 import { connectToDatabase } from '@config/database';
 import routes from './routes';
 import { initTracing } from './utils/tracing';
+import { WishlistJobs } from './jobs/wishlistJobs';
 
 dotenv.config();
 
@@ -78,6 +79,8 @@ async function startServer() {
     httpServer.listen(PORT, () => {
       console.log(`🚀 Server ready at http://localhost:${PORT}`);
     });
+
+    new WishlistJobs(); // Start cron jobs
   } catch (error) {
     console.error('Failed to start the server:', error);
     process.exit(1);
